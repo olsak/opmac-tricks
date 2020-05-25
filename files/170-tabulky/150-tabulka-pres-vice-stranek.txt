@@ -1,0 +1,93 @@
+anchor-name:ltable1
+id:0023
+author:P. O.
+date:2013-08-31
+
+----lang:cs--title:Tabulka přes více stránek
+Primitiv `\halign` vytvoří řádky tabulky a ty je možné rozlámat do stránek.
+Stačí ho neschovávat dovnitř `\vboxu`. Tuto vlastnost si ukážeme na
+jednoduché dlouhé tabulce, kde chceme mít linky mezi každým řádkem a pro
+jednoduchost nebudeme chtít opakovat nadpis tabulky na následujících
+stránkách (to je vyřešeno až v následující tipu).
+Uživatel napíše třeba
+
+```
+\longtable{|c|c|}{data & data \cr
+                  data & data \cr
+                  ... moc dat ... & \cr}
+```
+
+a vytvoří mu to centrovanou tabulku, která je ochotna se lámat do
+stránek.
+Bude asi potřeba deklarovat `\raggedbottom`, protože řádky tabulky neobsahují
+žádnou pružnost. Celý zázrak se ukrývá v následujících řádcích:
+
+```
+\def\longtable{\goodbreak \bgroup \catcode`\|=12 \tableL}
+\def\tableL#1#2{\setbox0=\table{#1}{#2}\setbox0=\hbox to\wd0{} % tabulka nanečisto
+   \tmpdim=\hsize \advance\tmpdim by-\wd0 \divide\tmpdim by2   % výpočet odsazení
+   \def\tabstrut{\vrule height1.1em depth.5em width0pt }       % volnější řádkování
+   \everycr={\longtablecr}\offinterlineskip                    % \everycr
+   \def\tmpa{}\tabdata={\kern\tmpdim}\scantabdata#1\relax      % \tabdata
+   \halign\expandafter{\the\tabdata\tabstrutA\cr#2\crcr}\egroup\goodbreak}
+\def\longtablecr{\noalign{\nobreak\ltrule\penalty0\kern-.4pt\ltrule\nobreak}}
+\def\ltrule{\moveright\tmpdim\hbox to\wd0{\hrulefill}}
+```
+
+Hlavní idea makra spočívá v tom, že pomocí `\everycr` vložíme za každé `\cr`
+zhruba řečeno: `\noalign{\hrule\penalty0\kern-.4pt\hrule\nobreak}`.
+Takže kreslíme dvě stejné čáry (tloušťky `.4pt`) přes sebe a mezi nima
+povolíme pomocí `\penalty0` stránkový zlom. Když se rozlomí, první čára
+zůstane
+dole a druhá se objeví nahoře na další stránce. Ostatní čáry jsou kresleny
+přes sebe, takže jejich zdvojení není vidět.
+
+Dále tento kód řeší centrování dlouhé tabulky. Kvůli tomu ji nejprve
+vytvoří
+nanečisto do `\box0` a do `\tmpdim` odměří velikost odsazení každého řádku.
+Toto odsazení pak je vloženo do deklarace tabulky v `\tabdata`.
+Místo `\hrule` je pak použita posunutá `\hrule` definovaná jako `\ltrule`.
+
+----lang:en--title:The table over more than one page
+The primitive `\halign` creates the lines of the table and puts them to the
+vertical list. This list is breakable to the pages if it is not included in
+the internal `\vbox`. This feature can be demonstrated by the simple long
+table. We need to have the horizontal rules between each line and we needn't
+to repeat the header of the table at each new page (the header repeating
+is solved by the next OPmac trick). The user write:
+
+```
+\longtable{|c|c|}{data & data \cr
+                  data & data \cr
+                  ... much more & data ... \cr}
+```
+
+and the centered table over more pages is printed. The usage of
+`\raggedbottom` is recommended for this situation because the lines of the
+table are not vertically stretchable. The `\longtable` can be implemented by
+few lines of the code:
+
+```
+\def\longtable{\goodbreak \bgroup \catcode`\|=12 \tableL}
+\def\tableL#1#2{\setbox0=\table{#1}{#2}\setbox0=\hbox to\wd0{} % table draft
+   \tmpdim=\hsize \advance\tmpdim by-\wd0 \divide\tmpdim by2   % calculation of indent
+   \def\tabstrut{\vrule height1.1em depth.5em width0pt }       %  baselineskip
+   \everycr={\longtablecr}\offinterlineskip                    % \everycr
+   \def\tmpa{}\tabdata={\kern\tmpdim}\scantabdata#1\relax      % \tabdata
+   \halign\expandafter{\the\tabdata\tabstrutA\cr#2\crcr}\egroup\goodbreak}
+\def\longtablecr{\noalign{\nobreak\ltrule\penalty0\kern-.4pt\ltrule\nobreak}}
+\def\ltrule{\moveright\tmpdim\hbox to\wd0{\hrulefill}}
+```
+
+The main idea of this macro is in the `\everycr` which inserts after each
+`\cr` the code: `\noalign{\hrule\penalty0\kern-.4pt\hrule\nobreak}`.
+Two equal rules are printed between each two lines, one rule overlap the
+second. The penalty 0 between the rules is the point of potential page
+break. The first rule keeps on the previous page and the second rule starts
+the new page if the penalty 0 is real page break.
+
+The next trick of this code solves the centering of this long table. This
+is the reason why we print the draft of the table first in the box0 and we
+calculate the indentation of the table in `\tmpdim`. This indentation is
+inserted into the table declaration before the first cell. The `\ltrule` is
+the `\hrule` shifted by the indentation.

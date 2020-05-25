@@ -1,0 +1,61 @@
+anchor-name:multispanc
+id:0103
+author:P. O.
+date:2015-04-23
+
+----lang:cs--title:Podbarvené položky přes více sloupců
+K předchozímu [OPmac triku](#cellcolor)
+přidáme možnost podvarvovat položky přes více sloupců. Přidáme makro
+`\multispanc{počet} \Barva {Text}`, které vytvoří položku přes `počet` sloupců
+podbarvené barvou `\Barva`. Chcete-li mít položku podbarvanou implicitní
+barvou, pište místo `\Barva` `\relax`.
+
+Příklad:
+
+```
+\def\tabstrut{\lower4pt\vbox to15pt{}}
+\tabskip=2pt \def\cskip{\noalign{\kern2pt}} \let\cellcolor=\Yellow
+\table{CLR}{\Black\White\bf Table &\multispanc2 \Black {\White\bf Title} \cr\cskip
+            first item      & second & \Blue \White third item \cr\cskip
+            next long item  & \Red X & \Green       YES }
+```
+
+vytvoří:
+
+![Ukázka tabulky](img/tab5-ukazka.png)
+
+Makro `\multispanc` může být definováno takto:
+
+```
+\def\multispanc#1#2#3{\multispan{#1}%
+   \expandafter\expandafter\expandafter\cellcolexp#2#3\end\hfil\hfil\ignorespaces}
+\def\cellcolexp{\futurelet\next\setcellcolor}
+```
+
+----lang:en--title:Colored multispan
+We follow the previous [OPmac trick](#cellcolor)
+and we add the macro `\multispanc{number} \Color {Text}` which creates the
+colored cell by `\Color` background over `number` columns. If you need to use
+default background color, write `\relax` instead `\Color`.
+
+Example:
+
+```
+\def\tabstrut{\lower4pt\vbox to15pt{}}
+\tabskip=2pt \def\cskip{\noalign{\kern2pt}} \let\cellcolor=\Yellow
+\table{CLR}{\Black\White\bf Table &\multispanc2 \Black {\White\bf Title} \cr\cskip
+            first item      & second & \Blue \White third item \cr\cskip
+            next long item  & \Red X & \Green       YES }
+```
+
+creates:
+
+![Table example](img/tab5-ukazka.png)
+
+The makro `\multispanc` can be defined by:
+
+```
+\def\multispanc#1#2#3{\multispan{#1}%
+   \expandafter\expandafter\expandafter\cellcolexp#2#3\end\hfil\hfil\ignorespaces}
+\def\cellcolexp{\futurelet\next\setcellcolor}
+```

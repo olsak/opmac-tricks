@@ -1,0 +1,109 @@
+anchor-name:balanced
+id:0077
+author:P. O.
+date:2014-08-09
+
+----lang:cs--title:Vnořené závorky jiného typu než {}
+TeX si hlídá automaticky párování a vnoření pouze jednoho typu závorek: `{}`. OPmac
+používá pro parametry občas ještě závorky `[]`, ale ty se nedají vnořovat.
+Napíšete-li tedy třeba `\label[a[b]c]`, dostanete lejblík `a[b` a dále `c]` se
+vytiskne. Pokud si chcete pohlídat i párování takových typů závorek
+(hranatých i jiných), můžete použít makro `\ensurerebalanced` tímto způsobem:
+
+```
+\def\makro[#1]{\ensurebalanced[]\makroA{#1}}
+\def\makroA#1{zde má parametr "#1" balancovány závorky [].}
+například:
+\makro[a[b]c] vytiskne: zde má parametr "a[b]c" balancovány závorky [].
+```
+
+Můžete si předefinovat třeba makro `\label` tak, aby akceptovalo
+balancovaný text s hranatými závorkami:
+
+```
+\def\tmp{\def\labelA##1}
+\expandafter\tmp\expandafter{\label[#1]}
+\def\label[#1]{\ensurebalanced[]\labelA{#1}}
+```
+
+Makro `\ensurebalanced` je definováno následovně:
+
+```
+\def\ensurebalanced#1#2#3#4{%
+   \isbalanced#1#2{#4}\iftrue #3{#4}%
+   \else
+      \def\ensurebalancedA##1##2#2{%
+         \isbalanced#1#2{##1#2##2}\iftrue #3{##1#2##2}%
+         \else \def\next{\ensurebalancedA{##1#2##2}}\expandafter\next\fi
+      }%
+      \def\next{\ensurebalancedA{#4}}\expandafter\next\fi
+}
+\def\isbalanced#1#2#3\iftrue{\tmpnum=0 \isbalancedA#1#2#3\isbalanced}
+\def\isbalancedA#1#2#3{%
+    \ifx\isbalanced#3\def\next{\csname ifnum\endcsname\tmpnum=0 }%
+    \else \def\next{\isbalancedA#1#2}%
+        \isonetoken#3\iftrue
+           \ifx#3#1\advance\tmpnum by1\fi
+           \ifx#3#2\advance\tmpnum by-1\fi
+     \fi\fi\next
+}
+\def\isonetoken#1#2\iftrue{\ifx\isbalanced#2\isbalanced}
+```
+
+Makro `\ensurebalanced` pohlídá pomocí `\isbalanced`, zda je přečtený text
+balancovaný na závorky `[=#1` a `]=#2`. Pokud ano, spustí `\makroA`, tedy `#3`
+následované přečteným parametrem. Pokud ne, zavolá (případně i rekurzívně)
+makro `\ensurebalancedA`, které přečte další část textu parametru.
+
+----lang:en--title:Nested brackets of another type than {}
+TeX checks the nested brackets only for one type of brackets: `{}`. OPmac
+uses the macros sometimes with the parameters surrounded by `[]` brackets, but
+hey cannot be simply nested. If you write (for example) `\label[a[b]c]` then
+you get the label `a[b` and the text `c]` is printed. You can check the
+pairs and nesting of another type of brackets than `{}` by the `\ensurebalanced`
+macro:
+
+```
+\def\macro[#1]{\ensurebalanced[]\macroA{#1}}
+\def\macroA#1{the parameter "#1" has balanced brackets [].}
+for example:
+\macro[a[b]c] prints: the parameter "a[b]c" has balanced brackets [].
+```
+
+The `\label` macro can be redefined in order to balanced `[]` brackets can be
+nested:
+
+```
+\def\tmp{\def\labelA##1}
+\expandafter\tmp\expandafter{\label[#1]}
+\def\label[#1]{\ensurebalanced[]\labelA{#1}}
+```
+
+The `\ensurebalanced` macro is defined by:
+
+```
+\def\ensurebalanced#1#2#3#4{%
+   \isbalanced#1#2{#4}\iftrue #3{#4}%
+   \else
+      \def\ensurebalancedA##1##2#2{%
+         \isbalanced#1#2{##1#2##2}\iftrue #3{##1#2##2}%
+         \else \def\next{\ensurebalancedA{##1#2##2}}\expandafter\next\fi
+      }%
+      \def\next{\ensurebalancedA{#4}}\expandafter\next\fi
+}
+\def\isbalanced#1#2#3\iftrue{\tmpnum=0 \isbalancedA#1#2#3\isbalanced}
+\def\isbalancedA#1#2#3{%
+    \ifx\isbalanced#3\def\next{\csname ifnum\endcsname\tmpnum=0 }%
+    \else \def\next{\isbalancedA#1#2}%
+        \isonetoken#3\iftrue
+           \ifx#3#1\advance\tmpnum by1\fi
+           \ifx#3#2\advance\tmpnum by-1\fi
+     \fi\fi\next
+}
+\def\isonetoken#1#2\iftrue{\ifx\isbalanced#2\isbalanced}
+```
+
+The macro `\ensurebalanced` checks the balanced text by `\isbalanced` wit
+used brackets `[=#1` and `]=#2`. If the text is balanced then `\macroA` is
+executed, i.e #3 followed by read parameter. Else the `\ensurebalancedA` macro
+is executed (maybe recursively). It reads the next part of the parameter.

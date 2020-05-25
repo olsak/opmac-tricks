@@ -1,0 +1,41 @@
+anchor-name:exseven
+id:0091
+author:P. O.
+date:2015-01-25
+
+----lang:cs--title:Konverze frází z \mtext na velká písmena
+Makro `\mtext{id}` expanduje na skutečnou frázi ve třech krocích:
+
+```
+\mtext{id} -> \csname mt:id:\csname lan:\the\language\endcsname\endcsname
+\csname mt:id:\csname lan:\the\language\endcsname\endcsname -> \mt:id:cs
+\mt:id:cs -> skutečný text
+```
+
+Chceme-li konvertovat takový text na velká písmena, musíme nejprve
+provést všechny tři úrovně expanze, na což potřebujeme sedm příkazů
+`\expandafter`:
+
+```
+\def\exseven{\expandafter\expandafter\expandafter
+             \expandafter\expandafter\expandafter\expandafter}
+...\uppercase\exseven{\mtext{id}}...
+```
+
+----lang:en--title:Uppercase \mtext phrases
+The `\mtext{id}` is expanded to the right text in three expansion steps:
+
+```
+\mtext{id} -> \csname mt:id:\csname lan:\the\language\endcsname\endcsname
+\csname mt:id:\csname lan:\the\language\endcsname\endcsname -> \mt:id:cs
+\mt:id:cs -> the declared text
+```
+
+If we need to convert the declared text to upper case, we need to do it
+by seven `\expandafter`'s:
+
+```
+\def\exseven{\expandafter\expandafter\expandafter
+             \expandafter\expandafter\expandafter\expandafter}
+...\uppercase\exseven{\mtext{id}}...
+```

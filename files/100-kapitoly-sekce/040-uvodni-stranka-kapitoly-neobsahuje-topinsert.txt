@@ -1,0 +1,25 @@
+anchor-name:notopins
+id:0135
+author:P. O.
+date:2015-12-21
+
+----lang:cs--title:Úvodní stránka kapitoly neobsahuje \topinsert
+Při užití `\topinsert ...\endinsert` bychom chtěli vyloučit
+umístění obrázku či tabulky na první stránku kapitoly, tedy nad nadpis
+kapitoly. To lze provést poměrně snadno vložením následujících řádků na
+začátek dokumentu:
+
+```
+\addto\chaphook{\global\dimen\topins=0pt }
+\addto\endoutput{\global\dimen\topins=\vsize}
+```
+
+----lang:en--title:How to prevent \topins on chapter page
+We need to prevent the printing tables and figures on the top of the
+first page of chapter, i. e. before the chapter title. This can be done by
+adding the following code at the beginning of the document.
+
+```
+\addto\chaphook{\global\dimen\topins=0pt }
+\addto\endoutput{\global\dimen\topins=\vsize}
+```

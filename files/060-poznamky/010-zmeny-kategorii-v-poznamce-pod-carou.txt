@@ -1,0 +1,54 @@
+anchor-name:footcat
+id:0030
+author:P. O.
+date:2013-09-27
+
+----lang:cs--title:Změny kategorií v poznámce pod čarou
+Pokud napíšeme například `\activettchar"` a dále
+`\fnote{tady je příkaz "\cosi"}`, tak to nebude fungovat, neboť `\fnote` čte
+svůj parametr bez změny kategorií. Problém je vyložen podrobně v TBN na str.
+26. Nicméně lze snadno předefinovat `\fnote` tak, aby změny kategorií v
+parametru fungovaly:
+
+```
+\expandafter\def\expandafter\afnote\expandafter{\fnote{\unhbox0}}
+\def\fnote{\setbox0=\hbox\bgroup\typobase\typoscale[800/800]\aftergroup\afnote\let\next}
+```
+
+Po takovém předefinování `\fnote` nemá parametr, ale načte následující text
+jako součást `\setbox0=\hbox`. Po ukončení `\hboxu` se provede původní `\fnote` z
+OPmac tentokrát s parametrem `\unhbox0`. Povšimněte si, že je pořeba nastavit
+přepínače ovlivňující font už při čtení obsahu `\hboxu`, protože nastavení
+fontů při `\unhbox0` už není účinné (sazba už byla provedena).
+
+Podobně jako `\fnote` je možné předefinovat `\mnote` a mnohá další podobná
+makra:
+
+```
+\expandafter\def\expandafter\amnote\expandafter{\mnote{\unhbox0}}
+\def\mnote{\setbox0=\hbox\bgroup\aftergroup\amnote\let\next}
+```
+
+----lang:en--title:Catcode changes in the footnotes
+For example, the text `\fnote{here is "\foo"}` will not work if
+`\activettchar"` is declared, because the `\fnote` reads its parameter without
+catcode changes. The problem is explained in detail in TBN, page 26.
+On the other hand, we can redefine `\fnote` in order to catcode changes work:
+
+```
+\expandafter\def\expandafter\afnote\expandafter{\fnote{\unhbox0}}
+\def\fnote{\setbox0=\hbox\bgroup\typobase\typoscale[800/800]\aftergroup\afnote\let\next}
+```
+
+The redefined `\fnote` does not have the parameter, but it reads the
+following text as a part of `\setbox0=\hbox` code. After the `\hbox` is
+finished, the original `\fnote` from OPmac is processed with the parameter
+`\unhbox0`. Note that the fontsize have to be set when the text is read into
+`\hbox` because the font parameters is irrelevant when `\unhbox0` is processed.
+
+You can redefine `\mnote` and similar macros by similar way as `\fnote` here:
+
+```
+\expandafter\def\expandafter\amnote\expandafter{\mnote{\unhbox0}}
+\def\mnote{\setbox0=\hbox\bgroup\aftergroup\amnote\let\next}
+```

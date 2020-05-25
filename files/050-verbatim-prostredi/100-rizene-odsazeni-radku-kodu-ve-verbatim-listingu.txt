@@ -1,0 +1,105 @@
+anchor-name:verbindent
+id:0151
+author:P. O.
+date:2016-06-02
+
+----lang:cs--title:Řízené odsazení řádků kódu ve verbatim listingu
+Existují konvence, kolik dát mezer pro každou další úrověň odsazení řádků v
+listingu programu. Například první úroveň je bez odsazení, druhá posunuje
+řádky o čtyři znaky doprava, další o 8 znaků atd. Tj. odsazení
+`\verbindentIN` je rovno čtyřem. Při tisku kódu pomocí `\begtt...\endtt`
+nebo `\verbinput` může být takové velké odsazení méně vhodné. Uděláme
+makro, které místo vstupního odsazení `\verbindentIN` užitého skutečně ve
+vstupním kódu vytiskne jiné odsazení `\verbindentOUT`. Například nastavíme
+`\verbindentOUT` na dvojku a všechna odsazení budou ve výstupu poloviční.
+
+```
+\def\tthook{\everypar={\everyttline}\adef\^^I{\TABchar}}
+\def\everyttline#1\fi{\fi \def\TABchar{{\ }}%
+   \ifx\NLh\undefined \def\spaceGEN{\ }\def\spaceTAB{\TABchar}\else
+      \let\spaceGEN=\ \let\spaceTAB=\TABchar\fi
+   \tmpnum=0 \def\everyttlineC##1{\everyttlineA}\everyttlineA
+}
+\def\everyttlineA{\futurelet\next\everyttlineB}
+\def\everyttlineB{\ifx\next\n \else
+   \ifx\next\spaceGEN \advance\tmpnum by1 \else
+   \ifx\next\spaceTAB \divide\tmpnum by\TABskipIN % TAB position
+      \advance\tmpnum by1 \multiply\tmpnum by\TABskipIN \relax \else
+   \def\everyttlineC{\everyttlineD\everyttlineE}\fi\fi\fi
+   \everyttlineC
+}
+\def\everyttlineD{% maybe line numbers:
+   \ifnum\ttline<0 \else
+      \ifx\glob\undefined \global \else \glob\fi \advance\ttline by1 \printttline\fi
+}
+\def\everyttlineE{% recalculation of indentation:
+   \tmpdim=.5em \tmpdim=\the\tmpnum\tmpdim \tmpdim=\verbindentOUT\tmpdim
+   \divide\tmpdim by\verbindentIN \kern\tmpdim
+}
+\def\TABskipIN{8}     % vzdalenost zarazek pro TAB (ASCII 9)
+\def\verbindentIN{4}  % velikost odsazeni na vstupu
+\def\verbindentOUT{2} % velikost odsazeni na vystupu
+```
+
+Makro zjistí pro každý řádek velikost jeho odsazení, tuto vzdálenost
+vynásobí `\verbindentOUT` a vydělí `\verbindentIN` a takto upravenou vzdálenost
+skutečně při tisku použije. Při zjišťování velikosti odsazení si makro všímá
+jednak mezer a jednak tabulátorů, které jsou typicky s těmi mezerami
+všelijak smíchány. Pro každý tabulátor vypočte následující pozici tabulátorové
+zarážky dle vzdálenosti zarážek, která je dána v `\TABskipIN`. Při běžném
+nastavení `\TABskipIN` na 8 dává například
+`mezera mezera tabulátor tabulátor mezera`
+celkové vstupní odsazení 17 znaků.
+
+Mezery mezi slovy na řádku nejsou nijak dotčeny. Tabulátor mezi slovy se
+chová jako jedna mezera. Makro spolupracuje i s makry na automatické
+obarvení textů dle triku 0124 a 0125.
+
+----lang:en--title:Smart indentation of code lines in verbatim
+There exist conventions, how many spaces to use for indentation of
+various levels of code lines. For example, if you use the schema 0, 4, 8, 12
+etc. in your verbatim input then you can set `\verbindentIN` to 4.
+When the code is printed using `\begtt...\endtt` or `\verbinput` then different
+indentation can be used. For example, if you need 0, 2, 4, 6, etc. in the
+output then you can set `\verbindentOUT` to 2. All indentations will have half
+size than in the input.
+
+```
+\def\tthook{\everypar={\everyttline}\adef\^^I{\TABchar}}
+\def\everyttline#1\fi{\fi \def\TABchar{{\ }}%
+   \ifx\NLh\undefined \def\spaceGEN{\ }\def\spaceTAB{\TABchar}\else
+      \let\spaceGEN=\ \let\spaceTAB=\TABchar\fi
+   \tmpnum=0 \def\everyttlineC##1{\everyttlineA}\everyttlineA}
+\def\everyttlineA{\futurelet\next\everyttlineB}
+\def\everyttlineB{\ifx\next\n \else
+   \ifx\next\spaceGEN \advance\tmpnum by1 \else
+   \ifx\next\spaceTAB \divide\tmpnum by\TABskipIN % TAB position
+      \advance\tmpnum by1 \multiply\tmpnum by\TABskipIN \relax \else
+   \def\everyttlineC{\everyttlineD\everyttlineE}\fi\fi\fi
+   \everyttlineC
+}
+\def\everyttlineD{% maybe line numbers:
+   \ifnum\ttline<0 \else
+      \ifx\glob\undefined \global \else \glob\fi \advance\ttline by1 \printttline\fi
+}
+\def\everyttlineE{% recalculation of indentation:
+   \tmpdim=.5em \tmpdim=\the\tmpnum\tmpdim \tmpdim=\verbindentOUT\tmpdim
+   \divide\tmpdim by\verbindentIN \kern\tmpdim
+}
+\def\TABskipIN{8}     % the distance between two TAB stops in input
+\def\verbindentIN{4}  % the indentation in input
+\def\verbindentOUT{2} % the indentation in output
+```
+
+The macro measures the indentation width of each line using `\everypar`.
+This width is multiplied by `\verbindentOUT` and divided by `\verbindentIN`.
+The corrected width is used in the output. When the input indentation is
+calculated then each space is calculated as one and each TAB behaves like
+normal TAB character: it shifts the next text to the next TAB stop. The
+distance of TAB stops is set in `\TABskipIN`. The default value 8 means that
+(for example) `space space tab tab space` generates the indentation of
+17 characters in the input.
+
+The spaces between words are unchanged. The TABs between words behave
+like one space. The macro cooperates with automatic highlighting mentioned
+in OPmac tricks 0124 and 0125.

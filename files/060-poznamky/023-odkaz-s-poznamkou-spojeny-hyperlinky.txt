@@ -1,0 +1,54 @@
+anchor-name:hyperlinkfnote
+id:0044
+author:P. O.
+date:2020-03-19
+
+----lang:cs--title:Odkaz s poznámkou spojený hyperlinky
+Požadavek je propojit odkaz v textu na poznámku hyperlinkovým odkazem a zpět, 
+poznámku propojit s jejím odkazem v hlavním textu. To lze udělat třeba takto:
+
+```
+\hyperlinks\Green\Green
+
+\let\fnmarkboth=\fnmarkx
+
+\def\fnmarkx{\link[fnx:\the\fnotenum]{\localcolor\Red} {\fnmarkboth}%
+             \dest[fny:\the\fnotenum]}
+\def\fnmarky{\link[fny:\the\fnotenum]{\localcolor\Blue}{\fnmarkboth}%
+             \dest[fnx:\the\fnotenum]}
+
+\def\fnote{\fnoteG\fnmarky}
+\def\fnotemark#1{{\advance\fnotenum by#1\relax \fnmarky}}
+
+\def\fnxborder{1 0 0}
+\def\fnyborder{0 0 1}
+```
+Ukázka zavádí pro dva nové druhy odkazů barvy `\Red` a `\Blue` a
+definuje pro ně také červený a modrý rámeček `\fnxborder` a `\fnyborder`. 
+Rámečky definovat nemusíte. 
+
+----lang:en--title:The footnote mark connected to footnote by hyperlink
+The task is to connect footnote mark in text to relevant footnote and
+backward the footnote to its footnote mark in the text.
+This could be done by:
+
+```
+\hyperlinks\Green\Green
+
+\let\fnmarkboth=\fnmarkx
+
+\def\fnmarkx{\link[fnx:\the\fnotenum]{\localcolor\Red} {\fnmarkboth}%
+             \dest[fny:\the\fnotenum]}
+\def\fnmarky{\link[fny:\the\fnotenum]{\localcolor\Blue}{\fnmarkboth}%
+             \dest[fnx:\the\fnotenum]}
+
+\def\fnote{\fnoteG\fnmarky}
+\def\fnotemark#1{{\advance\fnotenum by#1\relax \fnmarky}}
+
+\def\fnxborder{1 0 0}
+\def\fnyborder{0 0 1}
+```
+The `\Red` and `\Bue` colors are used here for activated hyperlinks 
+and the frame around active
+hyperlink is declared by `\fnxborder` and `\fnyborder`. You need not to
+declare frames.

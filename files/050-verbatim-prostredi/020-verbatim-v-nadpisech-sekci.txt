@@ -1,0 +1,137 @@
+anchor-name:code
+id:0102
+author:P. O.
+date:2015-04-22
+
+----lang:cs--title:Verbatim v nadpisech sekcí
+Verbatim prostředí deklarované pomocí `\activettchar` (např.
+`\activettchar"`) funguje jen tehdy, když je text mimo parametr jiného makra.
+Rozhodně nefunguje v nadpisech (např. nelze psát `\sec Cosi "\uff#$"`). Nyní
+zavedeme makro `\code{text}`, které vytvoří to samé, jako „text“, ale bude
+možné je bez obav vkládat do parametrů maker včetně nadpisů, ze kterých se
+texty správně propagují do obsahu, do záhlaví a do PDF záložek. Za cenu této
+vymoženosti bude občas potřeba zapsat text pro `\code` ne zcela doslova, ale
+se znaky backlash navíc. Pravidla jsou tato:
+
+* Místo `\` pište `\\`, místo `#` pište `\#` a místo `%` pište `\%`. \\
+* Vše ostatní se přepisuje doslova. \\
+* Před další speciální znaky `{`, `}`, `$`, `&`, `^`, `_`, `␣` (mezera), `~`
+  můžete ale nemusíte psát backlash. Tento backlash se nezobrazí. \\
+* Parametr `{text}` musí být balancovaný vzhledem k závorkám `{}`. Chcete-li
+  vložit do textu nebalancovanou závorku, pište `\{`. \\
+* Dvojice zobáků `^^ab` se promění ve specifikovaný znak. Pokud tomu chcete
+  zabránit, pište `^\^ab`. \\
+* Více mezer za sebou se slijí do jediné mezery. Pokud tomu chcete
+  zabránit, pište `\␣\␣` atd.
+
+Příklady:
+
+```
+\code{ah_a uff{} &$^}           % vytvoří: ah_a uff{} &$^
+\code{\\def\\cosi\#1{cosi=\#1}} % vytvoří: \def\cosi#1{cosi=#1}
+\code{a\%b\ \ \ c\%d}           % vytvoří: a%b   c%d
+```
+
+Implementace:
+
+```
+\def\code#1{\def\tmpb{#1}\edef\tmpb{\expandafter\stripm\meaning\tmpb\relax}%
+   \expandafter\replacestrings\expandafter{\string\\}{\bslash}%
+   \expandafter\replacestrings\bslash{}%
+   \codeP{\leavevmode\hbox{\tt\tmpb}}}
+\def\codeP#1{#1}
+\def\stripm#1->#2\relax{#2}
+\addprotect\code \addprotect\\ \addprotect\{ \addprotect\}
+\addprotect\^ \addprotect\_ \addprotect\~
+\setcnvcodesA
+\addto\cnvhook{\let\code=\codeP}
+```
+
+Makro `\code` detokenizuje svůj parametr pomocí `\meaning` a dále pomocí
+`\replacestrings` provede záměnu `\\` za jediný \ a ostatní jediné `\` odstraní.
+Při `\write` se `\code` ani `\\`, `\{`, `\}`, `\$` atd. neexpandují a zapíší se do REF
+souboru tak, jak jsou. Při zápisu do záložek se v klasickém módu zapíše text
+stejně jako při `\write` a PDF prohlížeč automaticky nezobrazí backslashe.
+Pokud ale používáte záložky s `pdfuni.tex`, je potřeba detokenizovat parametry
+`\code` před použitím `\pdfunidef`, což udělá makro `\precode`:
+
+```
+\ifx\pdfunidef\undefined\else \def\cnvhook #1#2{#2\precode \pdfunidef\tmp\tmp}\fi
+\def\precode{\def\codeP##1{}\let\bslash=\Bslash
+   \edef\tmp{\expandafter}\expandafter\precodeA\tmp\code{}}
+\def\precodeA#1\code#2{\addto\tmp{#1}%
+   \ifx\end#2\end \else
+      \codeA{#2}%
+      \expandafter\addto\expandafter\tmp\expandafter{\tmpb}%
+      \expandafter\precodeA \fi
+}
+\let\codeA=\code
+```
+
+----lang:en--title:Robust verbatim in titles of sections
+The verbatim environment (surrounded by `\activettchar` character) cannot
+be used in macro parameters, especially in section titles, because cactode
+changing isn't robust operation. We declare the macro `\code{text}` here,
+which prints the text like verbatim (with exceptinos described below) but it
+is robust: it can be used in parameters of other macros and if it is used
+in sections then the text is printed without changes in TOC, in
+headlines and in PDF outlines. But the parameter text of the `\code` cannot be
+prepared absolutely “verbatim”. User must respect the following rules:
+
+* Write `\\` instead `\`, write `\#` instead `#` and write `\%` instead `%`. \\
+* All other characters are printed verbatim. \\
+* You can escape other TeX-special characters: `{`, `}`, `$`, `&`, `^`, `_`,
+  `␣` (space), `~` by backslash. This backslash isn't printed. \\
+* The `{parameter text}` must be balanced with respect to braces `{}`. If you
+  need to insert non-balancing brace, write `\{`. \\
+* The double-caret followed by a code (like `^^ab`) is replaced by specified
+  character. If you don't need this then write `^\^ab`. \\
+* More subsequent spaces are replaced by one space. If you don't need this
+  then write control space: `\␣\␣`.
+
+Examples:
+
+```
+\code{ah_a uff{} &$^}         % prints: ah_a uff{} &$^
+\code{\\def\\foo\#1{foo=\#1}} % prints: \def\foo#1{foo=#1}
+\code{a\%b\ \ \ c\%d}         % prints: a%b   c%d
+```
+
+Implementation:
+
+```
+\def\code#1{\def\tmpb{#1}\edef\tmpb{\expandafter\stripm\meaning\tmpb\relax}%
+   \expandafter\replacestrings\expandafter{\string\\}{\bslash}%
+   \expandafter\replacestrings\bslash{}%
+   \codeP{\leavevmode\hbox{\tt\tmpb}}}
+\def\codeP#1{#1}
+\def\stripm#1->#2\relax{#2}
+\addprotect\code \addprotect\\ \addprotect\{ \addprotect\}
+\addprotect\^ \addprotect\_ \addprotect\~
+\setcnvcodesA
+\addto\cnvhook{\let\code=\codeP}
+```
+
+The macro `\code` detokenizes its parameter by `\meaning` and does
+`\replacestrings` in order to replace `\\` to \ and other `\` to nothing.
+When "\write to REF file" is processed then `\code` does nothing
+(as `\relax`) and the `\\`, `\{`, `\}`, `\$` etc. are not expanded because
+they are protected. The same principles are used when normal PDF outlines
+are created (only difference is that `\code#1` expands to #1). The PDF viewer
+removes backslashes automaticaly. Finally, PDF outlines with `pdfuni.tex` macro
+are more complicated: we need to detokenize the `\code` parameters from outline
+parameter before it is processed by `\pdfunidef`. This is done by `\precode`
+macro:
+
+```
+\ifx\pdfunidef\undefined\else  \def\cnvhook #1#2{#2\precode \pdfunidef\tmp\tmp}\fi
+\def\precode{\def\codeP##1{}\let\bslash=\Bslash
+   \edef\tmp{\expandafter}\expandafter\precodeA\tmp\code{}}
+\def\precodeA#1\code#2{\addto\tmp{#1}%
+   \ifx\end#2\end \else
+      \codeA{#2}%
+      \expandafter\addto\expandafter\tmp\expandafter{\tmpb}%
+      \expandafter\precodeA \fi
+}
+\let\codeA=\code
+```

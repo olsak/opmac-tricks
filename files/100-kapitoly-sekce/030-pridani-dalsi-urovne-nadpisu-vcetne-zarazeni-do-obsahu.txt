@@ -1,0 +1,120 @@
+anchor-name:part
+id:0099
+author:P. O.
+date:2015-04-15
+
+----lang:cs--title:Přidání další úrovně nadpisů včetně zařazení do obsahu
+Vytvoříme makro `\part <text>`, které bude vytvářet číslované části díla,
+jež jsou nadřazeny nad kapitoly. Při `\maketoc` se vytisknou do obsahu
+i informace o dělení knihy na části.
+
+```
+\newcount\partnum
+\def\part#1\par{%
+  \chaphook {\globaldefs=1 \chapnum=0 \secnum=0 \seccnum=0 \tnum=0 \fnum=0 \dnum=0}\relax
+  \edef\thepartnum{\the\partnum}\let\thetocnum=\thepartnum \xdef\tocilabel{\thepartnum}%
+  \vfil\break\null
+  \vskip3cm
+  \centerline{\typosize[15/18]\bf Part \uproman\partnum}
+  \wtotoc{-1}\bfshape{#1}\dest[toc:part.\thepartnum]
+  \tit #1\par
+  \vfil\break
+}
+\def\printpart#1{\vfil\break\null
+   \vskip3cm
+   \centerline{\typosize[15/18]\bf Part \uproman\partnum}
+   \tit #1\par
+   \vfil\break
+}
+\def\uproman#1{\uppercase\expandafter{\romannumeral#1}}
+\let\optocline=\tocline % original OPmac \tocline is saved.
+\def\tocline#1{\ifnum#1=-1 \let\next=\ptocline \else \def\next{\optocline{#1}}\fi \next}
+\def\ptocline#1#2#3#4{\medskip
+   \def\tocilabel{#2}%
+   \centerline{#1Part \uproman{#2}}\nobreak
+   \centerline{#1#3\unskip}\nobreak
+}
+\addto\maketoc{\def\tocilabel{}}
+```
+
+Makro vkládá informace do obsahu pomocí `\wtotoc` (k dispozici od verze
+OPmac Apr. 2015). Následuje číslo úrovně nadpisu, kapitola má úroveň 0, sekce 1 a
+podsekce 2. Při použití `\part` tedy vkládáme údaj -1. Dále je zde upraveno
+makro `\tocline`, které při úrovni 0 a více spustí originální `\tocline`, zatíco
+při úrovni -1 se spustí `\ptocline`, které vloží dva řádky do obsahu.
+Makro `\part` rovněž nastaví interní lejblík `\tocilabel`, aby byly odlišeny
+části obsahu pro jednotlivé části při použití `\hyperlinks`. Samotná čísla kapitol
+totiž v jednotlivých částech nezaručují unikátnost hyperlinkového
+lejblíku.
+
+Pokud chceme, aby `\part` fungoval i při `\outlines`, je třeba ještě vyvinout
+další úsilí:
+
+```
+\let\outlinesAA=\outlinesA
+\def\outlinesA#1{\ifnum#1=-1 \def\next{}\else \def\next{\outlinesAA{#1}}\fi \next}
+\let\outlinesBB=\outlinesB
+\def\outlinesB#1{\ifnum#1=-1 \def\next{\outlinesBp}\else \def\next{\outlinesBB{#1}}\fi \next}
+\def\outlinesBp#1#2#3#4{\def\tocilabel{#2}%
+   \pdfoutline goto name{toc:part.#2} count 0 {PART: #3}\relax
+}
+```
+
+----lang:en--title:New level of titles (part) in the text and in the TOC
+We create the macro `\part` which creates a numbered parts of the book.
+These parts include chapters, sections and subsections. All levels of titles
+will be printed in the TOC when `\maketoc` is used.
+
+```
+\newcount\partnum
+\def\part#1\par{%
+  \chaphook {\globaldefs=1 \chapnum=0 \secnum=0 \seccnum=0 \tnum=0 \fnum=0 \dnum=0}\relax
+  \edef\thepartnum{\the\partnum}\let\thetocnum=\thepartnum
+  \vfil\break\null
+  \vskip3cm
+  \centerline{\typosize[15/18]\bf Part \uproman\partnum}
+  \wtotoc{-1}\bfshape{#1}\xdef\tocilabel{\thepartnum}%
+  \tit #1\par
+  \vfil\break
+}
+\def\printpart#1{\vfil\break\null
+   \vskip3cm
+   \centerline{\typosize[15/18]\bf Part \uproman\partnum}
+   \tit #1\par
+   \vfil\break
+}
+\def\uproman#1{\uppercase\expandafter{\romannumeral#1}}
+\let\optocline=\tocline % original OPmac \tocline is saved.
+\def\tocline#1{\ifnum#1=-1 \let\next=\ptocline \else \def\next{\optocline{#1}}\fi \next}
+\def\ptocline#1#2#3#4{\medskip
+   \def\tocilabel{#2}%
+   \centerline{#1Part \uproman{#2}}\nobreak
+   \centerline{#1#3\unskip}\nobreak
+}
+\addto\maketoc{\def\tocilabel{}}
+```
+
+The macro `\part` inserts the TOC information using `\wtotoc` (supported
+since OPmac version Mar. 2015) to the REF file. The first parameter of
+`\wtotoc` is the level of the title: 0 for chapters, 1 for sections and 2 for
+subsections. Because `\part` is above chapters, we have chosen the level -1.
+The macro `\tocline` is redefined here in order it runs the original `\tocline` when
+the level is 0, 1 or 2, but the `\ptocline` prints two lines in the TOC when
+the level is -1. The label `\tocilabel` is defined as number of the part
+because we need to distinguish the chapter numbers when `\hyperlinks` are
+used. The chapter numbers alone are not unique in the whole book, so they
+are preceeded by `\tocilabel` when the internal hyperlink-label is created.
+
+If we want to use `\part` with `\outlines` then we must to do more work:
+
+```
+\let\outlinesAA=\outlinesA
+\def\outlinesA#1{\ifnum#1=-1 \def\next{}\else \def\next{\outlinesAA{#1}}\fi
+\next}
+\let\outlinesBB=\outlinesB
+\def\outlinesB#1{\ifnum#1=-1 \def\next{\outlinesBp}\else
+\def\next{\outlinesBB{#1}}\fi \n
+\def\outlinesBp#1#2#3#4{\def\tocilabel{#2}%
+   \pdfoutline goto name{toc:part.#2} count 0 {PART: #3}\relax
+}
+```

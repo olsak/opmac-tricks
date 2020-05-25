@@ -1,0 +1,60 @@
+anchor-name:nopt
+id:0169
+author:Petr Krajník
+date:2019-06-23
+
+----lang:cs--title:Úprava makra \ignorept a návrh makra \nopt 
+Při použití `\pdfliteral` se často vyskytne potřeba použít makro `\ignorept`.
+Pak stojí za to, aby `\ignorept` generovalo co nejmíň číslic do výsledného
+kódu. To lze zařídít následujícím předefinováním makra `\ignorept`:
+```
+\begingroup \lccode`\?=`\p \lccode`\!=`\t \lowercase{\endgroup
+   \def\ignorept #1.#2?!{% Print minimized point value
+       \ifnum#2=0 #1\else \ifnum#1=0 \expandafter\remzero\fi #1.#2\fi}
+}
+\def\remzero #10{#1}% Remove zero and leave minus if present
+```
+Makro vygeneruje číslo v minimální možné formě. Pro PDF kód ušetříme 
+mnoho zbytečných nul a teček. Vše se provádí v expand procesoru.
+
+Dále je užitečné zavést makro `\nopt`, které se postará o zachování mezery za
+použitím makra a umožní výpočet uvnitř svého parametru, tj. 
+třeba `\nopt[1.65\hoffset + 1in]` vygeneruje v argumentu `\pdfliteral`
+odpovídající konstantu.
+```
+\def\nopt[#1]{\expandafter\ignorept\the\dimexpr #1\relax}
+```
+Například kód v [OPmac triku 0021](#podklad) pak vypadá tato:
+```
+\def\prepghook{\dimen0=.996264truein 
+  \pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -\nopt[\dimen0] \nopt[\dimen0] cm 
+  \nopt[\hoffset] \nopt[\voffset] -\nopt[\pdfpagewidth] -\nopt[\pdfpageheight] re f Q}}
+```
+
+
+----lang:en--title:Modification of \ignorept macro and new \nopt macro
+We need to use \ignorept macro very often when \pdfliteral is used.
+We can minimize the output code (in PDF) when `ignorept` is re-defined:
+```
+\begingroup \lccode`\?=`\p \lccode`\!=`\t \lowercase{\endgroup
+   \def\ignorept #1.#2?!{% Print minimized point value
+       \ifnum#2=0 #1\else \ifnum#1=0 \expandafter\remzero\fi #1.#2\fi}
+}
+\def\remzero #10{#1}% Remove zero and leave minus if present
+```
+All work is done at expand processor level and numbers are in reduced form.
+
+We can define `\nopt[param]` macro which keeps the space after usage of such
+macro and enables to use calculations in parameter, for example
+`\nopt[1.65\hoffset + 1in]` generates appropriate number in the
+`\pdfliteral` argument.
+
+```
+\def\nopt[#1]{\expandafter\ignorept\the\dimexpr #1\relax}
+```
+For example, the code in [OPmac trick 0021](#podklad) can look like:
+```
+\def\prepghook{\dimen0=.996264truein 
+  \pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -\nopt[\dimen0] \nopt[\dimen0] cm 
+  \nopt[\hoffset] \nopt[\voffset] -\nopt[\pdfpagewidth] -\nopt[\pdfpageheight] re f Q}}
+```

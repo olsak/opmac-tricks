@@ -1,0 +1,43 @@
+anchor-name:nextlang
+id:0049
+author:P. O.
+date:2014-04-26
+
+----lang:cs--title:Přidání dalšího jazyka
+Jakým způsobem se přidá další jazyk do csplainu je popsáno v souboru
+`hyphen.lan`. Předpokládejme, že je přidána němčina `\delang` a polština
+`\pllang`. Je pak možné vytvořit analogický příkaz k výše popsanému příkazu
+`\mtdef` a pomocí něj zavést stejné fráze do dalších jazyků:
+
+```
+\sdef{lan:21}{de}  \sdef{lan:121}{de}
+\sdef{lan:23}{pl}  \sdef{lan:123}{pl}
+\def\mtdefx#1#2#3{\sdef{mt:#1:de}{#2}\sdef{mt:#1:pl}{#3}}
+
+             % German              % Polish
+\mtdefx {D}  {Ph.D. Dissertation}  {Praca doktorska}
+...
+```
+
+Když nyní zapneme vzory dělení třeba do polštiny (`\pllang`), vytiskne
+příkaz `\mtext{D}` frázi Praca doktorska.
+
+----lang:en--title:Adding a new language
+The language management is described in the file `hyphen.lan` from CSplain
+package. For the following example we suppose, that the German and Polish
+languages are added. The `\delang` and `\pllang` hyphenation selectors are
+available after that. We can enlarge the `\mtdef` macro from previous OPmac
+trick, we create `\mtdefx` and we put the word variants in the new languages.
+
+```
+\sdef{lan:21}{de}  \sdef{lan:121}{de}
+\sdef{lan:23}{pl}  \sdef{lan:123}{pl}
+\def\mtdefx#1#2#3{\sdef{mt:#1:de}{#2}\sdef{mt:#1:pl}{#3}}
+
+             % German              % Polish
+\mtdefx {D}  {Ph.D. Dissertation}  {Praca doktorska}
+...
+```
+
+When the `\pllang` is active (for example) then `\mtext{D}` expands to the
+phrase “Praca doktorska”.

@@ -1,0 +1,113 @@
+anchor-name:dots
+id:0084
+author:P. O.
+date:2014-12-20
+
+----lang:cs--title:Inteligentní \dots jako v AMSTeXu
+AMSTeX nabízí některá zajímavá makra. Můžete si natáhnout `\input amstex`
+před `\input opmac` a tím tato makra využít. Je však třeba těsně za `\input amstex`
+napsat `\catcode``\@=12`, protože AMSTeX nastavuje tento znak jako aktivní a to
+nedělá dobrotu.
+
+Nebo si zajímavá makra naprogramujeme sami.
+Například makro `\dots` pracuje v AMSTeXu podle kontextu. V textovém módu se
+chová jako klasické `\dots`, v matematickém módu se chová jako `\cdots` nebo
+`\ldots` v závislosti na tom, čím je obklopeno. Tedy:
+
+```
+$$
+  a_1,\dots a_n, \quad           % chová se jako \ldots
+  a_1 + \dots + a_n, \quad       % chová se jako \cdots
+  A_1 \subset \dots \subset A_n  % chová se jako \cdots
+$$
+```
+
+Takovou inteligenci je možné dát makru `\dots` pomocí následujícího kódu:
+
+```
+\let\textdots=\dots
+\def\dots{\ifmmode \expandafter\mathdots \else \expandafter\textdots \fi}
+\def\mathdots{\futurelet\next\mathdotsA}
+\def\mathdotsA{\mathdotsB +-=<>()[]\{\}\langle\rangle \end
+   \edef\tmpb{!\meaning\next}%
+   \expandafter\isinlist\expandafter\tmpb\expandafter{\expandafter!\string\mathchar"}%
+   \iftrue \expandafter\mathdotsC\tmpb \end \else \ldots \fi
+   \relax
+}
+\def\mathdotsB#1{\ifx\end#1\else
+      \ifx\next#1\cdots \expandafter\expandafter\expandafter\skiptorelax
+      \else \expandafter\expandafter\expandafter\mathdotsB
+   \fi\fi
+}
+\def\mathdotsC#1"#2#3\end{\let\next=\ldots
+   \ifnum#2=1 \let\next=\cdots \fi % Big OP
+   \ifnum#2=2 \let\next=\cdots \fi % Bin
+   \ifnum#2=3 \let\next=\cdots \fi % Rel
+   \ifnum#2=4 \let\next=\cdots \fi % Open
+   \ifnum#2=5 \let\next=\cdots \fi % Close
+   \next
+}
+\addprotect\dots
+```
+
+Makro `\mathdots` spuštěné v matematickém módu vloží do `\next` následující
+token a za pomocí `\mathdotsA` a `\mathdotsB` zjišťuje, zda to je některý
+ze znaků `+-=<>()[]{}`. Pokud ano, vloží `\cdots` a pomocí `\skiptorelax`
+končí. Jinak ještě prozkoumá, zda `\next`
+je `\mathchar` (např. `\le`). Pokud ne, vloží `\ldots`. Pokud ano,
+zjistí, pomocí `\mathdotsC`, zda tento `\mathchar` je třídy
+1, 2, 3, 4 nebo 5. Pokud ano, vloží `\cdots`, pokud ne, vloží `\ldots`.
+
+----lang:en--title:Intelligent \dots like in AMSTeX
+AMSTeX provides interesting macros. You can do `\input amstex`
+*before* `\input opmac` and you can utilize these macros. But you must
+write `\catcode``\@=12` immediately after `\input amstex` because AMSTeX sets
+this character as active and this brings only problems.
+
+Or you can use your own macros. For example the `\dots` macro works by the
+context in AMSTeX. It behaves as normal `\dots` in text mode, as `\cdots` or
+`\ldots` in mathmode. The result depends on the fact, what characters are
+surrounded by the `\dots`. It means:
+
+```
+$$
+  a_1,\dots a_n, \quad           % behaves like \ldots
+  a_1 + \dots + a_n, \quad       % behaves like \cdots
+  A_1 \subset \dots \subset A_n  % behaves like \cdots
+$$
+```
+
+This intelligence can be given to the `\dots` macro by the code:
+
+```
+\let\textdots=\dots
+\def\dots{\ifmmode \expandafter\mathdots \else \expandafter\textdots \fi}
+\def\mathdots{\futurelet\next\mathdotsA}
+\def\mathdotsA{\mathdotsB +-=<>()[]\{\}\langle\rangle \end
+   \edef\tmpb{!\meaning\next}%
+   \expandafter\isinlist\expandafter\tmpb\expandafter{\expandafter!\string\mathchar"}%
+   \iftrue \expandafter\mathdotsC\tmpb \end \else \ldots \fi
+   \relax
+}
+\def\mathdotsB#1{\ifx\end#1\else
+      \ifx\next#1\cdots \expandafter\expandafter\expandafter\skiptorelax
+      \else \expandafter\expandafter\expandafter\mathdotsB
+   \fi\fi
+}
+\def\mathdotsC#1"#2#3\end{\let\next=\ldots
+   \ifnum#2=1 \let\next=\cdots \fi % Big OP
+   \ifnum#2=2 \let\next=\cdots \fi % Bin
+   \ifnum#2=3 \let\next=\cdots \fi % Rel
+   \ifnum#2=4 \let\next=\cdots \fi % Open
+   \ifnum#2=5 \let\next=\cdots \fi % Close
+   \next
+}
+```
+
+The `\mathdots` macro inserts to the `\next` the following token in math
+mode. The test is processed by `\mathdotsA` and `\mathdotsB`: if the following
+token is one of `+-=<>()[]{}` then `\cdots` is inserted and the
+`\skiptorelax` finishes the work. Else the token is tested to `\matchar` type
+(like `\le`). If no, `\ldots` is inserted. Else the class of the `\matchar` is
+examined. If the class is 1, 2, 3, 4 or 5 then `\cdots` is inserted else
+`\ldots` is used.

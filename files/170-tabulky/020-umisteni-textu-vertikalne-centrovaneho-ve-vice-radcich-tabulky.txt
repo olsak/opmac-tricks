@@ -1,0 +1,66 @@
+anchor-name:tabcrow
+id:0159
+author:P. O.
+date:2017-06-17
+
+----lang:cs--title:Umístění textu vertikálně centrovaného ve více řádcích tabulky
+Vytoříme makro `\crow číslo {text}`, které sníží v daném řádku `text` tak,
+aby to vypadalo, že je vertikálně centrovaný přes `číslo` řádků. Chceme tedy
+místo ad hoc vytvořeného makra `\low{text}` z předchozího příkladu 0158 používat
+`\crow2{text}`.
+
+```
+\def\crow{\afterassignment\crowA \tmpnum=}
+\def\crowA#1{\setbox0=\hbox{\tabstrut}\tmpdim=\ht0 \advance\tmpdim by\dp0
+   \tmpdim=\the\tmpnum\tmpdim
+   \vbox to0pt{\kern-\ht0 \vbox to\tmpdim{\vss\hbox{#1}\kern-\prevdepth\vss}\vss}%
+}
+```
+
+Makro uloží do `\tmpdim` výšku plus hloubku tabstrutu násobenou `číslem` a
+vytvoří `\vbox to\tmpdim`, který je schován ve `\vbox to0pt`, aby to v sazbě
+nepřekáželo.
+
+Poznamenejme, že makro funguje za předpokladu, že všechny řádky tabulky
+jsou „jednořádkové“, tj. v položkách tabulky se nevyskytují celé
+víceřádkové odstavce. Potřebujeme totiž dopředu znát výšku všech řádků
+tabulky. Pokud se ale v řádcích vyskytují víceřádkové odstavce a dopředu
+nevíme, jak budou tyto položky tabulky vysoké, pak je lepší ručně vyladit
+posazení textu dolů podobně, jako v makru `\low` v předchozím OPmac triku.
+Nebo, trváte-li na automatickém výpočtu umístění textu, je někdy možné použít
+primitivní příkaz `\valign` místo `\halign`. Pokud jsou dopředu známy
+šířky všech sloupců v tabulce, je užití \halign (o které se opírá i makro
+`\table`) totiž nadbytečné, protože nepotřebujeme zarovnávat podle nejširší položky
+v každém sloupci. Potřebujeme ale zarovnávat podle nejvyšší položky v
+každém řádku, a k tomu se hodí `\valign`, což je transponované `\halign`.
+Ukázku implementace této myšlenky naleznete
+[zde](https://tex.stackexchange.com/questions/183235/).
+
+----lang:en--title:Vertical centered text in more rows
+We create the `\crow number {text}` macro which lowers the given `text` to
+achieve the visual illusion that it is aligned verticaly in `number` rows,
+the first of them is the actual row. Then we can replace the ad hoc macro
+`\low {text}` (from previous example) by more general `\crow2 {text}`.
+
+```
+\def\crow{\afterassignment\crowA \tmpnum=}
+\def\crowA#1{\setbox0=\hbox{\tabstrut}\tmpdim=\ht0 \advance\tmpdim by\dp0
+   \tmpdim=\the\tmpnum\tmpdim
+   \vbox to0pt{\kern-\ht0 \vbox to\tmpdim{\vss\hbox{#1}\kern-\prevdepth\vss}\vss}%
+}
+
+```
+
+The `\crow` macro saves the number in `\tmpnum` and starts `\crowA`. The
+`\tmpdim` is saved as `number` times the total height of the `\tabstrut`
+and the `\vbox to\tmpdim` is constructed hidden in `\vbox to0pt`.
+
+Note that the `\crow` macro works properly only when all table rows have
+the same `\tabstrut` height. It will not work when table rows include a
+multirow cells (paragraphs), where we don't know the exact rows height
+beforehand. Then you must return to a macro like `\low` from previous
+OPmac trick and you must set the position of the text manually. If you insist
+on automatic calculation for such vertical centering then you can
+replace `\halign` by the “transposed” primitive `\valign`, see
+[this thread](https://tex.stackexchange.com/questions/183235/)
+for more information about it.

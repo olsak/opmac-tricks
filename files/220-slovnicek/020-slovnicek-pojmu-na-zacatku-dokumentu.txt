@@ -1,0 +1,69 @@
+anchor-name:glosfirst
+id:0052
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Slovníček pojmů na začátku dokumentu
+Pokud chcete umístit `\makeglos` (z předchozího triku) na začátek
+dokumentu, máte dvě možnosti: nashromáždit všechny potřebné příkazy `\glos`
+před `\makeglos` na začátek dokumentu (protože na umístění příkazů `\glos`
+v dokumentu nezáleží) nebo použít REF soubor. Druhou možnost rozvedeme
+podrobněji.
+
+Při prvním TeXování se data pro slovníček do REF souboru uloží a při
+opakovaném TeXování se použijí.
+
+```
+\def\gloslist{}
+\def\Xglos #1#2{%
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \opwarning{Duplicated glossary item `#1'}%
+   \else
+      \sdef{;#1}{{#1}{#2}}%
+      \expandafter\addto\expandafter\gloslist\csname;#1\endcsname
+   \fi
+}
+
+\input opmac
+
+\def\glos #1#2{\openref\toks0={#2}\immediate\wref\Xglos{{#1}{\the\toks0}}}
+```
+
+Povšimněme si, že definici pomocného makra `\Xglos` a výchozí nastavení
+`\gloslist` musíme umístit před `\input opmac`, protože opmac čte REF soubor
+z předchozího běhu, takže v té době už musí makro `\Xglos` znát.
+
+Makro `\makeglos` zůstává beze změny, jako v předchozím OPmac triku.
+
+----lang:en--title:Glossary at the begin of the document
+If you need to place the `\makeglos` (from previous trick) at the beginning
+of the document then you have two variants: put all `\glos` data before
+`\makeglos` at beginning of the document or use REF file. The second variant
+is described here more precisely.
+
+The data is saved to REF file during the first TeX run (and during
+each next TeX run) and the data is used in second TeX run (and in each next
+TeX run).
+
+```
+\def\gloslist{}
+\def\Xglos #1#2{%
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \opwarning{Duplicated glossary item `#1'}%
+   \else
+      \sdef{;#1}{{#1}{#2}}%
+      \expandafter\addto\expandafter\gloslist\csname;#1\endcsname
+   \fi
+}
+
+\input opmac
+
+\def\glos #1#2{\openref\toks0={#2}\immediate\wref\Xglos{{#1}{\the\toks0}}}
+```
+
+Note that the auxiliary macro `\Xglos` and the resetting of `\gloslist` have
+to be inserted before `\input opmac` because OPmac reads the REF file from
+previous TeX during `\input opmac` and it needs to know all macros used in REF
+file.
+
+The macro `\makeglos` is kept unchanged from previous OPmac trick.

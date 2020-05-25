@@ -1,0 +1,86 @@
+anchor-name:eoldef
+id:0121
+author:P. O.
+date:2015-08-14
+
+----lang:cs--title:Makro s parametrem do konce řádku
+Makro `\eoldef` umožní definovat makro s jedním parametrem, který je
+separován koncem řádku. Například takto:
+
+```
+\eoldef\aha#1{\message{param: "#1"}}
+
+\aha tady je parametr
+a tu je další text.
+```
+
+Vidíme, že pomocí `\eoldef` definujeme jakoby makro s neseparovaným
+parametrem, ale ono makro si vezme parametr až do konce řádku. V uvedeném
+příkladu si tedy do `#1` vezme text „tady je parametr“.
+
+**Upozornění**. Od verze OPmac Apr. 2016 je makro `\eoldef` přímo
+součástí OPmac a pomocí `\eoldef` jsou definovány `\tit`, `\chap`, `\sec` a `\secc`.
+Změna není stoprocentně zpětně kompatibilní, ale přesto doufám, že výhody
+převáží nad nevýhodami. Odpadá třeba problém s případnou mezerou na konci
+parametru a dále problém uživatelů, napíšou-li `\sec` na poslední řádek
+souboru. Nevýhody: Chcete-li rozdělit titulek ve zdrojovém textu do více
+řádků, je třeba na konec pokračovacích řádků dát `%`.
+Pokud chcete použít `\sec` uvnitř vlastního makra, nelze psát
+`... \sec#1\par ...`, protože se objeví chybová hláška
+
+```
+! Paragraph ended before \eoldefA was complete.
+```
+
+Je možné použít `\bracedparam` z OPmac triku [0036](#latexchap)
+a psát ve svém makru třeba `... \bracedparam\sec{#1} ...`
+
+Pokud chcete vypnout separaci koncem řádku a vrátit se k původní separaci
+parametru maker `\tit`, `\chap`, `\sec` a `\secc` prázdným řádkem, můžete použít:
+
+```
+\def\eoldefA{\endgroup\eoldefB}
+\def\eoldefB#1#2\par{\csname\string#1:M\endcsname{#2}}
+```
+
+----lang:en--title:Macro with a parameter to the end of line
+The macro `\eoldef` gives possibility to define a macro with one parameter
+separated by the end of current line. For example
+
+```
+\eoldef\foo#1{\message{param: "#1"}}
+
+\foo this is parameter
+and this is next text.
+```
+
+We can see that `\eoldef` has the same syntax as `\def` for macros with one
+unseparable parameter, but the declared macro takes its parameter to eol. In
+the example above, the parameter `#1` is the text “this is parameter”.
+
+**Warning**. Since OPmac version Apr. 2016, the `\eoldef` macro is a part
+of the OPmac macros and the macros `\tit`, `\chap`, `\sec` and `\secc` are defined
+by it. The previous version of these macros were simply separated by `\par`.
+This is not 100% backward compatible but I hope that the advantages beat
+disadvantages. Advantages: The “last-space in the parameter disappears.
+User can write `\sec something` as the last line in the file. Disadvantages:
+if your source file divides the title text to more lines then you must hide
+the end of each line (but not the last line) by %. If you are using `\sec`
+indside your own macro then you cannot write `... \sec#1\par ...`
+because the error message occurrs:
+
+```
+! Paragraph ended before \eoldefA was complete.
+```
+
+You can use `\bracedparam` from OPmac trick [0036](#latexchap)
+and write `... \bracedparam\sec{#1} ...` in your macro.
+
+If you want to deactivate the EOL separation of parameters of `\tit`,
+`\chap`, `\sec`, `\secc` macros and to return to the original behavior (separation
+by empty line), you can use:
+
+```
+\def\eoldefA{\endgroup\eoldefB}
+\def\eoldefB#1#2\par{\csname\string#1:M\endcsname{#2}}
+```

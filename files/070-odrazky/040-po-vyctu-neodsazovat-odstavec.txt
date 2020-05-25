@@ -1,0 +1,26 @@
+anchor-name:noindent
+id:0019
+author:P. O.
+date:2013-08-27
+
+----lang:cs--title:Po výčtu neodsazovat odstavec
+Existuje typografické pravidlo, které praví, že první odstavec po seznamu
+opatřeném odrážkami by neměl mít odsazení, protože odsazeny jsou údaje v
+seznamu a může to působit jako matoucí. Při použítí `\begitems...\enditems` v
+OPmac stačí do definice na začátek dokumentu napsat:
+
+```
+\addto\enditems{\afternoindent}
+```
+
+a je uvedenému typografickému pravidlu vyhověno.
+
+----lang:en--title:No indent after list of items
+There exists the typographical rule that the first paragraph after item
+list isn't indented because the item records are indented in the list
+above and this can be the source of confusion. If you need to follow this
+rule then you can write at the beginning of your document:
+
+```
+\addto\enditems{\afternoindent}
+```

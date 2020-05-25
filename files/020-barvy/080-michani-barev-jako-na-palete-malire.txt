@@ -1,0 +1,170 @@
+anchor-name:cmixdef
+id:0105
+author:P. O.
+date:2015-04-24
+
+----lang:cs--title:Míchání barev, jako na paletě malíře
+Makro `\cmixdef\NovaBarva{lineární kombinace barev}`
+definuje novou barvu jako lineární kombinaci daných barev. Název
+`\cmixdef` značí „color mix define“. Příklad:
+
+```
+\cmixdef\myCyan {.3\Green + .5\Blue}  % směs 30 % zelené, 50 % modré, zbytek bílá
+\cmixdef\myColor {.1\Blue + .4\Brown + .5\Yellow}
+\cmixdef\LightBlue {.6\Blue} % Světle modrá: 60 % modré, zbytek bílá
+\cmixdef\DarkBlue {\Blue + .4\Black} % Modrá s přimícháním 40 % černé
+```
+
+Míchání barev probíhá na úrovni aditivního barevného prostoru CMYK. Pokud má
+výsledný součet největší složku větší než 1, jsou v závěru všechny složky
+pronásobeny takovým koeficientem, aby tato složka byla přesně rovna jedné.
+Chcete-li emulovat činnost malíře, použijte konvexní kombinaci, jako
+například v druhém řádku ukázky: jeden díl modré, čtyři díly hnědé a pět
+dílů žluté. Není ale nutné se konvexních kombinací držet, například:
+
+```
+\cmixdef\Blue{\Cyan + \Magenta} % vskutku, protože výchozí barvy jsou z CMYK
+zatímco:
+\cmixdef\myBlue{.5\Cyan + .5\Magenta} je totéž jako \cmixdef\myBlue{.5\Blue}.
+```
+
+Místo symbolu plus v lineární kombinaci je možné použít symbol mínus. Pak se
+barva odečte a v okamžiku odečtení příslušné barvy se záporné složky
+redukují na nulu. Třeba `\cmixdef\Barva{\Brown-\Black}` odstraní z barvy
+její „znečištění černou“. Konečně je možné těsně před makro pro barvu
+napsat symbol `^`, což značí, že se místo této barvy použije barva doplňková.
+
+```
+\cmixdef\mycolor{\Grey + .6^\Blue} stejné jako \cmixdef\mycolor{\Grey+.6\Yellow}
+```
+
+Implementace je následující:
+
+```
+\def\cmixdef#1#2{\bgroup
+   \let\setcmykcolor=\relax \edef\tmpb{+#2}%
+   \replacestrings{ }{}\replacestrings{+}{\addcolor}\replacestrings{-}{\addcolor-}%
+   \replacestrings{^\setcmykcolor}{\setcmykcolor^}%
+   \replacestrings{-\setcmykcolor}{-1\setcmykcolor}%
+   \def\C{0}\def\M{0}\def\Y{0}\def\K{0}%
+   \tmpb \checkcmyk
+   \xdef#1{\setcmykcolor{\C\space \M\space \Y\space \K}}%
+   \egroup
+}
+\def\addcolor#1\setcmykcolor#2{\def\tmp{}%
+   \tmpdim=\ifx$#1$1\else#1\fi pt
+   \ifx^#2\expandafter \addcolorC
+   \else \addcolorA#2 \fi
+}
+\def\addcolorA #1 #2 #3 #4 {%
+   \addcolorB\C{#1}n\addcolorB\M{#2}n\addcolorB\Y{#3}n\addcolorB\K{#4}k%
+}
+\def\addcolorB#1#2#3{\dimen0=#2\tmpdim
+   \ifx\tmp\empty\else
+      \ifx#3n\advance\dimen0 by\K\tmpdim \dimen0=-\dimen0 \advance\dimen0 by\tmpdim
+      \else \dimen0=0pt
+   \fi\fi
+   \advance\dimen0 by#1pt
+   \ifdim\dimen0<0pt \def#1{0}\else \edef#1{\expandafter\ignorept\the\dimen0}\fi
+}
+\def\addcolorC#1{\def\tmp{^}\addcolorA#1 }
+
+\def\checkcmyk{\tmpdim=\C pt
+   \ifdim\M pt>\tmpdim \tmpdim=\M pt \fi
+   \ifdim\Y pt>\tmpdim \tmpdim=\Y pt \fi
+   \ifdim\K pt>\tmpdim \tmpdim=\K pt \fi
+   \ifdim\tmpdim>1pt %\tmpdim=1/\tmpdim:
+      \tmpnum=1073741824 \divide\tmpnum by\tmpdim \multiply\tmpnum by4 \tmpdim=\tmpnum sp
+      \checkcmykA\C \checkcmykA\M \checkcmykA\Y \checkcmykA\K
+   \fi
+}
+\def\checkcmykA#1{\dimen0=#1\tmpdim
+   \ifdim\dimen0>1pt \def#1{1}\else \edef#1{\expandafter\ignorept\the\dimen0}\fi
+}
+```
+
+----lang:en--title:Color mixing like at painter's palette
+The macro `\cmixdef\NewColor{linear combination of colors}`
+defines new color as linear combination of given colors. The name of the
+macro means "color mix define". Example:
+
+```
+\cmixdef\myCyan {.3\Green + .5\Blue}  % mix 30 % of green, 50 % of blue, the rest is white
+\cmixdef\myColor {.1\Blue + .4\Brown + .5\Yellow}
+\cmixdef\LightBlue {.6\Blue} % Light blue: 60 % of blue, the rest is white
+\cmixdef\DarkBlue {\Blue + .4\Black} % Blue mixed with 40 % of black
+```
+
+The color mixing is processed at the addition color space CMYK. If the
+result has a component greater than 1 then finally all components are
+multiplied by a coefficient in order to maximal componet is eqal to 1.
+If you need to emulate the painter's activity then the convex kombination is
+recommended, as in the second line of the example: one piece of blue, four
+pieces of brown and five pieces of yellow. But there isn't necessery to
+use convex combination:
+
+```
+\cmixdef\Blue{\Cyan + \Magenta} % really, the basic colors are from CMYK, but:
+\cmixdef\myBlue{.5\Cyan + .5\Magenta} is equal to \cmixdef\myBlue{.5\Blue}.
+```
+
+You can use minus intead plus in the linear combination. The given color
+is substracted in such case and the negative components are rounded to zero
+immediately. For example
+
+```
+\cmixdef\Color{\Brown-\Black}
+```
+
+can be used for removing black component from the color. Finally,
+you can use `^` immediately preceeded before macro name of the color.
+Then the complementary color is used here.
+
+```
+\cmixdef\mycolor{\Grey + .6^\Blue} the same as \cmixdef\mycolor{\Grey+.6\Yellow}
+```
+
+The implementation:
+
+```
+\def\cmixdef#1#2{\bgroup
+   \let\setcmykcolor=\relax \edef\tmpb{+#2}%
+   \replacestrings{ }{}\replacestrings{+}{\addcolor}\replacestrings{-}{\addcolor-}%
+   \replacestrings{^\setcmykcolor}{\setcmykcolor^}%
+   \replacestrings{-\setcmykcolor}{-1\setcmykcolor}%
+   \def\C{0}\def\M{0}\def\Y{0}\def\K{0}%
+   \tmpb \checkcmyk
+   \xdef#1{\setcmykcolor{\C\space \M\space \Y\space \K}}%
+   \egroup
+}
+\def\addcolor#1\setcmykcolor#2{\def\tmp{}%
+   \tmpdim=\ifx$#1$1\else#1\fi pt
+   \ifx^#2\expandafter \addcolorC
+   \else \addcolorA#2 \fi
+}
+\def\addcolorA #1 #2 #3 #4 {%
+   \addcolorB\C{#1}n\addcolorB\M{#2}n\addcolorB\Y{#3}n\addcolorB\K{#4}k%
+}
+\def\addcolorB#1#2#3{\dimen0=#2\tmpdim
+   \ifx\tmp\empty\else
+      \ifx#3n\advance\dimen0 by\K\tmpdim \dimen0=-\dimen0 \advance\dimen0 by\tmpdim
+      \else \dimen0=0pt
+   \fi\fi
+   \advance\dimen0 by#1pt
+   \ifdim\dimen0<0pt \def#1{0}\else \edef#1{\expandafter\ignorept\the\dimen0}\fi
+}
+\def\addcolorC#1{\def\tmp{^}\addcolorA#1 }
+
+\def\checkcmyk{\tmpdim=\C pt
+   \ifdim\M pt>\tmpdim \tmpdim=\M pt \fi
+   \ifdim\Y pt>\tmpdim \tmpdim=\Y pt \fi
+   \ifdim\K pt>\tmpdim \tmpdim=\K pt \fi
+   \ifdim\tmpdim>1pt %\tmpdim=1/\tmpdim:
+      \tmpnum=1073741824 \divide\tmpnum by\tmpdim \multiply\tmpnum by4 \tmpdim=\tmpnum sp
+      \checkcmykA\C \checkcmykA\M \checkcmykA\Y \checkcmykA\K
+   \fi
+}
+\def\checkcmykA#1{\dimen0=#1\tmpdim
+   \ifdim\dimen0>1pt \def#1{1}\else \edef#1{\expandafter\ignorept\the\dimen0}\fi
+}
+```

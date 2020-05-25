@@ -1,0 +1,107 @@
+anchor-name:for
+id:0115
+author:P. O.
+date:2015-07-01
+
+----lang:cs--title:Cyklus typu for
+Vytvoříme makro `\for \i=X to Y by Z {tělo cyklu}`, které alokuje proměnnou
+`\i`, nastaví ji na hodnotu `X` a opakuje tělo cyklu tak dlouho, dokud proměnná
+`\i` nepřekročí `Y`, přitom po každém vykonání těla cyklu zvedne `\i` o `Z`.
+Například:
+
+```
+\for \i=1 to 10 by 1 {\for \j=1 to 10 by 1 {\message{a[\the\i,\the\j]}}}
+```
+
+vypíše `a[1,1] a[1,2] ... a[1,10] a[2,1] a[2,2] ... a[10,9] a[10,10]`.
+
+Celý cyklus probíhá uvnitř skupiny a je zahájen automatickou alokací
+proměnné cyklu, která je uvedena jako první parametr. Není tedy nutné tuto
+proměnnou alokovat. Ono to ani není žádoucí, protože řídicí sekvence `\i`, `\j`
+bývají v TeXu vyhrazeny k jiným účelům. Po skončení cyklu je `\i` znovu tím,
+čím bylo (například v plainTeXu) původně definováno.
+
+Makro `\for` můžeme definovat třeba takto:
+
+```
+\def\for#1=#2to#3by#4#{\forA{#1}{#2}{#3}{#4}}
+\long\def\forA#1#2#3#4#5{\begingroup
+   {\escapechar=`\\ % allocation of #1 as counter:
+      \expandafter \ifx\csname for:\string#1\endcsname \relax
+         \csname newcount\expandafter\endcsname \csname for:\string#1\endcsname\fi
+    \expandafter}\expandafter\let\expandafter#1\csname for:\string#1\endcsname
+   #1=#2%
+   \def\forB{#5\advance#1by#4\relax \expandafter\forC}%
+   \ifnum#4>0 \def\forC{\ifnum#1>#3\relax\else\forB\fi}%
+   \else      \def\forC{\ifnum#1<#3\relax\else\forB\fi}%
+   \fi
+   \ifnum#4=0 \let\forC=\relax \fi
+   \forC \endgroup
+}
+```
+
+V prvé části makra po zjištění parametrů se globálně alokuje proměnná
+`\for:\i` (pokud je `#1=\i`) nebo `\for:\j` (pokud je `#1=\j`) atd. Tato alokace
+probíhá jen tehdy, pokud tato proměná nebyla dříve alokována. Tj. opakované
+použití `\for\i=...` nealokuje proměnnou `\for:\i` opakovaně. Následně se
+lokálně přiřadí uživatelem deklarovaná proměná cyklu (tj. `\i`, `\j` atd.)
+té globálně alokované.
+
+Poté je nastavena hodnota této proměnné cyklu na výchozí hodnotu `X`.
+Cyklus samotný spočívá v opakovaném volání makra `\forC`, které obsahuje
+kontrolu, zda nebyla překročena koncová hodnota. Pokud ne, volá se `\forB`.
+Toto makro obsahuje jednak tělo cyklu `#5`, dále zvětšení proměnné cyklu o
+hodnotu `Z` a konečně nové volání makra `\forC` rekurzí. Jsou rozlišeny dva
+případy podmínky konce cyklu v závislosti na tom, zda krok `Z` je kladný nebo
+záporný. Je-li tento krok nulový (nekonečný cyklus), raději neprovedeme nic.
+
+----lang:en--title:The for-loop
+We create the macro `\for \i=X to Y by Z {loop body}` which allocates the
+loop variable (`\i` in this example), sets it to `X` and repeats the loop body
+until loop variable exceedes the `Y`. The loop variable is increased by `Z`
+after each loop body processing. For example
+
+```
+\for \i=1 to 10 by 1 {\for \j=1 to 10 by 1 {\message{a[\the\i,\the\j]}}}
+```
+
+prints `a[1,1] a[1,2] ... a[1,10] a[2,1] a[2,2] ... a[10,9] a[10,10]`.
+
+The whole loop is hidden in the group and it begins by allocation of
+loop variable (first parameter). User needn't to allocate this variable
+explicitly. This global allocation is typically undesirable because control
+sequences `\i`, `\j` have another meaning defined by plainTeX. When the for-loop
+ends then the group is closed and the `\i`, `\j` have their original meaning.
+
+The `\for` macro can be defined for example:
+
+```
+\def\for#1=#2to#3by#4#{\forA{#1}{#2}{#3}{#4}}
+\long\def\forA#1#2#3#4#5{\begingroup
+   {\escapechar=`\\ % allocation of #1 as counter:
+      \expandafter \ifx\csname for:\string#1\endcsname \relax
+         \csname newcount\expandafter\endcsname \csname for:\string#1\endcsname\fi
+    \expandafter}\expandafter\let\expandafter#1\csname for:\string#1\endcsname
+   #1=#2%
+   \def\forB{#5\advance#1by#4\relax \expandafter\forC}%
+   \ifnum#4>0 \def\forC{\ifnum#1>#3\relax\else\forB\fi}%
+   \else      \def\forC{\ifnum#1<#3\relax\else\forB\fi}%
+   \fi
+   \ifnum#4=0 \let\forC=\relax \fi
+   \forC \endgroup
+}
+```
+
+First, we scan parameters and we callocate (globally) the `\for:\i`
+variable (if `#1=\i`) or `\for:\j` varibale (if `#1=\j`) etc. This
+allocation is done only if the same variable were not allocated before. This
+means that second usage of `\for\i=...` doesn't allocate the same variable
+twice. Then the declared loop variable is set locally to the allocated variable
+(i.e. `\let\i=\for:\i`).
+
+The second part of the macro sets the loop variable to `X`. The loop is
+processed by repeatedly calling of `\forC` macro. This macro does:
+if `\i` doesn't exeed the `Y` then do `\forB`. And \forB processes the loop
+body `#5`, increases loop variable by `Z` and repeats `\forC` recursively.
+There are two types of conditional: it depends on the fact that
+the `Z` is positive or negative. And if `Z` is zero then no loop is processed.

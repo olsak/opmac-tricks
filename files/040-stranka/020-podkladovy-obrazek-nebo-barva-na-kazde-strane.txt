@@ -1,0 +1,110 @@
+anchor-name:podklad
+id:0021
+author:P. O.
+date:2013-08-30
+
+----lang:cs--title:Podkladový obrázek nebo barva na každé straně
+Tento trik je možné použít obecně pro jakýkoli dokument, ale nejčastější
+použití bude asi mít pro slídy, aby přestaly být spartánského vzhledu.
+V nějakém rozumném editoru pro obrázky si připravíme soubor background.pdf
+a do dokumentu na každou stránku jej dopravíme takto:
+
+```
+\def\prepghook{\vbox to0pt{\kern-\voffset\kern-1in
+   \hbox to0pt{\kern-\hoffset\kern-1in\background\hss}\vss}%
+   \nointerlineskip
+}
+\pdfximage width\pdfpagewidth height\pdfpageheight {background.pdf}
+\mathchardef\picbackground=\pdflastximage
+\def\background{\pdfrefximage\picbackground}
+```
+
+Od verze OPmac May 2015 je k dispozici `\prepghook`, který se spustí před
+konečným sestavením strany ve výstupní rutině. Je třeba box s obrázkem
+posunout o `\voffset+1in` nahoru a `\hoffset+1in` doleva.
+
+Pomocí `\pdfximage` je načten do dokumentu obrázek požadovaných rozměrů a
+odkaz na něj se jmenuje `\picbackground`. Makro `\background` pak
+vloží obrázek odkazem, tj. nepřidává do PDF nová data s obrázkem
+a tím minimalizuje velikost výstupního PDF.
+
+Pokud chceme mít podklad pouze v jedné barvě (jiné než bílá), není třeba
+kvůli tomu vytvářet podkladový obrázek. Stačí barevný podklad vložit pomocí
+`\pdfliteral`:
+
+```
+\def\prepghook{\pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -72 72 cm
+  \nopt{\hoffset} \nopt{\voffset} -\nopt{\pdfpagewidth} -\nopt{\pdfpageheight} re f Q}}
+\def\nopt#1{\expandafter\ignorept\the#1}
+
+\def\setbasecolor#1{#1\expandafter\setbasecolorA#1\pdfblackcolor}
+\def\setbgcolor#1{\expandafter\setbasecolorA#1\bgcolor}
+\def\setbasecolorA#1#2#3{\def#3{#2}}
+
+\setbasecolor\Yellow
+\setbgcolor\Blue
+
+Ahoj. Tady je žlutý text na modrém podkladu.
+```
+
+Výše uvedený kód předpokládá, že nepoužijete v dokumentu změnu velikosti
+pomocí `\magnification` nebo `\magscale`. Máte-li toto v úmyslu, musíte čísla
+`-72 72` nahradit „přepočítanou“ velikostí `1 in`:
+
+```
+\def\prepghook{\dimen0=.996264truein
+  \pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -\nopt{\dimen0 } \nopt{\dimen0 } cm
+  \nopt{\hoffset} \nopt{\voffset} -\nopt{\pdfpagewidth} -\nopt{\pdfpageheight} re f Q}}
+```
+
+----lang:en--title:Background image on each page
+This trick is possible to use for every document types but the slides can
+use it probably very frequent. We can prepare the background image (by an
+external graphics editor) and save it to the background.pdf file. This image can
+be inserted to every page by the following code:
+
+```
+\def\prepghook{\vbox to0pt{\kern-\voffset\kern-1in
+   \hbox to0pt{\kern-\hoffset\kern-1in\background\hss}\vss}%
+   \nointerlineskip
+}
+\pdfximage width\pdfpagewidth height\pdfpageheight {background.pdf}
+\mathchardef\picbackground=\pdflastximage
+\def\background{\pdfrefximage\picbackground}
+```
+
+The `\background` is placed exactly to the left up corner of the paper
+using `\prepghook` macro (available from OPmac May 2015).
+
+The image is loaded by `\pdfximage` and the right dimensions are set. The
+image is referenced by `\picbackground` constant and the image is placed to
+the page by this reference. This doesn't add new data with the image
+at every page and the PDF file size is minimized.
+
+If you need to set only solid background color to each page then you
+needn't to create a background image. The usage of `\pdfliteral` is
+sufficient:
+
+```
+\def\prepghook{\pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -72 72 cm
+  \nopt{\hoffset} \nopt{\voffset} -\nopt{\pdfpagewidth} -\nopt{\pdfpageheight} re f Q}}
+\def\nopt#1{\expandafter\ignorept\the#1}
+
+\def\setbasecolor#1{#1\expandafter\setbasecolorA#1\pdfblackcolor}
+\def\setbgcolor#1{\expandafter\setbasecolorA#1\bgcolor}
+\def\setbasecolorA#1#2#3{\def#3{#2}}
+
+\setbasecolor\Yellow
+\setbgcolor\Blue
+
+Hello. Here is yellow text on blue background.
+```
+
+If you plan to use `\magnification` or `\magscale` in your document then you
+must to replace the numbers `-72 72` by re-calculated values of one inch:
+
+```
+\def\prepghook{\dimen0=.996264truein
+  \pdfliteral{q \bgcolor\space k -0.996264 0 0 0.996264 -\nopt{\dimen0 } \nopt{\dimen0 } cm
+  \nopt{\hoffset} \nopt{\voffset} -\nopt{\pdfpagewidth} -\nopt{\pdfpageheight} re f Q}}
+```

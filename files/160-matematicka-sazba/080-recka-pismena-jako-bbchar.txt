@@ -1,0 +1,79 @@
+anchor-name:bbgreek
+id:0144
+author:P. O.
+date:2016-04-11
+
+----lang:cs--title:Řecká písmena jako \bbchar
+OPmac používá makro soubor ams-math, který pro písmena zdvojených tahů
+zavádí font `msbm*.tfm` z rodiny fontů AMS. Taková písmena vypadají daleko
+lépe než písmena z fontu `bbold*.tfm`. Fonty msbm mají ale jednu nevýhodu:
+neobsahují zdvojená řecká písmena. Pokud je chcete, naučíte se v tomto OPmac
+triku vyměnit fonty jedné rodiny za jinou. Pak můžete psát:
+
+```
+$\alpha = {\bbchar\alpha}$
+```
+
+a objeví se „alfa je rovno dvojitému alfa“. Pohledem do souboru
+`ams-math.tex` zjistíte, že rodina pro `\bbchar` má číslo 5 a označení `msbm`,
+takže bude stačit udělat toto:
+
+```
+\regtfm msbm 0 bbold5 5.5 bbold6 6.5 bbold7 7.5 bbold8 8.5 bbold9
+             9.5 bbold10 11.1 bbold12 15 bbold17 * % using bbchar from bbold*.tfm
+
+\mathchardef\bbalpha="50B   \mathchardef\bbbeta="50C    \mathchardef\bbgamma="50D
+\mathchardef\bbdelta="50E   \mathchardef\bbepsilon="50F \mathchardef\bbzeta="510
+\mathchardef\bbeta="511     \mathchardef\bbtheta="512   \mathchardef\bbiota="513
+\mathchardef\bbkappa="514   \mathchardef\bblambda="515  \mathchardef\bbmu="516
+\mathchardef\bbnu="517      \mathchardef\bbxi="518      \mathchardef\bbpi="519
+\mathchardef\bbrho="51A     \mathchardef\bbsigma="51B   \mathchardef\bbtau="51C
+\mathchardef\bbupsilon="51D \mathchardef\bbphi="51E     \mathchardef\bbchi="50F
+\mathchardef\bbpsi="520     \mathchardef\bbomega="57F
+
+\addto\bbchar{\let\alpha\bbalpha \let\beta\bbbeta \let\gamma\bbgamma
+   \let\delta\bbdelda \let\epsilon\bbepsilon \let\zeta\bbzeta \let\theta\bbtheta
+   \let\iota\bbiota \let\kappa\bbkappa \let\lambda\bblambda \let\mu\bbmu
+   \let\nu\bbnu \let\xi\bbxi \let\pi\bbpi \let\rho\bbrho \let\sigma\bbsigma
+   \let\tau\bbtau \let\upsilon\bbupsilon \let\phi\bbphi \let\chi\bbchi
+   \let\psi\bbpsi \let\omega\bbomega
+}
+```
+
+----lang:en--title:Greek letters in \bbchar family
+OPmac uses `ams-math.tex` file where the `msbm*.tfm` fonts (from AMS) are
+loaded for `\bbchar` math family. The letters are better, but the blackboard
+lowercase Greek letters are missing here. These are included in `bbold*.tfm`
+fonts, but the letters are more ugly. If you need the bb Greek letters
+then we show here how to replace one math family by another font. Specially
+the font `msbm*` by `bbchar*`. Then you can write:
+
+```
+$\alpha = {\bbchar\alpha}$
+```
+
+and the result is “normal alpha is equal to blackboard alpha”.
+The file `ams-math.tex` shows that `\bbchar` is math family 5 with the label
+`msbm`, so you can use the following macros:
+
+```
+\regtfm msbm 0 bbold5 5.5 bbold6 6.5 bbold7 7.5 bbold8 8.5 bbold9
+             9.5 bbold10 11.1 bbold12 15 bbold17 * % using bbchar from bbold*.tfm
+
+\mathchardef\bbalpha="50B   \mathchardef\bbbeta="50C    \mathchardef\bbgamma="50D
+\mathchardef\bbdelta="50E   \mathchardef\bbepsilon="50F \mathchardef\bbzeta="510
+\mathchardef\bbeta="511     \mathchardef\bbtheta="512   \mathchardef\bbiota="513
+\mathchardef\bbkappa="514   \mathchardef\bblambda="515  \mathchardef\bbmu="516
+\mathchardef\bbnu="517      \mathchardef\bbxi="518      \mathchardef\bbpi="519
+\mathchardef\bbrho="51A     \mathchardef\bbsigma="51B   \mathchardef\bbtau="51C
+\mathchardef\bbupsilon="51D \mathchardef\bbphi="51E     \mathchardef\bbchi="50F
+\mathchardef\bbpsi="520     \mathchardef\bbomega="57F
+
+\addto\bbchar{\let\alpha\bbalpha \let\beta\bbbeta \let\gamma\bbgamma
+   \let\delta\bbdelda \let\epsilon\bbepsilon \let\zeta\bbzeta \let\theta\bbtheta
+   \let\iota\bbiota \let\kappa\bbkappa \let\lambda\bblambda \let\mu\bbmu
+   \let\nu\bbnu \let\xi\bbxi \let\pi\bbpi \let\rho\bbrho \let\sigma\bbsigma
+   \let\tau\bbtau \let\upsilon\bbupsilon \let\phi\bbphi \let\chi\bbchi
+   \let\psi\bbpsi \let\omega\bbomega
+}
+```

@@ -1,0 +1,69 @@
+anchor-name:flags
+id:0114
+author:P. O.
+date:2014-06-30
+
+----lang:cs--title:Přepínače ve slovnících tvaru klíč=hodnota
+Do slovníku, který čárkami odděluje `klíč=hodnota`, chceme přimíchat
+čárkami oddělené „přepínače“, tj. samostatná slova bez následujícího rovnítka
+a hodnoty. Například:
+
+```
+\mymacroset {width=0.8pt, draft, silent}
+```
+
+Řešením může být užití `\replacestrings`, jak je uvedeno v následujícím
+příkladu:
+
+```
+\def\mymacroset#1{\def\tmpb{#1,}\replacestrings{ =}{=}\replacestrings{= }{=}%
+   \replacestrings{draft,}{my-final=0,}%
+   \replacestrings{final,}{my-final=1,}%
+   \replacestrings{silent,}{my-message=0,}%
+   \replacestrings{verbose,}{my-message=1,}%
+   \expandafter\kvscan\tmpb,=,%
+   \if1\kv{my-message}\let\mymessage=\message \else \def\mymessage##1{}\fi
+   ...
+}
+\mymacroset {width=0.7pt, final, silent} % default values
+```
+
+Přepínače jsme interně převedli na tvar `klíč=hodnota` a použili jsme
+`\kvscan` z předchozího OPmac triku 0069.
+
+V dalších makrech se můžeme na použitý přepínač dotazovat například pomocí
+
+```
+\if1\kv{my-final}Byl použit přepínač final.\else Byl použit přepínač draft.\fi
+```
+
+----lang:en--title:The options in key=value dictionaries
+We want to mix comma separated key=value items with single options, i. e.
+single words not followed by the equal sign and a value. For example:
+
+```
+\mymacroset {width=0.8pt, draft, silent}
+```
+
+The `\replacestrings` can help with this task, as in the following example:
+
+```
+\def\mymacroset#1{\def\tmpb{#1,}\replacestrings{ =}{=}\replacestrings{= }{=}%
+   \replacestrings{draft,}{my-final=0,}%
+   \replacestrings{final,}{my-final=1,}%
+   \replacestrings{silent,}{my-message=0,}%
+   \replacestrings{verbose,}{my-message=1,}%
+   \expandafter\kvscan\tmpb,=,%
+   \if1\kv{my-message}\let\mymessage=\message \else \def\mymessage##1{}\fi
+   ...
+}
+\mymacroset {width=0.7pt, final, silent} % default values
+```
+
+The single options are transformed internaly to key=value format and then
+the `\kvscan` from previous OPmac trick 0069 is used.
+We can ask to used option by `\if1\kv{...}` as follows:
+
+```
+\if1\kv{my-final}The "final" option was used.\else The "draft" option was used.\fi
+```

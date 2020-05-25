@@ -1,0 +1,71 @@
+anchor-name:varstyle
+id:0157
+author:P. O.
+date:2017-05-03
+
+----lang:cs--title:Sazba závislá na mathstylu
+K sazbě v matematickém módu, která je závislá na matematickém stylu
+(display, text, script, scriptscript) se používá primitivní příkaz
+`\mathchoice` a plainTeX definuje makro `\mathpalette`. Obojí je nešikovné.
+Vlastnost `\mathchoice` by mohla být implemenována v TeXu pomocí pozdrženého
+argumentu (jako při `\write`) bez nutnosti v TeXu sestavovat všechny čtyři
+varianty sazby. To ale nespravíme bez zásahu do samotného TeXu. Na druhé
+straně makro `\mathpalette`, které podává uživatelem definovanému makru
+přepínač stylu jako parametr, můžeme opustit a udělat si makro `\varstyle` s
+názornějším použitím a s daleko širšími možnostmi. Makro `\varstyle` má jeden
+parametr, který vytvoří matematický seznam. V rámci tohoto parametru je
+možné používat `\usestyle` pro přepnutí do matematického stylu aktivního v
+okamžiku užití `\varstyle` a dále je možné použít `\mathaxis` pro vzdálenost
+účaří od matematické osy a případně si definovat další na stylu závislá
+makra pomocí `\ifcase\mstylenum D\or T\or S\or SS\fi`. Například makro na
+dvojitou sumu (dva sumační znaky přes sebe) může vypadat takto:
+
+```
+\def\dbsumR{\ifcase\mstylenum .35\or.25\or.21\or.15\fi em}
+\def\dbsumU{\ifcase\mstylenum .15\or.12\or.09\or.07\fi em}
+\def\doublesum{\mathop{\varstyle{\raise\dbsumU\rlap{$\usestyle\sum$}{\kern\dbsumR\sum}}}}
+
+$\displaystyle \doublesum_{ij}^{DN} \textstyle \doublesum_{ij}^{DN}$
+```
+
+Makro `\varstyle` a příbuzná makra jsou definována pomocí `\mathchoice`:
+
+```
+\newcount\mstylenum
+\def\varstyle#1{\mathchoice{\mstylenum=0 #1}{\mstylenum=1 #1}{\mstylenum=2 #1}{\mstylenum=3 #1}}
+\def\usestyle{\ifcase\mstylenum \displaystyle\or\textstyle\or\scriptstyle\or\scriptscriptstyle\fi}
+\def\mathaxis{\fontdimen22\ifcase\mstylenum \textfont\or\textfont\or\scriptfont\or\scriptscriptfont\fi2 }
+```
+
+----lang:en--title:Math style dependent macros
+For various typesetting in mathematical mode (display, text, script,
+scriptscript), the primitive command `\mathchoice` is used. And plain TeX
+defines the macro `\mathpalette`. Both are awkward. The `\mathchoice` feature
+could be implemented in TeX using a delayed argument (as in `\write`) without
+having to typeset all four math style variations in the TeX. But we cannot
+do this without interfering with the TeX itself. On the other hand, the
+macro `\mathpalette` can be abandoned. We make the macro `\varstyle`, which is
+more user-friendly and with far wider options. Macro `\varstyle` has one
+parameter to create a math list. Within this parameter it is possible to use
+`\usestyle` to switch to math style active at the time of use
+`\varstyle`, and it is also possible to use `\mathaxis` for the distance of the
+baseline from the mathematical axis and we can define another style-dependent
+macros using `\ifcase\mstylenum D \or T \or S \or SS \fi`. For example,
+a double sum macro (two summation characters across) may look like this:
+
+```
+\def\dbsumR{\ifcase\mstylenum .35\or.25\or.21\or.15\fi em}
+\def\dbsumU{\ifcase\mstylenum .15\or.12\or.09\or.07\fi em}
+\def\doublesum{\mathop{\varstyle{\raise\dbsumU\rlap{$\usestyle\sum$}{\kern\dbsumR\sum}}}}
+
+$\displaystyle \doublesum_{ij}^{DN} \textstyle \doublesum_{ij}^{DN}$
+```
+
+The makro `\varstyle` and friends are defined by `\mathchoice`:
+
+```
+\newcount\mstylenum
+\def\varstyle#1{\mathchoice{\mstylenum=0 #1}{\mstylenum=1 #1}{\mstylenum=2 #1}{\mstylenum=3 #1}}
+\def\usestyle{\ifcase\mstylenum \displaystyle\or\textstyle\or\scriptstyle\or\scriptscriptstyle\fi}
+\def\mathaxis{\fontdimen22\ifcase\mstylenum \textfont\or\textfont\or\scriptfont\or\scriptscriptfont\fi2 }
+```

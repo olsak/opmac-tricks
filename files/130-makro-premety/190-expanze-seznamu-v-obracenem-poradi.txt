@@ -1,0 +1,57 @@
+anchor-name:revlist
+id:0119
+author:P. O.
+date:2015-07-22
+
+----lang:cs--title:Expanze seznamu v obráceném pořadí
+Na expandování seznamu údajů v obráceném pořadí není nutné vytvářet spojové
+seznamy. Ty byly v předchozím [OPmac triku](#plists)
+uvedeny spíše jako řešení
+akademického problému. Napíšeme-li třeba
+
+```
+\revlist{aa,bb,ccc,dddd}
+```
+
+pak na výstupu dostaneme `dddd,ccc,bb,aa`. Makro `\revlist` pracuje
+jen na úrovni expand procesoru, pokud je implementováno třeba takto:
+
+```
+\def\revlist#1{\revlistA{}#1,,}
+\def\revlistA#1#2,{\ifx,#2,\expandafter\revlistB\else \expandafter\revlistA\fi {#2,#1}}
+\def\revlistB#1{\revlistC #1,}
+\def\revlistC,#1,,{#1}
+```
+
+Je-li `n` počet údajů, které je třeba uvést v opačném pořadí, pak makro
+`\revlist` má kvadratickou složitost `n^2` zatímco projití spojového seznamu z
+předchozího OPmac triku pozpátku má složitost lineární. Na druhé straně k
+vytvoření spojového seznamu potřebujeme alokovat `n` řídicích sekvencí,
+zatímco při použití makra `\revlist` si vystačíme se čtyřmi sekvencemi.
+To je obvyklé dilema mezi rychlostí a paměťovými nároky.
+
+----lang:en--title:The list expanded in revesed order
+If we need to expand a list of items in reversed order then we needn't
+to create the linked list from [previous OPmac trick](#plists).
+The linked list was mentioned only as an academical problem. We can write,
+for example
+
+```
+\revlist{aa,bb,ccc,dddd}
+```
+
+and we get the output `dddd,ccc,bb,aa` at expansion level, if the `\revlist`
+is implemented by:
+
+```
+\def\revlist#1{\revlistA{}#1,,}
+\def\revlistA#1#2,{\ifx,#2,\expandafter\revlistB\else \expandafter\revlistA\fi {#2,#1}}
+\def\revlistB#1{\revlistC #1,}
+\def\revlistC,#1,,{#1}
+```
+
+Let `n` denotes the number of items to be reversed. The `\revlist` macro has
+its complexity `n^2` but linked list can be read in reversed order in linear
+complexity. On the other hand we need to allocate `n` control sequences in
+linked list but only four control sequences when `\revist` macro is used. This
+is usual dilemma between speed and memory demands.

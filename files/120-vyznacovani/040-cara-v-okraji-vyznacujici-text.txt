@@ -1,0 +1,154 @@
+anchor-name:specline
+id:0128
+author:P. O.
+date:2015-11-04
+
+----lang:cs--title:Čára v okraji vyznačující text
+Uživatel uzavře vyznačovaný text pomocí `\beginspec...\endspec`. Začátek
+textu může být někde uvnitř odstavce a konec třeba v dalším odstavci. Makro
+vytvoří v pravém okraji čáru začínající ve výšce prvního slova vyznačeného
+textu a končící ve výšce posledního slova vyznačeného textu.
+
+Implementace se opírá o pdfTeXový primitivní příkaz `\pdfsavepos` a využívá
+REF soubor ke zjištění polohy začínajícího a končícího slova. Takže čáry se
+stabilizují ve správné poloze až po druhém běhu TeXu.
+Implementace vypadá takto:
+
+```
+\def\preparespec#1{\expandafter\ifx \csname spec:#1\endcsname \relax \sdef{spec:#1}{}\fi}
+\def\XspecB#1{\preparespec{\the\lastpage}
+    \expandafter\addto\csname spec:\the\lastpage\endcsname{,\specdraw{#1}}}
+\def\XspecE#1{\preparespec{\the\lastpage}
+    \expandafter\addto\csname spec:\the\lastpage\endcsname{{#1}}}
+
+\input opmac % načtení OPmac musí proběhnout až po definici \XspecB a \XspecE
+
+\newif\ifspecenv \specenvfalse
+\def\beginspec{\ifspecenv \opwarning{\noexpand\beginspec inside spec environment, ignored}%
+   \else \global\specenvtrue \openref
+      \ifvmode \pdfsavepos \else \vbox to0pt{\vss\pdfsavepos\kern\ht\strutbox}\fi
+      \wref\XspecB{{\the\pdflastypos}}\fi
+}
+\def\endspec{\ifspecenv \global\specenvfalse
+      \ifvmode \pdsavepos \else\vbox to0pt{\kern\dp\strutbox\pdfsavepos\vss}\fi
+      \wref\XspecE{{\the\pdflastypos}}%
+   \else \opwarning{\noexpand\endspec outside spec environment, ignored}\fi
+}
+\def\prepghook{\moveright\hsize\vbox to0pt{\preparespec{\the\pageno}
+   \expandafter\expandafter\expandafter
+   \specdrawB\csname spec:\the\pageno\endcsname \botypos\relax}\nointerlineskip
+}
+\def\specdraw#1#2#3{\moveright 5pt\vbox to0pt{
+   \tmpnum=\topypos \advance\tmpnum by-#1 \kern\tmpnum sp
+   \tmpnum=-#2 \advance\tmpnum by#1 \hrule height\tmpnum sp width 2pt \vss}\nointerlineskip
+   \ifx#3\relax \global\let\specdrawB=\specdrawBrun \fi
+}
+\def\specdrawB#1{}
+\def\specdrawBrun#1#2{\gdef\specdrawB##1{}\specdraw{\topypos}{#1}{#2}}
+
+\tmpdim=\pdfpageheight \advance\tmpdim by-1in \advance\tmpdim by-\voffset \edef\topypos{\number\tmpdim}
+\advance\tmpdim by-\vsize \advance \tmpdim by-\dp\strutbox \edef\botypos{\number\tmpdim}
+```
+
+Makra `\XspecB{od}` a `\XspecE{do}` uloží během načtení REF souboru údaje do
+maker `\spec:pageno` (pageno je číslo příslušné strany) a jsou tam ve tvaru:
+
+```
+,\specdraw{od}{do},\specdraw{od}{do},\specdraw{od}{do}
+```
+
+V tomto tvaru je použije výstupní rutina v `\prepghook`: Spustí
+`\specdrawB` následovaný expandovaným `\spec:pagen`o následovaný dalšími dvěma
+tokeny `\botypos\relax`. Přitom `\specdrawB` typicky pouze ignoruje první čárku
+a `\specdraw` přečte `{od}` a `{do}` a následující token, který typicky rovněž
+ignoruje (tj. ignoruje následující čárku nebo token `\botypos`). Dále
+`\specdraw` nakreslí čáru `{od}--{do}`.
+
+Zajímavá je situace, kdy čára na příslušné straně není uzavřena. Pak chybí
+údaj `{do}` a místo něj `\specdraw` načte `\botypos`, tj. polohu spodní hrany
+stránky. Třetí ignorovaný parametr je pak `\relax` a v takovém případě
+`\specdraw` předefinuje `\specdrawB` pro následující stranu jako `\specdrawBrun`,
+aby tam čára mohla pokračovat. Za domácí cvičení prostudujte definici
+`\specdrawBrun` a rozmyslete si, že makro funguje i pro případy, kdy
+`\spec:pageno` je prázdná a `\specdrawB` pracuje v původním významu (žádná čára na
+stránce) nebo ve významu `\specdrawBrun` (čára na stránce odshora dolů).
+
+Další domácí úkol: modifikujte makro tak, aby vytvářelo barevné
+rámečky pod textem (užití `\beginspec` a `\endspec` se v tomto případě
+předpokládá ve vertikáním módu mezi odstavci).
+
+----lang:en--title:Marginal line around selected text
+The user encloses the selected text by `\beginspec...\endspec`. The
+selected text may start in the middle of the paragraph and the last selected
+word can be somewhere in next paragraphs, for instance. The macro draws the
+line in the right margin starting from the vertical position of the first
+selected word and ending at the vertical position of the last selected word.
+
+The implementation uses the pdfTeX's primitive `\pdfsavepos` and the REF
+file from OPmac for reading the positions of the first and the last selected
+word. This means that the marginal lines can be created after second run of
+TeX, after the data from REF file are read. The implementation follows:
+
+```
+\def\preparespec#1{\expandafter\ifx \csname spec:#1\endcsname \relax \sdef{spec:#1}{}\fi}
+\def\XspecB#1{\preparespec{\the\lastpage}
+    \expandafter\addto\csname spec:\the\lastpage\endcsname{,\specdraw{#1}}}
+\def\XspecE#1{\preparespec{\the\lastpage}
+    \expandafter\addto\csname spec:\the\lastpage\endcsname{{#1}}}
+
+\input opmac % OPmac input must be done after the \XspecB and \XspecE are defined
+
+\newif\ifspecenv \specenvfalse
+\def\beginspec{\ifspecenv \opwarning{\noexpand\beginspec inside spec environment, ignored}%
+   \else \global\specenvtrue \openref
+      \ifvmode \pdfsavepos \else \vbox to0pt{\vss\pdfsavepos\kern\ht\strutbox}\fi
+      \wref\XspecB{{\the\pdflastypos}}\fi
+}
+\def\endspec{\ifspecenv \global\specenvfalse
+      \ifvmode \pdsavepos \else\vbox to0pt{\kern\dp\strutbox \pdfsavepos\vss}\fi
+      \wref\XspecE{{\the\pdflastypos}}%
+   \else \opwarning{\noexpand\endspec outside spec environment, ignored}\fi
+}
+\def\prepghook{\moveright\hsize\vbox to0pt{\preparespec{\the\pageno}
+   \expandafter\expandafter\expandafter
+   \specdrawB\csname spec:\the\pageno\endcsname \botypos\relax}\nointerlineskip
+}
+\def\specdraw#1#2#3{\moveright 5pt\vbox to0pt{
+   \tmpnum=\topypos \advance\tmpnum by-#1 \kern\tmpnum sp
+   \tmpnum=-#2 \advance\tmpnum by#1 \hrule height\tmpnum sp width 2pt \vss}\nointerlineskip
+   \ifx#3\relax \global\let\specdrawB=\specdrawBrun \fi
+}
+\def\specdrawB#1{}
+\def\specdrawBrun#1#2{\gdef\specdrawB##1{}\specdraw{\topypos}{#1}{#2}}
+
+\tmpdim=\pdfpageheight \advance\tmpdim by-1in \advance\tmpdim by-\voffset \edef\topypos{\number\tmpdim}
+\advance\tmpdim by-\vsize \advance \tmpdim by-\dp\strutbox \edef\botypos{\number\tmpdim}
+```
+
+The macros `\XspecB{from}` and `\XspecE{to}` save the information to the
+macros `\spec:pageno` (where pageno is the relevant page number) when REF file
+is read. The information in the `\spec:pageno` is in the form:
+
+```
+,\specdraw{from}{to},\specdraw{from}{to},\specdraw{from}{to}
+```
+
+The output routine uses such information in `\prepghook`: The `\specdrawB` is
+run followed by expanded `\spec:pageno` followed by two tokens
+`\botypos\relax`. In general, the `\specdrawB` only ignores the first comma and
+the `\specdraw` reads `{from}` and `{to}` and following comma or `\botypos` (which is
+ignored). The `\specdraw` draws the marginal line `{from}--{to}`.
+
+The interesting situation is the case, when the marginal line isn't
+closed at the current page. Then the `{to}` parameter is missing and `\specdraw`
+reads `\botypos` instead `{from}`. The `\botypos` includes the bottom position of
+the page, so the line is normally drawn. The third (ignored) parameter is
+`\relax` in this case and this is an indicator for redefining the `\specdrawB`
+to `\specdrawBrun` for the next page. Then the next page begins by the line
+created by `\specdrawBrun`. As an exercise, you can think about the empty
+`\spec:pageno`. This works in the normal mode (no line is created) and in the
+interrupted-line mode too: the line is drawn from the top to the bottom.
+
+Next exercise: modify the macro in order to it creates the colored frames
+around the text. Suppose the usage of `\begspec` and `\endspec` beween paragraphs
+in vertical mode.

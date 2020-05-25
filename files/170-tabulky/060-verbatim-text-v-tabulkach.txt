@@ -1,0 +1,53 @@
+anchor-name:tableverb
+id:0162
+author:P. O.
+date:2017-06-17
+
+----lang:cs--title:Verbatim text v tabulkách
+Protože `\table{deklarace}{data}` čte celý druhý parametr `data` před jeho
+vykonáním, není možné uvnitř tohoto parametru přecházet do verbatim (např.
+takto: `$#`) nebo dělat jiné změny kategorií znaků s požadavkem okamžitého
+efektu. A přitom stačí málo, číst parametr `data` a okamžitě ho vykonávat.
+To se dá udělat takto:
+
+```
+\activettchar"
+
+\tableverb{deklarace}
+data včetně "#&$" verbatim
+\etable
+```
+
+Všimněte si, že na rozdíl od makra `\table` nejsou `data` uzavřena do svorek
+a jsou ukončena makrem `\etable`. Kód pro tato makra vypadá takto:
+
+```
+\def\tableverb{\vbox\bgroup \catcode`\|=12 \tableB}
+\def\tableB#1{\offinterlineskip \colnum=0 \def\tmpa{}\tabdata={}\scantabdata#1\
+   \halign\expandafter\bgroup\the\tabdata\cr}
+\def\etable{\crcr\egroup\egroup}
+```
+
+----lang:en--title:Verbatim text in tables
+We cannot use verbatim text (or another catcode dancing) in the
+`\table` data because the parameters `\table {declaration}{data}` are read
+before typesetting, the `{data}` parameter is not read during typesetting.
+But you can use a slight modified macro `\verbtable`:
+
+```
+\activettchar"
+
+\tableverb{declaration}
+data including "#&$" verbatim
+\etable
+```
+
+Note that there is a differnece: `data` is not in the barces but it is
+closed by `\etable` macro.
+
+```
+\def\tableverb{\vbox\bgroup \catcode`\|=12 \tableB}
+\def\tableB#1{\offinterlineskip \colnum=0 \def\tmpa{}\tabdata={}\scantabdata#1\
+   \halign\expandafter\bgroup\the\tabdata\cr}
+\def\etable{\crcr\egroup\egroup}
+```

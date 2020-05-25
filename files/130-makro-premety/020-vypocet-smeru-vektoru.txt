@@ -1,0 +1,119 @@
+anchor-name:argofvector
+id:0061
+author:P. O.
+date:2014-05-24
+
+----lang:cs--title:Výpočet směru vektoru
+Je dán vektor v rovině a je třeba najít úhel mezi tímto vektorem a
+osou `x` ve stupních. Je to potřebné, když chceme například otočit nějaký
+grafický prvek (např. hrot šipky) dle požadovaného směru. Vytvoříme makro
+
+```
+\calculateargofvector (X0 Y0) (X Y)  % (X0 Y0) je počátek vektoru, (X Y) konec
+například
+\calculateargofvector (0 0) (2 3)
+\calculateargofvector (1.1 2.7) (-4.7 6.3)
+```
+
+které vrátí výsledek v makru `\argofvector`. Protože TeX nedisponuje interně
+implementovanými funkcemi pro odmocninu a `arccos`, je makro poněkud
+náročnější.
+
+```
+\newdimen\dimX  \newdimen\dimY
+
+\def\processatan #1 {\tmpdim=\ifx\relax#1\maxdimen \else.#1pt\fi\relax
+   \ifdim\dimY<\tmpdim\expandafter\processatanE
+   \else \advance\tmpnum by1 \def\tmp{#1}\expandafter \processatan \fi}
+\def\processatanE #1\relax{}
+
+\def\calculateargofvector (#1 #2) (#3 #4){\def\tmp{0}\tmpnum=0
+   \dimX=#3pt \advance\dimX by-#1pt \dimY=#4pt \advance\dimY by-#2pt
+   \ifdim\dimX=0pt \ifdim\dimY=0pt \dimX=1pt \dimY=0pt \fi \fi
+   \ifdim\dimY<0pt \dimY=-\dimY \dimX=-\dimX \advance\tmpnum by180 \fi
+   \ifdim\dimX<0pt \tmpdim=\dimX \dimX=\dimY \dimY=-\tmpdim \advance\tmpnum by90 \fi
+   \ifdim\dimY>\dimX \tmpdim=\dimX \advance\tmpdim by\dimY
+                   \advance\dimY by-\dimX \dimX=\tmpdim \advance\tmpnum by45 \fi
+   \ifdim\dimX<63pt \multiply\dimX by256 \multiply\dimY by256
+   \else \ifdim\dimX<1023pt \multiply\dimX by16 \multiply\dimY by16 \fi\fi
+   \divide\dimX by256 \divide\dimY by\dimX \multiply\dimY by256
+   \processatan 017 035 052 07 087 105 123 14 158 176 194 21 23 25 268 287 306 325 344 364
+                384 404 424 445 466 488 51 532 554 577 6 625 649 675 7 727 754 781 81 839
+                869 9 932 966 99999 {\relax} \relax
+   \edef\argofvector{\the\tmpnum}%
+   \ifdim\tmpdim=\maxdimen \tmpnum=0 \else
+      \advance\tmpdim by-.\tmp pt \advance\dimY by-.\tmp pt \multiply\dimY by10
+      \tmpnum=\dimY \divide\tmpnum by\tmpdim
+   \fi
+   \ifnum\tmpnum>0 \edef\argofvector{\argofvector.\the\tmpnum}\fi
+}
+```
+
+V prvé části výpočtu otočíme vektor případně o 180 a 90 stupňů, abychom
+jej dostali do prvého kvadrantu. Otočení ve stupních přičítáme k výsledku v
+`\tmpnum`. Dále vektor otočíme do první půle kvadrantu o 45 stupňů, pokud tam
+již není. Při tomto otočení se změní jeho velikost, což nám nevadí, protože
+hned dalším krokem je normalizace vektoru tak, že má souřadnici X rovnou
+jedné. Tj. souřadnice `Y` je rovna tangentě hledaného úhlu. Za makrem
+`\processatan` jsou napsány tangenty úhlů 1, 2, 3 až 45 a toto makro cyklem
+najde odpovídající úhlel a zbylá data až po `\relax` přeskočí. V závěru je
+výpočet desetiny úhlu lineární aproximací v intervalu `tg(n)--tg(n+1)`.
+
+----lang:en--title:Calculation of the direction of given vector
+The vector in a plane is given. We need to find the angle between this
+vector and the axis `x` in degrees. This is needed when we need to rotate some
+graphics element (the spike of the arrow, for example) by the given
+direction. We create the macro
+
+```
+\calculateargofvector (X0 Y0) (X Y)  % (X0 Y0) is the origin, (X Y) is the end
+for example
+\calculateargofvector (0 0) (2 3)
+\calculateargofvector (1.1 2.7) (-4.7 6.3)
+```
+
+The result is returned and saved in the macro `\argofvector`. Because TeX
+doesn't provide the internal functions `sqrt`, `arccos` or `arctan`, the macro is
+somewhat more complicated.
+
+```
+\newdimen\dimX  \newdimen\dimY
+
+\def\processatan #1 {\tmpdim=\ifx\relax#1\maxdimen \else.#1pt\fi\relax
+   \ifdim\dimY<\tmpdim\expandafter\processatanE
+   \else \advance\tmpnum by1 \def\tmp{#1}\expandafter \processatan \fi}
+\def\processatanE #1\relax{}
+
+\def\calculateargofvector (#1 #2) (#3 #4){\def\tmp{0}\tmpnum=0
+   \dimX=#3pt \advance\dimX by-#1pt \dimY=#4pt \advance\dimY by-#2pt
+   \ifdim\dimX=0pt \ifdim\dimY=0pt \dimX=1pt \dimY=0pt \fi \fi
+   \ifdim\dimY<0pt \dimY=-\dimY \dimX=-\dimX \advance\tmpnum by180 \fi
+   \ifdim\dimX<0pt \tmpdim=\dimX \dimX=\dimY \dimY=-\tmpdim \advance\tmpnum by90 \fi
+   \ifdim\dimY>\dimX \tmpdim=\dimX \advance\tmpdim by\dimY
+                   \advance\dimY by-\dimX \dimX=\tmpdim \advance\tmpnum by45 \fi
+   \ifdim\dimX<63pt \multiply\dimX by256 \multiply\dimY by256
+   \else \ifdim\dimX<1023pt \multiply\dimX by16 \multiply\dimY by16 \fi\fi
+   \divide\dimX by256 \divide\dimY by\dimX \multiply\dimY by256
+   \processatan 017 035 052 07 087 105 123 14 158 176 194 21 23 25 268 287 306 325 344 364
+                384 404 424 445 466 488 51 532 554 577 6 625 649 675 7 727 754 781 81 839
+                869 9 932 966 99999 {\relax} \relax
+   \edef\argofvector{\the\tmpnum}%
+   \ifdim\tmpdim=\maxdimen \tmpnum=0 \else
+      \advance\tmpdim by-.\tmp pt \advance\dimY by-.\tmp pt \multiply\dimY by10
+      \tmpnum=\dimY \divide\tmpnum by\tmpdim
+   \fi
+   \ifnum\tmpnum>0 \edef\argofvector{\argofvector.\the\tmpnum}\fi
+}
+```
+
+The vector is rotated by 180 or 90 degrees first in order to get it to
+the first quadrant. This rotation (in degrees) is added to the `\tmpnum`.
+Second, we rotate the vector to the first half of the first quadrant by
+(possibly) rotating it by 45 degrees. The vector is resized by this
+operation but this doesn't matter because next step is the normalization of
+the vector so that it has the first coordinate equal to one. This means that
+the Y coordinate of the vector is equal to the tangent of the desired angle.
+The tangents of the angles 1, 2, 3, ..., 45 degrees are written after
+`\processatan` macro. This macro finds the right value and skips the rest to
+the `\relax`. Finally, the linear approximation is used for the calculation of
+the fraction part of the angle value.

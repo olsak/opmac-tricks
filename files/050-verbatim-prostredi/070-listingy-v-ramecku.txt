@@ -1,0 +1,43 @@
+anchor-name:ttram
+id:0126
+author:P. O.
+date:2015-10-07
+
+----lang:cs--title:Listingy v rámečku
+Chceme, aby listingy produkované pomocí `\begtt...\endtt` nebo pomocí
+`\verbinput` byly zarámované. Rámeček se má zlomit, pokud listing přesahuje na
+další stránku.
+
+Od verze OPmac Oct. 2015 je možné tento úkol vyřešit bez redefinování
+celého makra `\begtt` a `\doverbinput`. Je totiž možné vložit do `\tthook`
+přiřazení `\everypar`, které vloží čáry vlevo a vpravo každého řádku.
+Zbytek kódu se věnuje předefinování makra `\ttskip`, které vytvoří nejprve
+zahajovací díl rámečku (`\ttskipA`) a poté ukončovací díl rámečku (`\ttskipB`).
+
+```
+\def\srule{\line{\vrule height 3pt \hfil\vrule}}
+\def\ttskipA{\bigskip\hrule\srule \global\let\ttskip=\ttskipB}
+\def\ttskipB{\nointerlineskip\srule\hrule\bigskip \global\let\ttskip=\ttskipA}
+\let\ttskip=\ttskipA
+\def\tthook{\offinterlineskip \everypar={\rlap{\kern-\ttindent\line{\vrule\strut\hss\vrule}}}}
+```
+
+----lang:en--title:Listings in frames
+We need to print each listing produced by `\begtt...\endtt` or by
+`\verbinput` in a frame. The frame must be beakable when listing continues at
+new page.
+
+This task is solvable without re-definition of `\begtt` and `\doverbinput`
+macros since OPmac version Ost. 2015. We can add the `\everypar` setting in
+the `\tthook` here. And we print the frame parts at the left and right side of
+each line by the `\everypar`. The rest of the code defines `\ttskip` as
+`\ttskipA` for the top rule of the frame and as `\ttskipB` for the bottom rule
+of the frame.
+
+```
+\def\srule{\line{\vrule height 3pt \hfil\vrule}}
+\def\ttskipA{\bigskip\hrule\srule \global\let\ttskip=\ttskipB}
+\def\ttskipB{\nointerlineskip\srule\hrule\bigskip \global\let\ttskip=\ttskipA}
+\let\ttskip=\ttskipA
+\def\tthook{\offinterlineskip \everypar={\rlap{\kern-\ttindent\line{\vrule\strut\hss\vrule}}}}
+```

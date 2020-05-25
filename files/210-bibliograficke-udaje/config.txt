@@ -1,0 +1,7 @@
+----lang:cs--name:Bibliografické údaje
+K využití následujících triků s odkazy na literaturu a citacemi je
+potřeba vyjít z verze OPmac aspoň Apr.~2014.
+
+----lang:en--name:Bibliography
+For the next bibliography tricks to work, you need to use
+OPmac version Apr.~2014 or newer.

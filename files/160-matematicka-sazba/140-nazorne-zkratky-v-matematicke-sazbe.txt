@@ -1,0 +1,147 @@
+anchor-name:mspecdef
+id:0149
+author:P. O.
+date:2016-05-26
+
+----lang:cs--title:Názorné zkratky v matematické sazbě
+![Ukázka mspecdef](img/mspecdef.png)
+
+Je daleko názornější ve zdrojáku matematické sazby psát `<=` místo `\leq`,
+`==>` místo `\Rightarrow`, `+-` místo `\pm` atd. Takže zápis pak může vypadat takto:
+
+```
+$$ a <= b <= c ==> a <= c $$
+```
+
+Tuto inteligenci matematické sazby lze deklarovat pomocí makra `\msecdef`
+třeba takto:
+
+```
+\mspecdef <<   \ll
+\mspecdef <>   \neq
+\mspecdef <=   \leq
+\mspecdef <=>  \Leftrightarrow
+\mspecdef >>   \gg
+\mspecdef >=   \geq
+\mspecdef -+   \mp
+\mspecdef +-   \pm
+\mspecdef ==   \equiv
+\mspecdef =.   \doteq
+\mspecdef ==>  \Rightarrow
+```
+
+Konečně ukážeme, jak vypadá kód chytrého makra `\msecdef`:
+
+```
+\def\skipnext#1#2{#1}
+\def\trynext#1{\trynextA#1.\relax\relax}
+\def\trynextA#1#2\relax#3\relax#4#5{%
+   \ifx\relax#2\relax \def\next{#4}\else
+      \def\next{\isnextchar#1{\skipnext{\trynextA#2\relax#3#1\relax{#4}{#5}}}{#5#3}}\fi
+   \next
+}
+\def\mspecdefA#1#2#3 #4{\ifx#2\undefined
+   \def#2{\trynext{#3}{#4}{#1}}\else
+   \toks0={\trynext{#3}{#4}}\toks1=\expandafter{#2}%
+   \edef#2{\the\toks0{\the\toks1}}\fi
+}
+\def\mspecdef#1{%
+   \ifcat_#1 \expandafter\let\csname m:#1\endcsname=X \catcode`#1=12 \fi
+   \expandafter\ifx\csname m:#1\endcsname\relax
+      \expandafter\mathchardef\csname m:#1\endcsname=\mathcode`#1 \fi
+   \mathcode`#1="8000 \begingroup \lccode`~=`#1
+   \lowercase{\endgroup\expandafter\mspecdefA\csname m:#1\endcsname~}%
+}
+\def\tmp{\adef_##1{_{##1}}\adef^##1{^{##1}}}\tmp
+\catcode`_=12 \catcode`^=12 \mathcode`_="8000 \mathcode`^="8000
+```
+
+Popis myšlenky: po `\mspecdef ax \U  \mspecdef axy \V  \mspecdef abcd \W`
+se deklaruje znak `a` jako math-aktivní (má kód `"8000`) a je definován jako:
+
+```
+\def a{\trynext{bcd}\W{\trynext{xy}\V{\trynext{x}\U{normal a}}}}
+```
+
+Makro nejprve testuje, zda následuje string `bcd` (pomocí opakovaného
+`\isnextchar`). Pokud to je splněno, vynechá se zbytek makra a spustí se `\W`.
+Jinak se spustí zbytek makra. To znamená, že se testuje následující string
+`xy` a když není přítomen, testuje se `x` a když také není přítomen, vytiskne se
+normální `a`. Všimněte si, že delší stringy (začínající stejně) musejí být
+pomocí `\mspecdef` deklarovány později než stringy kratší.
+
+Poslední dva řádky kódu zajistí, že `$a_+$` se automaticky převede na
+`$a_{+}$`, protože přímá syntax `$a_+$` přestává fungovat například po
+`\mspecdef +- \pm`.
+
+----lang:en--title:Visual marks in math
+![mspecdef example](img/mspecdef.png)
+
+It is more comfortable to use `<=` instead `\leq`,
+`==>` instead `\Rightarrow`, `+-` instead `\pm` etc. in source file in math.
+For example:
+
+```
+$$ a <= b <= c ==> a <= c $$
+```
+
+This feature can be declared by `\mspecdef` macro, for example:
+
+```
+\mspecdef <<   \ll
+\mspecdef <>   \neq
+\mspecdef <=   \leq
+\mspecdef <=>  \Leftrightarrow
+\mspecdef >>   \gg
+\mspecdef >=   \geq
+\mspecdef -+   \mp
+\mspecdef +-   \pm
+\mspecdef ==   \equiv
+\mspecdef =.   \doteq
+\mspecdef ==>  \Rightarrow
+```
+
+The `\mspecdef` macro is defined as follows:
+
+```
+\def\skipnext#1#2{#1}
+\def\trynext#1{\trynextA#1.\relax\relax}
+\def\trynextA#1#2\relax#3\relax#4#5{%
+   \ifx\relax#2\relax \def\next{#4}\else
+      \def\next{\isnextchar#1{\skipnext{\trynextA#2\relax#3#1\relax{#4}{#5}}}{#5#3}}\fi
+   \next
+}
+\def\mspecdefA#1#2#3 #4{\ifx#2\undefined
+   \def#2{\trynext{#3}{#4}{#1}}\else
+   \toks0={\trynext{#3}{#4}}\toks1=\expandafter{#2}%
+   \edef#2{\the\toks0{\the\toks1}}\fi
+}
+\def\mspecdef#1{%
+   \ifcat_#1 \expandafter\let\csname m:#1\endcsname=X \catcode`#1=12 \fi
+   \expandafter\ifx\csname m:#1\endcsname\relax
+      \expandafter\mathchardef\csname m:#1\endcsname=\mathcode`#1 \fi
+   \mathcode`#1="8000 \begingroup \lccode`~=`#1
+   \lowercase{\endgroup\expandafter\mspecdefA\csname m:#1\endcsname~}%
+}
+\def\tmp{\adef_##1{_{##1}}\adef^##1{^{##1}}}\tmp
+\catcode`_=12 \catcode`^=12 \mathcode`_="8000 \mathcode`^="8000
+```
+
+The idea: when we do `\mspecdef ax \U \mspecdef axy \V \mspecdef abcd \W`
+then the `a` character is set as math-active (i.e. `\matcode` is `"8000`) and
+it is defined as
+
+```
+\def a{\trynext{bcd}\W{\trynext{xy}\V{\trynext{x}\U{normal a}}}}
+```
+
+This macro does test if the following string is `bcd` (using repeatedly
+called `\isnextchar`). If it is true then next part of the macro is skipped
+and `\W` is processed. Else next part of the macro is processed. This means,
+that `xy` is tested. If fails then `x` is tested and if fails then normal `a` is
+printed. Note that the declared strings with the same beginning part (ax, axy
+here) must be declared in the order from shortest string to longer.
+
+The last two lines solve the problem like `$a_+$` when `\mspecdef +- \pm`
+is declared. User need not to write `$a_{+}$`, macros converts the first
+syntax to second automatically.

@@ -1,0 +1,53 @@
+anchor-name:replacestrings
+id:0060
+author:P. O.
+date:2014-05-15
+
+----lang:cs--title:Využití \replacestrings
+OPmac disponuje makrem `\replacestrings`, které používá v makru `\url`. Makro
+`\replacestrings` v přechodném bufferu `\tmpb` vymění stringy za jiné stringy.
+Toto makro jsem využil, když jsem potřeboval v šabloně CTUStyle vygenerovat
+genitiv (tj. druhý pád) fakulty. Fakultu napíše student jen jako značku F1
+až F8 do `\toks` stringu `\faculty`. Tedy například napíše `\faculty{F3}`. Pomocí
+`\mtext` je tato značka konvertovaná na název fakulty dle právě aktuálního
+jazyka. Když je tímto jazykem čeština, objeví se název fakulty v prvním
+pádě. Někdy ale potřebujeme jej ohnout do genitivu. Použil jsem následující
+kód:
+
+```
+\def\facultygenitiv{\edef\tmpb{\mtext{\the\faculty} }%
+   \replacestrings{ulta }{ulty }%
+   \replacestrings{á }{é }%
+   \tmpb}
+```
+
+Když je například `\faculty{F4}` a jazyk český, pak se
+`\mtext{\the\faculty}` expanduje na „Fakulta jaderná a fyzikálně inženýrská“.
+Při použití makra `\facultygenitiv` přitom dostanu
+„Fakulty jaderné a fyzikálně inženýrské“. Pomocí výše uvedených
+čtyř řádků jsem schopen převést do genitivu všech osm fakult ČVUT.
+
+----lang:en--title:Usage of \replacestrings
+OPmac provides the `\replacesrings` macro which is used for `\url` parameter
+processing. The `\replacestrings` macro replaces the substrings of the string
+saved in the `\tmpb` macro. The another usage of `\replacestrings` is here.
+I needed to generate the genitive of the faculty name. The faculty is set by
+the user only as an abbreviation (F1, F2, ..., F8). This is saved to
+`\faculty` toks string. The `\mtext` macro (from OPmac) converts this
+abbreviation to the full name of the faculty depending on the actual
+language. It his language id Czech then genitive of this name is different
+than the nominative. I used the following code:
+
+```
+\def\facultygenitiv{\edef\tmpb{\mtext{\the\faculty} }%
+   \replacestrings{ulta }{ulty }%
+   \replacestrings{á }{é }%
+   \tmpb}
+```
+
+When the `\faculty={F4}` for example and the language is set as Czech then
+`\mtext{\the\faculty}` expands to the nominative:
+“Fakulta jaderná a fyzikálně inženýrská”.
+If the `\facultygenitiv` is used, the string above is replaced to
+“Fakulty jaderné a fyzikálně inženýrské”. The code above solves the
+genitive of all eight faculties at the CTU in Prague.

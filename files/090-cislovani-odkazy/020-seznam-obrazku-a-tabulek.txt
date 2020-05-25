@@ -1,0 +1,119 @@
+anchor-name:pictab
+id:0013
+author:P. O.
+date:2013-08-17
+
+----lang:cs--title:Seznam obrázků a tabulek
+OPmac nabízí jen automaticky generovaný obsah kapitol, sekcí a podsekcí.
+Chceme-li vytvořit automaticky generovaný obsah obrázků a tabulek, je třeba to
+naprogramovat například takto:
+
+```
+\def\totlist{} \def\toflist{}
+\def\Xtab#1#2#3{\addto\totlist{\totline{#1}{#2}{#3}}}
+\def\Xfig#1#2#3{\addto\toflist{\tofline{#1}{#2}{#3}}}
+
+\input opmac
+
+\def\tofline#1#2#3{{\leftskip=\iindent \rightskip=\iindent plus1em
+   \noindent\llap{\bf\ref[#1].\enspace}%
+   {#3\unskip}\nobreak\tocdotfill\pgref[#1]\nobreak\hskip-\iindent\null\par}}
+\let\totline=\tofline
+
+\def\captionhook#1{\typosize[10/12]%
+   \ifx\clabeltext\undefined \else
+      \ifx#1t{\protectlist\immediate\wref\Xtab{{\lastlabel}{\thetnum}{\clabeltext}}}%
+      \else  {\protectlist\immediate\wref\Xfig{{\lastlabel}{\thefnum}{\clabeltext}}}%
+   \fi\fi
+   \global\let\clabeltext=\undefined
+}
+\def\clabel[#1]#2{\gdef\clabeltext{#2}\label[#1]}
+```
+
+Je zde využit soubor REF z OPmac a do něj jsou zapisovány údaje
+tvaru `\Xtab{lejblík}{číslo}{text}` a `\Xfig{leblík}{číslo}{text}`.
+Tyto údaje jsou zapisovány okamžitě, protože neobsahují číslo strany. Číslo strany v
+obsahu obrázků a tabulek je nakonec vytištěno pomocí `\pgref[lejblík]`.
+Soubor REF je čten během `\input opmac`, proto je potřeba makra `\Xtab`, `\Xref` definovat
+před načtením opmac. Tato makra si data pouze zapamatují do `\totlist` a `\toflist`,
+kde se kumulují údaje ve tvaru `\totline{lejblík}{číslo}{text}` a podobně
+pro `\tofline`. Definice maker `\tofline`, `\totline` je inspirovaná makrem `\tocline`
+z OPmac.
+
+Uživatel musí napsat `\clabel[lejblík]{text}` následovaný tabulkou nebo
+obrázkem včetně příkazu `\caption/t` nebo `\caption/f`. Makro `\clabel` založí
+lejblík a makro `\caption` prostřednictvím `\captionhook` pošle potřebné údaje
+do REF souboru. Použití může vypadat například takto:
+
+```
+\nonum\notoc\sec Seznam obrázků
+
+\toflist
+
+\nonum\notoc\sec Seznam tabulek
+
+\totlist
+
+\clabel[tabA]{Tabule A}
+... Tabulka A\par\nobreak
+\caption/t Toto je velmi zajímavá tabulka A.
+
+\clabel[tabB]{Tabule B}
+... Tabulka B\par\nobreak
+\caption/t Nyní se můžete pokochat tabulkou B.
+```
+
+----lang:en--title:List of figures and tables
+OPmac generates the contents of chapters, sections and subsections by
+`\maketoc` macro. When we need to print the list of figures or tables then we
+need to do it, for example by the code:
+
+```
+\def\totlist{} \def\toflist{}
+\def\Xtab#1#2#3{\addto\totlist{\totline{#1}{#2}{#3}}}
+\def\Xfig#1#2#3{\addto\toflist{\tofline{#1}{#2}{#3}}}
+
+\input opmac
+
+\def\tofline#1#2#3{{\leftskip=\iindent \rightskip=\iindent plus1em
+   \noindent\llap{\bf\ref[#1].\enspace}%
+   {#3\unskip}\nobreak\tocdotfill\pgref[#1]\nobreak\hskip-\iindent\null\par}}
+\let\totline=\tofline
+
+\def\captionhook#1{\typosize[10/12]%
+   \ifx\clabeltext\undefined \else
+      \ifx#1t{\protectlist\immediate\wref\Xtab{{\lastlabel}{\thetnum}{\clabeltext}}}%
+      \else  {\protectlist\immediate\wref\Xfig{{\lastlabel}{\thefnum}{\clabeltext}}}%
+   \fi\fi
+   \global\let\clabeltext=\undefined
+}
+\def\clabel[#1]#2{\gdef\clabeltext{#2}\label[#1]}
+```
+
+The REF file managed by OPmac is used here. New items will be write into
+this file in the form `\Xtab{label}{number}{text}` a `\Xfig{label}{number}{text}`.
+The items are written immediately because the page number is not used here.
+The page number is printed by normal `\pgref` macro. The REF file is read
+during `\input opmac`, so we need to define `\Xtab` and `\Xref` before
+`\input opmac`. The macros save the information into the `\totlist` and `\toflist`
+macros in the form `\totline{label}{number}{text}` or
+`\tofline{label}{number}{text}`. The definition of `\totline` and `\tofline` is
+inspired by `\tocline` macro from OPmac.
+
+The user has to write `\clabel[label]{text}` followed by the table or
+figure with the `\caption/t` or `\caption/f` macro. The macro `\caption` sends the
+information (including declared label) to the REF file using `\captionhook`.
+The usage can be:
+
+```
+\nonum\notoc\sec List of figures\par\toflist
+\nonum\notoc\sec List of tables\par\totlist
+
+\clabel[tabA]{Table A}
+... Table A\par\nobreak
+\caption/t This is interesting Table A.
+
+\clabel[tabB]{Table B}
+... Table B\par\nobreak
+\caption/t And this is Table B.
+```

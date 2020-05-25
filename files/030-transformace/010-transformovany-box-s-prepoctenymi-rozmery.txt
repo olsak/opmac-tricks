@@ -1,0 +1,158 @@
+anchor-name:transformbox
+id:0046
+author:P. O.
+date:2014-04-07
+
+----lang:cs--title:Transformovaný box s přepočtenými rozměry
+Vytvoříme makro `\transformbox{transformace}{obsah boxu}`, které vloží
+transformovaný `\hbox` do vnějšího boxu takových rozměrů, že
+minimálně obklopuje transformovaný box. Počátek transformace zůstává na
+účaří. Například
+
+![Ukázka čmeláka](img/cmelak-ukazka.png)
+
+```
+\picw=5cm \transformbox{\pdfrotate{45}}{\inspic cmelak.jpg }
+```
+
+vytiskne čmeláka otočeného o 45 stupňů. Je-li dejme tomu tento obrázek
+čtvercový, bude mít vnější box výšku i šířku `5cm * sqrt(2)`, hloubka zůstane
+nulová.
+
+Čáry kolem naznačují hranici vnějšího boxu, ve skutečnosti se
+nevytisknou. Nebo třeba
+
+```
+\transformbox{\pdfscale{2}{1.2}\pdfrotate{-30}}{Box}
+```
+
+vytvoří box šířky, výšky a hloubky tak, jak je naznačeno na obrázku:
+
+![Ukázka boxu](img/box-ukazka.png)
+
+Je také možné definovat otáčení boxu jako `\rotbox{úhel}{text boxu}`
+jednoduše takto:
+
+```
+\def\rotbox#1#2{\transformbox{\pdfrotate{#1}}{#2}}
+```
+
+Makro `\transformbox` je definováno takto:
+
+```
+\newdimen\vvalX \newdimen\vvalY
+\newdimen\newHt \newdimen\newDp \newdimen\newLt \newdimen\newRt
+\let\oripdfsetmatrix=\pdfsetmatrix
+
+\def\multiplyMxV #1 #2 #3 #4 {% matrix * (vvalX, vvalY)
+   \tmpdim = #1\vvalX \advance\tmpdim by #3\vvalY
+   \vvalY  = #4\vvalY \advance\vvalY  by #2\vvalX
+   \vvalX = \tmpdim
+}
+\def\multiplyMxM #1 #2 #3 #4 {% currmatrix := currmatrix * matrix
+   \vvalX=#1pt \vvalY=#2pt \expandafter\multiplyMxV \currmatrix
+   \edef\tmpb{\expandafter\ignorept\the\vvalX\space \expandafter\ignorept\the\vvalY}%
+   \vvalX=#3pt \vvalY=#4pt \expandafter\multiplyMxV \currmatrix
+   \edef\currmatrix{\tmpb\space
+      \expandafter\ignorept\the\vvalX\space \expandafter\ignorept\the\vvalY\space}%
+}
+\def\transformbox#1#2{\hbox{\setbox0=\hbox{#2}\preptransform{#1}%
+   \kern-\newLt \vrule height\newHt depth\newDp width0pt
+   \setbox0=\hbox{\box0}\ht0=0pt \dp0=0pt \pdfsave#1\rlap{\box0}\pdfrestore \kern\newRt}%
+}
+\def\preptransform #1{\def\currmatrix{1 0 0 1 }%
+   \def\pdfsetmatrix##1{\edef\tmpb{##1 }\expandafter\multiplyMxM \tmpb\unskip}#1%
+   \setnewHtDp 0pt  \ht0  \setnewHtDp 0pt  -\dp0
+   \setnewHtDp \wd0 \ht0  \setnewHtDp \wd0 -\dp0
+   \let\pdfsetmatrix=\oripdfsetmatrix
+}
+\def\setnewHtDp #1 #2 {%
+   \vvalX=#1\relax \vvalY=#2\relax \expandafter\multiplyMxV \currmatrix
+   \ifdim\vvalX<\newLt \newLt=\vvalX \fi \ifdim\vvalX>\newRt \newRt=\vvalX \fi
+   \ifdim\vvalY>\newHt \newHt=\vvalY \fi \ifdim-\vvalY>\newDp \newDp=-\vvalY \fi
+}
+```
+
+Makro implementuje maticovou aritmetiku pro currentmatrix. Dále dočasně
+(během `\preptranform`) předefinuje `\pdfsetmatrix` tak, že zadané transformace
+matici nenastaví, ale jen ji spočítají. Pak touto maticí pronásobíme čtyři body,
+které tvoří vrcholy boxu, a podíváme se na jejich obrazy. Podle jejich obrazů nastavíme
+nové rozměry vnějšího boxu `\newHt`, `\newDp` a dále prostor před počátkem
+transformace `\newLt` a za ním `\newRt`.
+
+----lang:en--title:Transformed box with new bounding box calculated
+We create the macro `\transformbox{transformation}{contents of box}` which
+puts the linear-transformed `\hbox` into outer box. The dimensions of the outer box
+are correctly calculated. The origin of the transformation stays on the
+baseline of the new outer box. For example:
+
+![Sample bumble-bee](img/cmelak-ukazka.png)
+
+```
+\picw=5cm \transformbox{\pdfrotate{45}}{\inspic bumblebee.jpg }
+```
+
+prints the picture rotated by 45 degrees. If (for example) the picture is
+square then the outer box will have height plus width equal to `5cm * sqrt(2)`
+and the depth is `0 cm`.
+
+The lines are invisible in the real output, of course. Another example:
+
+```
+\transformbox{\pdfscale{2}{1.2}\pdfrotate{-30}}{Box}
+```
+
+creates a box of width, height and depth as in the following sketch:
+
+![Box example](img/box-ukazka.png)
+
+It is possible to define rotating of box like `\rotbox{angle}{contents}`
+simply by the following code:
+
+```
+\def\rotbox#1#2{\transformbox{\pdfrotate{#1}}{#2}}
+```
+
+The macro `\transformbox` id defined:
+
+```
+\newdimen\vvalX \newdimen\vvalY
+\newdimen\newHt \newdimen\newDp \newdimen\newLt \newdimen\newRt
+\let\oripdfsetmatrix=\pdfsetmatrix
+
+\def\multiplyMxV #1 #2 #3 #4 {% matrix * (vvalX, vvalY)
+   \tmpdim = #1\vvalX \advance\tmpdim by #3\vvalY
+   \vvalY  = #4\vvalY \advance\vvalY  by #2\vvalX
+   \vvalX = \tmpdim
+}
+\def\multiplyMxM #1 #2 #3 #4 {% currmatrix := currmatrix * matrix
+   \vvalX=#1pt \vvalY=#2pt \expandafter\multiplyMxV \currmatrix
+   \edef\tmpb{\expandafter\ignorept\the\vvalX\space \expandafter\ignorept\the\vvalY}%
+   \vvalX=#3pt \vvalY=#4pt \expandafter\multiplyMxV \currmatrix
+   \edef\currmatrix{\tmpb\space
+      \expandafter\ignorept\the\vvalX\space \expandafter\ignorept\the\vvalY\space}%
+}
+\def\transformbox#1#2{\hbox{\setbox0=\hbox{#2}\preptransform{#1}%
+   \kern-\newLt \vrule height\newHt depth\newDp width0pt
+   \setbox0=\hbox{\box0}\ht0=0pt \dp0=0pt \pdfsave#1\rlap{\box0}\pdfrestore \kern\newRt}%
+}
+\def\preptransform #1{\def\currmatrix{1 0 0 1 }%
+   \def\pdfsetmatrix##1{\edef\tmpb{##1 }\expandafter\multiplyMxM \tmpb\unskip}#1%
+   \setnewHtDp 0pt  \ht0  \setnewHtDp 0pt  -\dp0
+   \setnewHtDp \wd0 \ht0  \setnewHtDp \wd0 -\dp0
+   \let\pdfsetmatrix=\oripdfsetmatrix
+}
+\def\setnewHtDp #1 #2 {%
+   \vvalX=#1\relax \vvalY=#2\relax \expandafter\multiplyMxV \currmatrix
+   \ifdim\vvalX<\newLt \newLt=\vvalX \fi \ifdim\vvalX>\newRt \newRt=\vvalX \fi
+   \ifdim\vvalY>\newHt \newHt=\vvalY \fi \ifdim-\vvalY>\newDp \newDp=-\vvalY \fi
+}
+```
+
+The matrix arithmetic is implemented here and it is applied on
+currentmatrix. The `\pdfsetmatrix` is redefined while `\pretransform`
+processing: the currentmatrix is not set but only calculated. The calculated
+matrix is multiplied by four points -- vertices of the box before
+transformation. The results are four vertices of the transformed box.
+We use them for the calculation of the new dimensions of the outer box
+`\newHt`, `\newDp` and the left side `\newLt` and right side `\newRt`.

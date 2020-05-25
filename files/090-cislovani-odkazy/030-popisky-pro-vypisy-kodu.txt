@@ -1,0 +1,57 @@
+anchor-name:caplisting
+id:0035
+author:P. O.
+date:2013-11-29
+
+----lang:cs--title:Popisky pro výpisy kódů
+OPmac nabízí dva druhy nezávisle číslovaných popisků: obrázky pomocí
+`\caption/f` a tabulky pomocí `\caption/t`. Ukážeme si, jak doplnit třetí druh.
+Například popisky pod výpisy kódů pomocí `\caption/l`.
+
+```
+\newcount\lnum
+\def\thelnum{\thechapnum.\the\lnum}
+\sdef{mt:l:en}{Listing} \sdef{mt:l:cs}{Výpis} \sdef{mt:l:sk}{Výpis}
+\def\chaphook#1\relax{{\globaldefs=1 \chapnums}}
+\def\chapnums{\secnum=0 \seccnum=0 \tnum=0 \fnum=0 \dnum=0 \lnum=0 }
+
+\chyph  % Zkouška v češtině:
+
+\chap Pokus
+
+\begtt
+int main() { ... }
+\endtt
+\nobreak \label[main]
+\caption/l Toto je výpis funkce main.
+```
+
+Uvedená ukázka zavádí čítač `\lnum` a definuje vzhled čísla `\thelnum`.
+Dále jsou uvedeny tři jazykové varianty slova Výpis a přidáno resetování
+čísla `\numl` v každé kapitole.
+
+----lang:en--title:Captions for code listings
+OPmac provides two caption types Witt independent numbering: figures by
+the `\caption/f` and tables by the `\caption/t`. We will show how to add a new
+caption type. For example we introduce the `\caption/l` for code
+listings.
+
+```
+\newcount\lnum
+\def\thelnum{\thechapnum.\the\lnum}
+\sdef{mt:l:en}{Listing} \sdef{mt:l:cs}{Výpis} \sdef{mt:l:sk}{Výpis}
+\def\chaphook#1\relax{{\globaldefs=1 \chapnums}}
+\def\chapnums{\secnum=0 \seccnum=0 \tnum=0 \fnum=0 \dnum=0 \lnum=0 }
+
+\chap Test
+
+\begtt
+int main() { ... }
+\endtt
+\nobreak \label[main]
+\caption/l This is the main function listing.
+```
+
+The example declares the counter `\lnum` and defines the printing format
+`\thelnum`. The word “Listing” is declared for three language mutations.
+The `\numl` counter will be reset in each chapter.

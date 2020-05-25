@@ -1,0 +1,62 @@
+anchor-name:jumping
+id:0112
+author:P. O.
+date:2015-06-19
+
+----lang:cs--title:Podtržení respektuje dolní přetahy
+Za pomocí předchozího OPmac triku vytvoříme makro `\underlinee{text}`,
+které podtrhne text, ale podtrhující čára se nedotýká dolních přetahů. Test:
+`\underlinee{jumping quickly}` vytvoří:
+
+![jumping quickly](img/jumping-ukazka.png)
+
+Pro písmo Computer Modern `10pt` může makro `\underlinee` vypadat takto:
+
+```
+\def\underlinee#1{%
+   \leavevmode\vbox to0pt{\vss
+      \hrule height.3pt
+      \vskip-\baselineskip \kern2.5pt
+      \localcolor
+      \hbox{\strut\rlap{\White\pdfliteral{2 Tr 1.1 w}#1\pdfliteral{0 Tr 0 w}}#1}
+}}
+```
+
+Chcete-li podtrhávat jiné písmo, je vhodné individuálně nastavit konstanty
+`.3pt`, `2.5pt` a `1.1`, abyste dosáhli co nejlepšího vizuálního efektu.
+
+Uvedené makro podtrhne text zapouzdřený v boxu, takže nedovolí zlomit
+řádek. Pokud byste chtěli vytvořit chytřejší podtrhávání včetně
+automatického zlomu řádků, můžete se dále inspirovat
+[OPmac trikem 0063](http://petr.olsak.net/opmac-tricks.html#soul).
+Analogický problém je řešen na
+[tex.sx.com](http://tex.stackexchange.com/questions/249850/)
+
+----lang:en--title:Underline omitting the descenders
+Using previous OPmac trick, we create the macro `\underlinee{text}`
+which creates underlined text but the rule respects descenders.
+Test: `\underlinee{jumping quickly}` prints
+
+![jumping quickly](img/jumping-ukazka.png)
+
+The `\underlinee` macro designed for Computer modern at `10pt` can look like
+
+```
+\def\underlinee#1{%
+   \leavevmode\vbox to0pt{\vss
+      \hrule height.3pt
+      \vskip-\baselineskip \kern2.5pt
+      \localcolor
+      \hbox{\strut\rlap{\White\pdfliteral{2 Tr 1.1 w}#1\pdfliteral{0 Tr 0 w}}#1}
+}}
+```
+
+If another font is used then you can set the constants `.3pt`, `2.5pt` and
+`1.1` indiviually in order to reach the best result.
+
+The `\underline{text}` macro creates a box, so the text isn't breakable
+into more lines inside the paragraph. If you need automatically broken
+underlined text then you can be inspired by
+[OPmac trick 0063](http://petr.olsak.net/opmac-tricks-e.html#soul).
+Analogical problem is solved at
+[tex.sx.com](http://tex.stackexchange.com/questions/249850/)

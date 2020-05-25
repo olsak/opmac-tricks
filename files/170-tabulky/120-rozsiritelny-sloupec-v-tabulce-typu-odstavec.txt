@@ -1,0 +1,59 @@
+anchor-name:partab
+id:0012
+author:P. O.
+date:2013-08-16
+
+----lang:cs--title:Rozšířitelný sloupec v tabulce typu „odstavec“
+Vytvoříme makro `\tableto{šířkatab}{deklarace}{data}` podobně jako v
+předchozím příkladě. Předpokládáme, že v deklaraci bude použit jeden
+deklarátor `P`, který označuje sloupec typu odstavec a jehož šířka bude
+taková, aby celková šířka tabulky odpovídala spcifikovanému údaji `{šířkatab}`.
+
+```
+\newdimen\Pwidth  \newdimen\tabw
+\def\tabdeclareP {\tabiteml\vtop{\hsize=\Pwidth \rightskip=0pt plus1fil
+   \baselineskip=1.2em \lineskiplimit=0pt
+   \noindent ##\unsskip\vbox to0pt{\vss\hbox{\tabstrutA}}}\hss\tabitemr}
+\def\tableto#1#2#3{{\Pwidth=.5\hsize \setbox0=\table{#2}{#3}
+   \tabw=#1\relax \advance\tabw by-\wd0 \advance\Pwidth by\tabw \table{#2}{#3}}}
+```
+
+Toto makro nejprve nanečisto vytvoří požadovanou tabulku s
+`\Pwidth=\hsize` do boxu0 a pak změří box0 a upraví podle toho konečnou
+hodnotu registru `\Pwidth`,
+
+----lang:en--title:The cells with paragraph-like formatting
+The LaTeX users know the column declaration p and they call this as
+“parbox” declaration. OPmac provides only c, l and r declarations but user
+can create another declarations. The following code defines the declaration `P`
+for the columns where the text is formatted as paragraph with the given
+`\Pwidth`.
+
+```
+\newdimen\Pwidth
+\def\tabdeclareP {\tabiteml\vtop{\hsize=\Pwidth \rightskip=0pt plus1fil
+   \baselineskip=1.2em \lineskiplimit=0pt \noindent ##\tabstrutA}\hss\tabitemr}
+```
+
+The example of the usage:
+
+```
+\Pwidth=3cm \table{|c|P|}{\crl \tskip3pt
+   aaa & This is text which is divided to more lines. \crl \tskip3pt
+    bb & And here is another long long text. \crl}
+```
+
+Now, we create the macro `\tableto{width}{declaration}{data}` similar as in
+the previous OPmac trick. We suppose that only one `P` declaration is used in
+the declaration. The width of the `P` column will be calculated in order to
+the whole width of the table is the same as given width.
+
+```
+\newdimen\tabw
+\def\tableto#1#2#3{{\Pwidth=.5\hsize \setbox0=\table{#2}{#3}
+   \tabw=#1\relax \advance\tabw by-\wd0 \advance\Pwidth by\tabw \table{#2}{#3}}}
+```
+
+This macro prints the table into box0 first with `\Pwidth=\hsize`. The
+width of the box0 is measured and the `\Pwidth` is corrected to the final
+value. Then the table is printed again.

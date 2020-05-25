@@ -1,0 +1,82 @@
+anchor-name:fnotebroken
+id:0167
+author:P. O.
+date:2019-02-12
+
+----lang:cs--title:Poznámky pod čarou na více stránkách s barevnými texty
+
+V TeXu je konceptuální problém s barevnými texty, které mají přecházet z
+jedné strany na další. Pro barvy jsou užity barevné přepínače, které PDF
+rasterizér na každé stránce resetuje. PdfTeX proto zavádí pro práci s
+barvami tzv. colorstack a OPmac to využívá a funguje to v případě barevných
+textů, které přecházejí ze strany na stranu v hlavním bloku. Ale v případě
+takto rozdělených textů v pznámkách pod čarou se z toho stává 
+hodně komplikovaný problém interně v pdfTeXu (zatím)
+neřešený. Když napíšete `{\localcolor\Red text ... text}` v hlavním
+textu, tak přechod ze strany na stranu funguje, ale v poznámkách pod čarou
+to fungovat nemůže, pokud jde o dlouhou poznámku rozdělenou na více stránek
+a obarvený úsek textu v poznámce přeteče na další stranu.
+
+Pokud přesto chcete, aby Váš text i v dlouhých poznámkách pod čarou
+(přecházejících na více stran) hýřil všemi barvami, je možné v poznámkách
+psát `{\fnotecolor\Red text ... text}` a využít následující makro:
+
+```
+\def\fnotecolor#1{\expandafter\definecolor#1%
+   \expandafter\fnoteRedA\expandafter{\iffalse}\fi}
+\def\definecolor#1#2{\def\everyColor{#2 k}}
+\long\def\fnoteRedA#1{\everyspacecolor#1 {} \egroup\pdfliteral{0 g}}
+\long\def\everyspacecolor#1 {\ifx\end#1\end \unskip \else 
+   \pdfliteral{\everyColor}#1 \expandafter\everyspacecolor\fi
+}
+
+```
+
+Toto makro vkládá před každé slovo obarveného textu přepínač na příslušnou
+(stále stejnou) barvu. Je to v 99 procentech zbytečné, ale když se takto
+obarvený text přelomí přes stranu v poznámce pod čarou, přepínač před prvním
+slovem nové strany zabere. Navíc je použit PDF primitivní přepínač barev,
+který obchází colorstack, takže implicitní řešení barev pomocí colorstacku 
+bude dále fungovat v hlavním textu.
+
+V tomto případě trochu spoléháme na to, že se v poznámkách pod čarou
+(zvláště na rozhraní mezi stránkami) nebudou dělit slova a obarvený text
+nebude obsahovat další složitější makrokonstrukce, které by způsobily
+konflikt s makrem rozkládajícím tento text na slova.
+
+----lang:en--title:Broken footnotes with colors
+
+There is bad concept with colors in TeX: color switchers are used and they
+works in PDF rasteriser only: TeX has no idea about colors used in middle of
+the typesetting material when this material is broken to more pages. This
+problem is partially solved in pdfTeX using colorstack mechanism, but it
+does not work well when long footnotes with colored text are broken to more
+pages. Opmac uses colorstack, so the text created by `{\localcolor\Red
+text...text}` works well in main block of typesetting material even if the
+text is broken to more pages. But you must type `{\fnotecolor\Red
+text...text}` inside a long footnote when this footnote can be broken. The
+`\fnotecolor` macro can be defined as follows:
+
+```
+\def\fnotecolor#1{\expandafter\definecolor#1%
+   \expandafter\fnoteRedA\expandafter{\iffalse}\fi}
+\def\definecolor#1#2{\def\everyColor{#2 k}}
+\long\def\fnoteRedA#1{\everyspacecolor#1 {} \egroup\pdfliteral{0 g}}
+\long\def\everyspacecolor#1 {\ifx\end#1\end \unskip \else 
+   \pdfliteral{\everyColor}#1 \expandafter\everyspacecolor\fi
+}
+
+```
+
+The macro adds the color switcher (with the same color) before each word in
+the colorized text in footnote. Only first switcher does a visible action.
+But if the long footnote is broken to next page then the color switcher
+loctated at the front of the first word at the new page (in the footnote
+area) causes the appropriate color switching. Because the colors used by
+`\fnotecolor` don't use colorstack, there is no interferrence with
+colorstack used in main text.
+
+We hope that the words in colorized footnote will be not hyphenated (when
+footnote is broken to more pages) and there are no complicated macro
+construction inside colorized text because `\fnotecolor` needs to 
+decompose the text to words.

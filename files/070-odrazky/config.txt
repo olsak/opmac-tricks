@@ -1,0 +1,4 @@
+----lang:cs--name:Odrážky
+
+----lang:en--name:Lists
+

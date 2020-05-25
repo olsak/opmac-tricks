@@ -1,0 +1,116 @@
+anchor-name:smartgreek
+id:0130
+author:P. O.
+date:2015-11-11
+
+----lang:cs--title:Nekurzivní řecká písmena
+V matematické sazbě je `$\beta$` v kurzívě bez ohledu na to, zda napíšeme
+třeba `$\rm\beta$`. Toto chování je možné změnit po deklaraci `\smartgreek`. Pak
+se přizpůsobí fontu `\rm` i malá řecká písmena.
+Makro `\smartgreek` vypadá takto:
+
+```
+\def\smartgreek{%
+   \expandafter\ifx\csname updelta\endcsname\relax \eurmgreek \fi
+   \escapechar=-1 \setsmartgreekA
+      \alpha\beta\gamma\delta\epsilon\zeta\eta\theta\iota\kappa\lambda\mu\nu\xi\pi\rho\sigma
+      \tau\upsilon\phi\chi\omega\varepsilon\vartheta\varpi\varrho\varsigma\varphi\relax
+   \escapechar=`\\
+}
+\def\setsmartgreekA#1{\ifx#1\relax \else
+   \expandafter \let \csname ori\string#1\endcsname = #1%
+   \edef#1{\relax \noexpand\ifnum\fam=0 \thecsname up\string#1\endcsname
+          \noexpand\else \noexpand\ifnum\fam=\rmfam \thecsname up\string#1\endcsname
+          \noexpand\else \thecsname ori\string#1\endcsname
+          \noexpand\fi \noexpand\fi}%
+   \expandafter\setsmartgreekA \fi
+}
+\def\thecsname{\expandafter\noexpand\csname}
+\def\eurmgreek{\regtfm eurm 0 eurm5 6 eurm7 8.5 eurm10 *
+   \csname newfam\endcsname \eurmfam \tmpnum=\eurmfam \advance\tmpnum by-10
+   \edef\eurmh{\ifcase\tmpnum A\or B\or C\or D\or E\or F\fi}%
+   \addto\normalmath{\loadmathfamily {\eurmfam} eurm }\normalmath
+   \addto\boldmath{\loadmathfamily {\eurmfam} eurm }%
+   \mathchardef \upalpha "0\eurmh 0B    \mathchardef \upbeta  "0\eurmh 0C
+   \mathchardef \upgamma "0\eurmh 0D    \mathchardef \updelta "0\eurmh 0E
+   \mathchardef \upepsilon "0\eurmh 0F  \mathchardef \upzeta  "0\eurmh 10
+   \mathchardef \upeta   "0\eurmh 11    \mathchardef \uptheta "0\eurmh 12
+   \mathchardef \upiota  "0\eurmh 13    \mathchardef \upkappa "0\eurmh 14
+   \mathchardef \uplambda "0\eurmh 15   \mathchardef \upmu    "0\eurmh 16
+   \mathchardef \upnu   "0\eurmh 17     \mathchardef \upxi   "0\eurmh 18
+   \mathchardef \uppi   "0\eurmh 19     \mathchardef \uprho   "0\eurmh 1A
+   \mathchardef \upsigma   "0\eurmh 1B  \mathchardef \uptau   "0\eurmh 1C
+   \mathchardef \upupsilon "0\eurmh 1D  \mathchardef \upphi   "0\eurmh 1E
+   \mathchardef \upchi   "0\eurmh 1F    \mathchardef \uppsi   "0\eurmh 20
+   \mathchardef \upomega   "0\eurmh 21  \mathchardef \upvarepsilon "0\eurmh 22
+   \mathchardef \upvartheta "0\eurmh 23 \mathchardef \upvarpi   "0\eurmh 24
+   \let \upvarrho=\varrho \let \upvarsigma=\varsigma
+   \mathchardef \upvarphi   "0\eurmh 27
+}
+```
+
+Je-li natažen tx-math, využijí se znaky `\upalpha`, `\upbeta` atd. odtud,
+jinak je potřeba znaky deklarovat z fontu eurm, což provede makro
+`\eurmgreek`. Makro `\setsmartgreek` předefinuje znaky `\alpha`, `\beta`, atd.
+takto:
+
+```
+\let\orialpha=\alpha
+\def\alpha{\relax \ifnum\fam=0 \upalpha \else \ifnum\fam=\rmfam \upalpha \else \orialpha \fi\fi}
+```
+
+----lang:en--title:Upright greek letters in math
+The `$\beta$` and `$\rm\beta$` prints the same result: italic beta.
+This behavior can be changed by `\smartgreek` declaration. Then the
+`\rm` selector prints greek lowercase letters in math upright.
+The `\smartgreek` macro looks like:
+
+```
+\def\setsmartgreek{%
+   \expandafter\ifx\csname updelta\endcsname\relax \eurmgreek \fi
+   \escapechar=-1 \setsmartgreekA
+      \alpha\beta\gamma\delta\epsilon\zeta\eta\theta\iota\kappa\lambda\mu\nu\xi\pi\rho\sigma
+      \tau\upsilon\phi\chi\omega\varepsilon\vartheta\varpi\varrho\varsigma\varphi\relax
+   \escapechar=`\\
+}
+\def\setsmartgreekA#1{\ifx#1\relax \else
+   \expandafter \let \csname ori\string#1\endcsname = #1%
+   \edef#1{\relax \noexpand\ifnum\fam=0 \thecsname up\string#1\endcsname
+           \noexpand\else \noexpand\ifnum\fam=\rmfam \thecsname up\string#1\endcsname
+           \noexpand\else \thecsname ori\string#1\endcsname
+           \noexpand\fi \noexpand\fi}%
+   \expandafter\setsmartgreekA \fi
+}
+\def\thecsname{\expandafter\noexpand\csname}
+\def\eurmgreek{\regtfm eurm 0 eurm5 6 eurm7 8.5 eurm10 *
+   \csname newfam\endcsname \eurmfam \tmpnum=\eurmfam \advance\tmpnum by-10
+   \edef\eurmh{\ifcase\tmpnum A\or B\or C\or D\or E\or F\fi}%
+   \addto\normalmath{\loadmathfamily {\eurmfam} eurm }\normalmath
+   \addto\boldmath{\loadmathfamily {\eurmfam} eurm }%
+   \mathchardef \upalpha "0\eurmh 0B    \mathchardef \upbeta  "0\eurmh 0C
+   \mathchardef \upgamma "0\eurmh 0D    \mathchardef \updelta "0\eurmh 0E
+   \mathchardef \upepsilon "0\eurmh 0F  \mathchardef \upzeta  "0\eurmh 10
+   \mathchardef \upeta   "0\eurmh 11    \mathchardef \uptheta "0\eurmh 12
+   \mathchardef \upiota  "0\eurmh 13    \mathchardef \upkappa "0\eurmh 14
+   \mathchardef \uplambda "0\eurmh 15   \mathchardef \upmu    "0\eurmh 16
+   \mathchardef \upnu   "0\eurmh 17     \mathchardef \upxi   "0\eurmh 18
+   \mathchardef \uppi   "0\eurmh 19     \mathchardef \uprho   "0\eurmh 1A
+   \mathchardef \upsigma   "0\eurmh 1B  \mathchardef \uptau   "0\eurmh 1C
+   \mathchardef \upupsilon "0\eurmh 1D  \mathchardef \upphi   "0\eurmh 1E
+   \mathchardef \upchi   "0\eurmh 1F    \mathchardef \uppsi   "0\eurmh 20
+   \mathchardef \upomega   "0\eurmh 21  \mathchardef \upvarepsilon "0\eurmh 22
+   \mathchardef \upvartheta "0\eurmh 23 \mathchardef \upvarpi   "0\eurmh 24
+   \let \upvarrho=\varrho \let \upvarsigma=\varsigma
+   \mathchardef \upvarphi   "0\eurmh 27
+}
+```
+
+If tx-math is loaded then `\upalpha`, `\upbeta` etc. are ready and they are
+used. Else the upvariants are declared using eurm font and using macro
+`\eurmgreek`. The `\setsmartgreek` macro redefines characters
+`\alpha`, `\beta`, etc. by the following way:
+
+```
+\let\orialpha=\alpha
+\def\alpha{\relax \ifnum\fam=0 \upalpha \else \ifnum\fam=\rmfam \upalpha \else \orialpha \fi\fi}
+```

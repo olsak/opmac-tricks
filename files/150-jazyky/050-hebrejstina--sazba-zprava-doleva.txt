@@ -1,0 +1,129 @@
+anchor-name:hebrew
+id:0092
+author:P. O.
+date:2015-01-26
+
+----lang:cs--title:Hebrejština -- sazba zprava doleva
+Sazbu zprava doleva zvládá i pdfTeX vybavený eTeXem (toto rozšíření se
+aktivuje při inicializaci formátu a pdfcsplain je s ním obvykle inicializován),
+protože eTeX obsahuje modul TeXXeT. Tento modul začne pracovat po zadání
+`\TeXXeTstate=1` na začátku dokumentu a pak akceptuje příkazy `\beginR...\endR`,
+mezi kterými probíhá sazba (v horizontálním módu) zprava doleva.
+
+Připravíme makro `\hebrew{...text v hejštině...}` a
+`\hebrewpar{... několik odstavců v hebrejštině ...}`, které vytvoří sazbu
+krátkých hebrejských textů. V pdfTeXu použijeme 8bitový font
+`rcjhbltx.tfm` (běžně dostupný v TeXových distribucích) a překódování z UTF-8
+vstupu na tento font provedeme encTeXem.
+
+Poznámka: v textovém editoru, který umí správně pracovat s UNICODE znaky
+hebrejštiny, píšete text v pořadí znaků, jak se čte, nicméně v okně editoru
+se automaticky sekvence znaků zobrazuje „pozpátku“, protože editor zná
+úseky znaků UNICODE tabulky, které má zobrazovat tímto způsobem. Do souboru
+je ale sekvence znaků uložena v pořadí, jak se čte. Proto je nutné toto pořadí
+znovu převrátit v sazbě příkazy `\beginR` a `\endR`.
+
+```
+\TeXXeTstate=1
+\font\hebrewfont=rcjhbltx
+\def\texthebrew#1{\leavevmode\beginR{\hebrewfont#1}\endR}
+\long\def\hebrewpar#1{\par\hbox{\beginR\vbox{\hebrewfont#1}\endR}}
+
+%      sekvence            UTF-8 kód                                     kód ve fontu
+\mubyte\HEBalef             ^^d7^^90\endmubyte      \chardef\HEBalef              39
+\mubyte\HEBbet              ^^d7^^91\endmubyte      \cahrdef\HEBbet               98
+...
+\mubyte\HEBshin             ^^d7^^a9\endmubyte      \chardef\HEBshin             152
+\mubyte\HEBshinshindotdages ^^ef^^ac^^ab\endmubyte  \chardef\HEBshinshindotdages 153
+...
+```
+
+Kód znaku ve fontu zjistíte pohledem do souboru `cjhebltx.enc`, který je součástí
+TeXových distribucí. Pokud se vám nechce zjišťovat UTF-8 kódy všech znaků a
+jste schopni v editoru přímo tyto znaky napsat, můžete kódování fontu
+deklarovat i přímo pomocí těchto znaků (v ukázce je místo skutečného znaku
+jen zkratka heb-znak, protože skutečný znak na této WWW stránce zobrazit
+nelze).
+
+```
+\mubytein=0
+%      sekvence          skutečný znak                               kód ve fontu
+\mubyte\HEBalef             heb-znak\endmubyte  \chardef\HEBalef              39
+\mubyte\HEBbet              heb-znak\endmubyte  \cahrdef\HEBbet               98
+...
+\mubyte\HEBshin             heb-znak\endmubyte  \chardef\HEBshin             152
+\mubyte\HEBshinshindotdages heb-znak\endmubyte  \chardef\HEBshinshindotdages 153
+...
+\mubytein=1
+```
+
+Je-li někdo ochoten zaslat mi hotovou tabulku s hebrejskými znaky a
+soubor s ukázkou sazby hebrejského textu, rád sem zařadím odkaz.
+
+Podobně (ale bez pravolevé sazby) je v souboru `cyrchars.tex` řešena sazba
+promocí encTeXu azbukou. Soubor `cyrchars.tex` je součástí csplainu a přímo v
+něm je dokumentace a ukázky.
+
+----lang:en--title:Hebrew -- right to left typesetting
+The right to left typesetting is possible by TeXXeT module which is a
+part of eTeX extension of pdfTeX, for example. CSplain is usually
+initialized with eTeX extension, so this module is available. The TeXXeT
+module works with `\beginR...\endR` commands where right to left typesetting
+is done, but you need to initialize this by `\TeXXeTstate=1` at the beginning
+of your document.
+
+We prepare the macros `\hebrew{...text in Hebrew...}` and
+`\hebrewpar{... more paragraphs in Hebrew ...}` for typesetting a short parts
+of text in Hebrew language. We use 8bit font `rcjhbltx.tfm` which is available
+in TeX distributions and pdfTeX is able to work with it. The UTF-8 to font
+encoding is processed by encTeX.
+
+Note: You type the Hebrew characters in the normal order in the UNICODE
+text editor, but the editor prints the text in reversed order on the screen
+because it is well known what UNICODE characters can be printed in this
+reversed order. The characters are saved in normal order into the file. This
+is reason, why we need to reverse them again in TeX by `\beginR...\endR`
+commands.
+
+```
+\TeXXeTstate=1
+\font\hebrewfont=rcjhbltx
+\def\texthebrew#1{\leavevmode\beginR{\hebrewfont#1}\endR}
+\long\def\hebrewpar#1{\par\hbox{\beginR\vbox{\hebrewfont#1}\endR}}
+
+%      sequvence            UTF-8 code                               code in the font
+\mubyte\HEBalef             ^^d7^^90\endmubyte      \chardef\HEBalef              39
+\mubyte\HEBbet              ^^d7^^91\endmubyte      \cahrdef\HEBbet               98
+...
+\mubyte\HEBshin             ^^d7^^a9\endmubyte      \chardef\HEBshin             152
+\mubyte\HEBshinshindotdages ^^ef^^ac^^ab\endmubyte  \chardef\HEBshinshindotdages 153
+...
+```
+
+The code in the font can be found out in the file `cjhebltx.enc` which is a
+part of the TeX distributions. If you are lazy to find UTF-8 codes of all
+Hebrew alphabet and you are able to write the raw Hebrew characters in the
+text editor then you can declare the encoding by writing these raw
+characters directly (without knowledge of their UTF-8 codes).
+The abbreviation heb-char is used instead raw Hebrew characters in the
+following example because this WWW page doesn't support Hebrew characters.
+
+```
+\mubytein=0
+%      sequvence           raw character                         code in the font
+\mubyte\HEBalef             heb-char\endmubyte  \chardef\HEBalef              39
+\mubyte\HEBbet              heb-char\endmubyte  \cahrdef\HEBbet               98
+...
+\mubyte\HEBshin             heb-char\endmubyte  \chardef\HEBshin             152
+\mubyte\HEBshinshindotdages heb-char\endmubyte  \chardef\HEBshinshindotdages 153
+...
+\mubytein=1
+```
+
+If somebody is willing to release the whole encoding file of Hebrew
+characters using this OPmac trick, I'll be happy to give the link here.
+
+The similar technique (but without right to left typesetting)
+is used in the file `cyrchars.tex` for Cyrillic characters. This file is the
+part of the CSplain package and the documentation and examples are
+included in this file.

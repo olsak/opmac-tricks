@@ -1,0 +1,118 @@
+anchor-name:hyphprocess
+id:0065
+author:P. O.
+date:2014-06-07
+
+----lang:cs--title:Vyhledání míst pro dělení slov ve slově
+Vytvoříme makro `\hyphenprocess{slovo}`, které vrátí parametr v makru
+`\listwparts` ve tvaru `slo\-vo` podle aktuálního nastavení dělení slov.
+
+```
+\newdimen\hyphdim
+\let\hyphentt=\tentt  \hyphdim=\fontdimen6\hyphentt \divide\hyphdim by2
+
+\def\hyphenprocess#1{\def\tmp{#1}\let\listwparts=\undefined
+   \setbox0=\vbox\bgroup\hyphenpenalty=-10000 \hsize=0pt \hfuzz=\maxdimen
+      \edef\hychar{\hyphenchar\hyphentt=\the\hyphenchar\hyphentt}\hyphenchar\hyphentt=45
+      \def~{\nobreak\hskip.5em\relax}\tt\noindent\hskip0pt\relax #1\par \hychar
+      \hyphenprocessA
+   \expandafter\let\expandafter\listwparts\expandafter\empty
+      \expandafter\hyphenprocessB\listwparts
+}
+\def\hyphenprocessA{\setbox2=\lastbox
+   \ifvoid2 \egroup \else \unskip \unpenalty
+      \setbox2=\hbox{\unhbox2}%
+      \tmpnum=\wd2 \advance\tmpnum by100 \divide\tmpnum by\hyphdim
+      \ifx\listwparts\undefined \xdef\listwparts{,}%
+      \else \advance\tmpnum by-1 \xdef\listwparts{\the\tmpnum,\listwparts}\fi
+              \expandafter\hyphenprocessA \fi
+}
+\def\hyphenprocessB#1,{\if^#1^\expandafter\hyphenprocessC
+   \else \tmpnum=#1 \expandafter\hyphenprocessD\tmp\end
+   \fi
+}
+\def\hyphenprocessC{\expandafter\addto\expandafter\listwparts\expandafter{\tmp}}
+\def\hyphenprocessD#1#2\end{\addto\listwparts{#1}%
+   \advance\tmpnum by-1
+   \ifnum\tmpnum>0 \def\next{\hyphenprocessD#2\end}%
+   \else
+   \def\tmp{#2}\def\next{\addto\listwparts{\-}\expandafter\hyphenprocessB}\fi
+   \next
+}
+```
+
+Makro si rozlomí slovo v pracovním `\vboxu` ve fontu `\hyphentta` pak v makru
+`\hyphenprocessA` posbírá boxy, proměří je a na základě toho rozpozná, z
+kolika písmen se skládají. Do `\listsparts` uloží počty písmen jednotlivých
+úseků, takže například pro slovo „rozdělení“ uloží do `\listwparts` čísla
+`3,2,,`. Povšimněte si, že číslo pro poslední úsek záměrně chybí, protože je
+nebudeme potřebovat. Makra `\hyphenprocessB`, `C` a `D` s těmito údaji pracují a
+sbírají z `\tmp` (kde je slovo uloženo) patřičný počet písmenek a přemisťují je
+do `\listwparts`. Mezi jednotlivé úseky vkládají znak `\-`.
+
+Makro `\ul` nebo `\ltsp` z předchozího příkladu 0063 můžeme nyní snadno
+vylepšit, aby automaticky našlo dělení slov. Stačí předefinovat interní
+makro `\wordscanA` následovně:
+
+```
+\def\wordscanA#1 {\ifx^#1^\unskip\else
+   \hyphenprocess{#1}\expandafter\wordscanB\listwparts\-\end \expandafter\wordscanA\fi}
+```
+
+----lang:en--title:Hyphenation preprocessing
+We create the macro `\hyphenprocess{word}` which returns its parameter in
+the `\listwparts` macro in the form `hy\-phen\-ated` by the actual `\language`
+register and by the preloaded hyphenation patterns.
+
+```
+\newdimen\hyphdim
+\let\hyphentt=\tentt  \hyphdim=\fontdimen6\hyphentt \divide\hyphdim by2
+
+\def\hyphenprocess#1{\def\tmp{#1}\let\listwparts=\undefined
+   \setbox0=\vbox\bgroup\hyphenpenalty=-10000 \hsize=0pt \hfuzz=\maxdimen
+      \edef\hychar{\hyphenchar\hyphentt=\the\hyphenchar\hyphentt}\hyphenchar\hyphentt=45
+      \def~{\nobreak\hskip.5em\relax}\tt\noindent\hskip0pt\relax #1\par \hychar
+      \hyphenprocessA
+   \expandafter\let\expandafter\listwparts\expandafter\empty
+      \expandafter\hyphenprocessB\listwparts
+}
+\def\hyphenprocessA{\setbox2=\lastbox
+   \ifvoid2 \egroup \else \unskip \unpenalty
+      \setbox2=\hbox{\unhbox2}%
+      \tmpnum=\wd2 \advance\tmpnum by100 \divide\tmpnum by\hyphdim
+      \ifx\listwparts\undefined \xdef\listwparts{,}%
+      \else \advance\tmpnum by-1 \xdef\listwparts{\the\tmpnum,\listwparts}\fi
+              \expandafter\hyphenprocessA \fi
+}
+\def\hyphenprocessB#1,{\if^#1^\expandafter\hyphenprocessC
+   \else \tmpnum=#1 \expandafter\hyphenprocessD\tmp\end
+   \fi
+}
+\def\hyphenprocessC{\expandafter\addto\expandafter\listwparts\expandafter{\tmp}}
+\def\hyphenprocessD#1#2\end{\addto\listwparts{#1}%
+   \advance\tmpnum by-1
+   \ifnum\tmpnum>0 \def\next{\hyphenprocessD#2\end}%
+   \else
+   \def\tmp{#2}\def\next{\addto\listwparts{\-}\expandafter\hyphenprocessB}\fi
+   \next
+}
+```
+
+The macro processes the word in the temporary `\vbox` in the font
+`\hyphentta` and with `\hsize=0pt`. The hyphenated word is re-boxed by
+`\hyphenprocessA` macro. The dimensions of these boxes are used for calculation
+of the number of letters in each part of the hyphenated word.
+These numbers are saved to the `\listsparts` macro. For example after
+processing the word “hyphenated” we get 2,4,, in the `\listwpars`. The last
+part of the word is not represented here. The macros `\hyphenprocessB`, `C` and `D`
+read these data and read the appropriate number of letters from the `\tmp`
+(where the word is saved) and save these letters into `\listwparts`. The `\-`
+sequence is inserted between the parts of the word.
+
+We can improve the macro `\ul` or `\ltsp` from the previous example 0063 in
+order to the words are auto hyphenated in the parameters of these macros:
+
+```
+\def\wordscanA#1 {\ifx^#1^\unskip\else
+   \hyphenprocess{#1}\expandafter\wordscanB\listwparts\-\end \expandafter\wordscanA\fi}
+```

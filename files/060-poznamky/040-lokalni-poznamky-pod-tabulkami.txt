@@ -1,0 +1,89 @@
+anchor-name:tnote
+id:0033
+author:P. O.
+date:2013-10-07
+
+----lang:cs--title:Lokální poznámky pod tabulkami
+Kromě poznámek pod čarou je často potřeba označit jednotlivé položky v
+tabulce a přidat k nim poznámky přímo pod tabulku. Nikoli tedy poznámky pod
+čarou, které se vztahují k celé stránce. Uživatel například napíše
+
+```
+\table{lll}{
+  aha\tnote{projev pochopení}  & bha & ha \cr
+  uha\tnote{údiv}              & eha & ha \cr
+  xha\tnote{extra pochopení}   & fha & nha \cr
+}
+\nobreak\medskip\tnotes
+```
+
+a u položek aha, uha, xha se zjeví exponenty 1, 2, 3 a pod tabulkou v
+místě `\tnotes` se vytisknou tytéž exponenty následované slovy projev
+pochopení, údiv a extra pochopení.
+K tomu účelu může posloužit následující makro:
+
+```
+\newcount\tnotenum  \newbox\tnotebox
+\def\tnote#1{\global\advance\tnotenum by1
+   \hbox{\thetnote}%
+   \global\setbox\tnotebox=\vbox{\unvbox\tnotebox
+      \typobase\typoscale[800/800] \noindent\enspace\llap{\thetnote\ }#1\strut}}
+\def\tnotes{\global\tnotenum=0 \box\tnotebox}
+\def\thetnote{$^{\the\tnotenum}$}
+```
+
+Chcete-li místo čísel mít v exponentech písmena, pište třeba
+
+```
+\def\thetnote{$^{\rm\athe{\the\tnotenum}}$}
+```
+
+Poznámky se postupně kumulují do boxu `\tnotebox` a nakonec je tento box
+vytištěn. Box s poznámkami má šířku `\hsize`, takže pokud máte krátké poznámky
+a štíhlou tabulku a chcete obojí centrovat, je třeba například psát:
+
+```
+\centerline{\vbox{\table{...}{...}\medskip\rlap{\tnotes}}}
+```
+
+----lang:en--title:Local notes for tables
+Sometimes we need to print special notes for table cells not as footnotes
+but as notes under the table. The user can write, for example:
+
+```
+\table{lll}{
+  aha\tnote{small understanding}  & bha & ha \cr
+  uha\tnote{wondering}            & eha & ha \cr
+  xha\tnote{extra understanding}  & fha & nha \cr
+}
+\nobreak\medskip\tnotes
+```
+
+The cells aha, uha, xha will take exponents 1, 2, 3 and the same
+exponents including the note texts will be printed in the place of
+the `\tnotes` under the table. You can use the following macro:
+
+```
+\newcount\tnotenum  \newbox\tnotebox
+\def\tnote#1{\global\advance\tnotenum by1
+   \hbox{\thetnote}%
+   \global\setbox\tnotebox=\vbox{\unvbox\tnotebox
+      \typobase\typoscale[800/800] \noindent\enspace\llap{\thetnote\ }#1\strut}}
+\def\tnotes{\global\tnotenum=0 \box\tnotebox}
+\def\thetnote{$^{\the\tnotenum}$}
+```
+
+If you need to use letters instead numbers in the exponents, you can
+write
+
+```
+\def\thetnote{$^{\rm\athe{\the\tnotenum}}$}
+```
+
+The notes are accumulated into box `\tnotebox` and this box is printed under
+the table by `\tnotes` sequence. The box has the width `\hsize`, so you can
+write for centering short notes:
+
+```
+\centerline{\vbox{\table{...}{...}\medskip\rlap{\tnotes}}}
+```

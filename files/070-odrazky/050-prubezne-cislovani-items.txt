@@ -1,0 +1,34 @@
+anchor-name:gitemnum
+id:0134
+author:Jan Šustek
+date:2015-12-19
+
+----lang:cs--title:Průběžné číslování items
+Někdy chceme, aby číslování ve výčtu začalo tam, kde skončilo číslování
+v předcházejícím výčtu. Toho docílíme vytvořením globálního čítače
+`\gitemnum`, do nějž vložíme poslední hodnotu `\itemnum` z předchozího výčtu, kterou
+potom načteme na začátku následujícího výčtu.
+
+```
+\newcount\gitemnum
+\addto\begitems{\itemnum\gitemnum}
+\addbefore\enditems{\global\gitemnum\itemnum}
+```
+
+V definici jsme využili makro `\addbefore` z OPmac triku 0004. Trik funguje
+pouze pro jednoúrovňové výčty.
+
+----lang:en--title:Global numbering of items
+We need sometimes to start the numbering of items in the list with next
+number not used before. We can create global counter `\gitemnum` where the
+last item number is saved. Then this value is used at the start of the next
+items list.
+
+```
+\newcount\gitemnum
+\addto\begitems{\itemnum\gitemnum}
+\addbefore\enditems{\global\gitemnum\itemnum}
+```
+
+The `\addbefore` macro from OPmac trick 0004 is used here. This trick works
+only for not nested lists.

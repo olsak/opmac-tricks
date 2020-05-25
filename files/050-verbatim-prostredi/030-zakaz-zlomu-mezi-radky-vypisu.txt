@@ -1,0 +1,86 @@
+anchor-name:ttpenalty
+id:0123
+author:P. O.
+date:2015-09-11
+
+----lang:cs--title:Zákaz zlomu mezi řádky výpisu
+Balíček fancyvrb z LaTeXu umožňuje vkládat `\clubpenalty` za první řádek
+výpisu a `\widowpenalty` před poslední řádek, takže dokážete zamezit
+stránkovému zlomu, kdy na stránce zbyde jen osiřelý řádek výpisu.
+Implementace ve fancyvrb je poněkud těžkopádná. My to uděláme elegantněji a
+navíc umožníme vkládat údaje pomocí eTeXových primitivů `\clubpenalties` a
+`\widowpenalties`, tedy postihneme penaltou i více řádků na začátku a na konci
+výpisu. To fancyvrb nedokáže.
+
+```
+\def\tthook{%
+   \clubpenalties   3 10000 10000 25
+   \widowpenalties  3 10000 10000 25
+   \setbox0=\vbox\bgroup \aftergroup\tthookA}
+\def\tthookA{\setbox2=\hbox{}\setbox0=\vbox\bgroup\unvbox0 \tthookB}
+\def\tthookB{\unskip\unskip\unpenalty \setbox0=\lastbox
+   \ifvoid0 \egroup \noindent\unhbox2 \par \egroup
+   \else \global\setbox2=\hbox{\box0\penalty0\unhbox2}%
+      \expandafter\tthookB
+   \fi}
+```
+
+Následující výpis se zlomí jedině mezi třetím a čtvrtým řádkem:
+
+```
+\begtt
+  první
+  druhý
+  třetí
+  čtvrtý
+  pátý
+  šestý
+\endtt
+```
+
+Pomocí `\tthook` necháme celý verbatim výpis setavit do boxu0, ten pak
+pomocí `\tthookA` rozebereme na řádky a tyto řádky vložíme vedle sebe do hboxu2.
+Nakonec spustíme `\noindent\unhbox2\par`, takže vystartujeme běžný TeXový
+odstavec, který se rozlomí do právě připravených řádků a pod řádky
+pochopitelně vloží deklarované penalty.
+
+----lang:en--title:\clubpenalties and \widowpenalties between lines in code listing
+The LaTeX fancyvrb package allows to insert `\clubpenalty` after first line
+of listing and `\widowpenalty` before the last. So, we are able to avoid
+single line of the listing after page breaking. The implementation in
+fancyvrb is somewhat clumpy. We do the same more elegant and, moreover we
+allow to insert the penalties declared by eTeX primitives `\clubpenalties` and
+`\widowpenalties`, so we can avoid more than only one single line after
+breaking. The fancyvrb is unable to do this.
+
+```
+\def\tthook{%
+   \clubpenalties   3 10000 10000 25
+   \widowpenalties  3 10000 10000 25
+   \setbox0=\vbox\bgroup \aftergroup\tthookA}
+\def\tthookA{\setbox2=\hbox{}\setbox0=\vbox\bgroup\unvbox0 \tthookB}
+\def\tthookB{\unskip\unskip\unpenalty \setbox0=\lastbox
+   \ifvoid0 \egroup \noindent\unhbox2 \par \egroup
+   \else \global\setbox2=\hbox{\box0\penalty0\unhbox2}%
+      \expandafter\tthookB
+   \fi}
+```
+
+Next listing is breakable only between third and fourth line:
+
+```
+\begtt
+  first
+  second
+  third
+  fourth
+  fifth
+  sixth
+\endtt
+```
+
+The whole listing is packed to box0 by `\tthook`. Then this box is unpacked
+in `\tthookA` and repacked to the sinle line hbox2 (original lines are side by
+side seperated by `\penalty0` here). Finally, we do `\noindent\unhbox2\par`,
+so the normal paragraph is started and this process inserts the appropriate
+penalties between lines, of course.

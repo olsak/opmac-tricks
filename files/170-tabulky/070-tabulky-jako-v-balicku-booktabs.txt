@@ -1,0 +1,92 @@
+anchor-name:booktabs
+id:0009
+author:P. O.
+date:2013-08-15
+
+----lang:cs--title:Tabulky jako v balíčku booktabs
+Ortodoxní zastánci LaTeXového balíčku booktabs by ohrnuli nos nad
+předchozí ukázkou a zdůraznili by, že jsem lama, která neví, že svislé čáry do
+tabulky nepatří a vodorovné jsou možné v různých tloušťkách, ale v žádném
+případě ne dvojité. A hlavně s čarami v tabulce je třeba zacházet umírněně a
+decentně. V dokumentaci mají tuto ukázku:
+
+![Ukázka tabulky](img/tab3-ukazka.png)
+
+kterou pomocí `\table` z OPmac vytvoříme třeba takto:
+
+```
+\table{llr}{                            \crtop
+  \multispan2\hfil Item\hfil&           \cr
+  \multispan2\tablinefil\kern.5em       \cr
+   Animal    & Description & Price (\$) \crmid
+   Gnat      & per gram    &      13.65 \cr
+             & each        &       0.01 \cr
+   Gnu       & stuffed     &      92.50 \cr
+   Emu       & stuffed     &      33.33 \cr
+   Armadillo & frozen      &       8.99 \crbot}
+```
+
+Je ovšem potřeba definovat `\crtop`, `\crmid`, `\crbot` a pozměnit tloušťku
+čáry v `\tablinefil`:
+
+```
+\def\crtop{\crcr \noalign{\hrule height.6pt \kern2.5pt}}
+\def\crbot{\crcr \noalign{\kern2.5pt\hrule height.6pt}}
+\def\crmid{\crcr \noalign{\kern1pt\hrule\kern1pt}}
+\def\tablinefil{\leaders\hrule height.2pt\hfil\vrule height1.7pt depth1.5pt width0pt }
+```
+
+Konečně je třeba odstranit mezery vlevo v první položce a vpravo v
+poslední, jinak by ty čáry poněkud přečuhovaly. Přidal jsem `\kern-.5em`
+do deklarace řádku tabulky zleva a zprava, protože `\tabiteml` a `\tabitemr`
+jsou definovány jako `\enspace`. K tomu účelu jsem mírně předefinoval interní
+makro OPmac `\tableA`:
+
+```
+\def\tableA#1#2{\offinterlineskip \def\tmpa{}\tabdata={\kern-.5em}\scantabdata#1\relax
+   \halign\expandafter{\the\tabdata\kern-.5em\tabstrutA\cr#2\crcr}\egroup}
+```
+
+----lang:en--title:Tables like in booktabs package
+The orthodox advocates of LaTeX booktabs package don't like the tables
+form the example above and they point out that I am loser because I don't
+know that the vertical rules in the table are out. Only horizontal rules are
+allowed but not double rules. And less rules is better than more. They have
+the following example in the documentation:
+
+![Table example](img/tab3-ukazka.png)
+
+we can create such table by OPmac and without booktabs package:
+
+```
+\table{llr}{                            \crtop
+  \multispan2\hfil Item\hfil&           \cr
+  \multispan2\tablinefil\kern.5em       \cr
+   Animal    & Description & Price (\$) \crmid
+   Gnat      & per gram    &      13.65 \cr
+             & each        &       0.01 \cr
+   Gnu       & stuffed     &      92.50 \cr
+   Emu       & stuffed     &      33.33 \cr
+   Armadillo & frozen      &       8.99 \crbot}
+```
+
+We only need to define `\crtop`, `\crmid`, `\crbot` macros and to change
+the width of the `\tablinefil`:
+
+```
+\def\crtop{\crcr \noalign{\hrule height.6pt \kern2.5pt}}
+\def\crbot{\crcr \noalign{\kern2.5pt\hrule height.6pt}}
+\def\crmid{\crcr \noalign{\kern1pt\hrule\kern1pt}}
+\def\tablinefil{\leaders\hrule height.2pt\hfil\vrule height1.7pt depth1.5pt width0pt }
+```
+
+Finally, we need to remove the spaces left in the first cell and right in
+the last cell because the rules have to be aligned wit the text. I've added
+`\kern-.5em` to left and right into the line declaration because `\tabiteml` and
+`\tabitemr` are defined by `\enspace`. This is the reason why the internal OPmac
+macro `\tableA` is slightly redefined:
+
+```
+\def\tableA#1#2{\offinterlineskip \def\tmpa{}\tabdata={\kern-.5em}\scantabdata#1\relax
+   \halign\expandafter{\the\tabdata\kern-.5em\tabstrutA\cr#2\crcr}\egroup}
+```

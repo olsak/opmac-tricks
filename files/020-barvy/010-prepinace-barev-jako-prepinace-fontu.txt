@@ -1,0 +1,31 @@
+anchor-name:coluser
+id:0026
+author:P. O.
+date:2013-09-03
+
+----lang:cs--title:Přepínače barev jako přepínače fontů
+Tento OPmac trik měl své opodstatnění pro verze OPmac do Nov. 2014.
+Od verze Dec. 2014 stačí na začátek dokumentu napsat `\localcolor`
+a je vystaráno. Barvy se pak přepínají lokálně uvnitř TeXových skupin. Je
+ale potřeba dát pozor na konstrukce typu:
+
+```
+\setbox0=\hbox{text \Red text}   % nefunguje, návrat na původní barvu
+                                 % se provede za \setbox0
+\setbox0=\hbox{{text \Red text}} % funguje, návrat na původní barvu
+                                 % se provede uvnitř boxu
+```
+
+----lang:en--title:Color switchers like font switchers
+This OPmac trick has its reason for until version Nov. 2014.
+New version Dec. 2014 provides the command `\localcolor` at the beginning of
+your document. You needn't do nothing more. The colors are set locally after
+such declaration inside groups. But you need to take care in following cases:
+
+```
+\setbox0=\hbox{text \Red text}   % Doesn't work, because the re-setting
+                                 % to the original color is done after
+                                 % \setbox0, i.e. outside the box.
+\setbox0=\hbox{{text \Red text}} % Works, the re-setting is done
+                                 % inside the box.
+```

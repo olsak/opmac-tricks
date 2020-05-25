@@ -1,0 +1,90 @@
+anchor-name:multilang
+id:0014
+author:P. O.
+date:2013-08-17
+
+----lang:cs--title:Texty ve více jazycích
+OPmac pracuje pouze s automaticky generovanými slovy
+Chapter/Kapitola/Kapitola, Table/Tabulka/Tabuľka a Figure/Obrázek/Obrázok. V
+dokumentaci je popsáno, jak se dají ta slova modifikovat nebo přidat další
+pomocí `\sdef`. Při tvorbě šablon [CUstyle](custyle.html) a
+[CTUstyle](ctustyle.html) jsem potřeboval připravit mnoho dalších
+slov a umožnit psát v angličtině, češtině nebo slovenštině. Používání `\sdef`
+při deklaraci slov by bylo moc zlouhavé, vytvořil jsem tedy zkratku `\mtdef`:
+
+```
+\def\slet#1#2{\expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname}
+\def\mtdef#1#2#3#4{\sdef{mt:#1:en}{#2} \sdef{mt:#1:cz}{#3}
+  \if$#4$\slet{mt:#1:sk}{mt:#1:cz}\else \sdef{mt:#1:sk}{#4}\fi}
+
+\mtdef {abstract}     {Abstract}          {Abstrakt}       {}
+\mtdef {author}       {Author}            {Autor}          {}
+\mtdef {thanks}       {Acknowledgement}   {Poděkování}     {Poďakovanie}
+\mtdef {declaration}  {Declaration}       {Prohlášení}     {Prehlásenie}
+\mtdef {keywords}     {Keywords}          {Klíčová slova}  {Kľúčové slová}
+\mtdef {title}        {Title}             {Název práce}    {Názov práce}
+\mtdef {contents}     {Contents}          {Obsah}          {}
+\mtdef {tables}       {Tables}            {Tabulky}        {Tabuľky}
+\mtdef {figures}      {Figures}           {Obrázky}        {}
+\mtdef {supervisor}   {Supervisor}        {Vedoucí práce}  {Vedúci práce}
+\mtdef {supervisorD}  {Supervisor}        {Školitel}       {Školiteľ}
+\mtdef {bibliography} {References}        {Literatura}     {Literatúra}
+\mtdef {appendix}     {Appendix}          {Příloha}        {Príloha}
+\mtdef {specifi}      {Specification}     {Zadání}         {Zadanie}
+
+\mtdef {B} {Bachelor's thesis} {Bakalářská práce}  {Bakalárska práca}
+\mtdef {M} {Master's thesis}   {Diplomová práce}   {Diplomová práca}
+\mtdef {D} {Ph.D. thesis}      {Dizertační práce}  {Dizertačná práca}
+```
+
+Pokud údaj pro slovenštinu chybí, není to proto, že bych si nemohl
+vzpomenout, ale je to tím, že je použito stejné slovo jako v češtině.
+
+V makru pak v místě, kde se má potřebné slovo objevit, píšeme
+`\mtext{abstract}`, `\mtext{author}`, `\mtext{B}` atd. Vypíše se odpovídající
+slovo podle předchozího nastavení vzorů dělení slov `\ehyph`, `\chyph` nebo
+`\shyph`.
+
+----lang:en--title:Multilingual texts
+OPmac generates the words Chapter/Kapitola/Kapitola,
+Table/Tabulka/Tabuľka and Figure/Obrázek/Obrázok. There are three variants
+of each word for English, Czech and Slovak languages. The right variant is
+used dependent on the current value of the `\language` register. How to add or
+modify these words by `\sdef` can be found in the documentation.
+
+The templates [CUstyle](custyle.html) and
+[CTUstyle](ctustyle.html) use much more words in three language
+variants. I used a shorthand macro `\mtdef` instead or repeated use of `\sdef`:
+
+```
+\def\slet#1#2{\expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname}
+\def\mtdef#1#2#3#4{\sdef{mt:#1:en}{#2} \sdef{mt:#1:cs}{#3}
+  \if$#4$\slet{mt:#1:sk}{mt:#1:cs}\else \sdef{mt:#1:sk}{#4}\fi}
+
+\mtdef {abstract}     {Abstract}          {Abstrakt}       {}
+\mtdef {author}       {Author}            {Autor}          {}
+\mtdef {thanks}       {Acknowledgement}   {Poděkování}     {Poďakovanie}
+\mtdef {declaration}  {Declaration}       {Prohlášení}     {Prehlásenie}
+\mtdef {keywords}     {Keywords}          {Klíčová slova}  {Kľúčové slová}
+\mtdef {title}        {Title}             {Název práce}    {Názov práce}
+\mtdef {contents}     {Contents}          {Obsah}          {}
+\mtdef {tables}       {Tables}            {Tabulky}        {Tabuľky}
+\mtdef {figures}      {Figures}           {Obrázky}        {}
+\mtdef {supervisor}   {Supervisor}        {Vedoucí práce}  {Vedúci práce}
+\mtdef {supervisorD}  {Supervisor}        {Školitel}       {Školiteľ}
+\mtdef {bibliography} {References}        {Literatura}     {Literatúra}
+\mtdef {appendix}     {Appendix}          {Příloha}        {Príloha}
+\mtdef {specifi}      {Specification}     {Zadání}         {Zadanie}
+
+\mtdef {B} {Bachelor's thesis} {Bakalářská práce}  {Bakalárska práca}
+\mtdef {M} {Master's thesis}   {Diplomová práce}   {Diplomová práca}
+\mtdef {D} {Ph.D. thesis}      {Dizertační práce}  {Dizertačná práca}
+```
+
+If the item for Slovak language is missing then it means that it ti the
+same as for Czech language.
+
+The word is specified by the `\mtext` macro, for example `\mtext{abstract}`,
+`\mtext{author}`, `\mtext{B}` etc. The right variant is used depending on the
+`\ehyph`, `\chyph` or `\shyph` switchers, i.e. depending on the `\language`
+register.

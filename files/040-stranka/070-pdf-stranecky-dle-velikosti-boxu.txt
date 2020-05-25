@@ -1,0 +1,88 @@
+anchor-name:outbox
+id:0147
+author:P. O.
+external:
+date:2017-05-16
+note:
+
+----lang:cs--title:PDF stránečky dle velikosti boxu
+Vytvoříme makro `\outbox`, které okamžitě vloží do stránky PDF dokumentu
+následující box, přitom rozměry stránky (medium size) budou stejné, jako
+rozměry tohoto boxu (zvětšené o okraje). Okraje kolem boxu se dají nastavit
+pomocí `\outboxmargins(levý,pravý,horní,dolní)jednotka` a jsou implicitně
+nastaveny na 1pt z každé strany. Takže například:
+
+```
+\outboxmargins(1,1,2,2)pt
+
+\outbox\hbox{text}     % vytvoří maličkou stránku s textem "text"
+                       % a se stanovenými okraji
+\outbox\vbox{odstavec} % vytvoří stránku o šířce odstavce
+                       % a výšce textu v odstavci.
+```
+
+Implementace je následující
+
+```
+\def\outbox{\afterassignment\outboxA \setbox0=}
+\def\outboxA{\aftergroup\outboxC}
+\def\outboxC{\setbox0=\outboxB
+   \begingroup
+      \hoffset=-1in \voffset=-1in
+      \pdfpagewidth=\wd0 \pdfpageheight=\ht0
+      \shipout\box0
+   \endgroup
+}
+\def\outboxmargins (#1,#2,#3,#4)#5 {\def\outboxB{%
+   \vbox{\kern#3#5\hbox{\kern#1#5\box0 \kern#2#5}\kern#4#5}}%
+}
+\outboxmargins (1,1,1,1)pt
+```
+
+Makro `\outbox` spustí po přečtení následujícího boxu makro `\outboxC`. To je
+potřeba udělat přechodně pomocí `\outboxA`, důvod je vysvětlen v TBN na straně
+338. Dále makro `\outboxmargins` připraví makro `\outboxB`, které přidá boxu 0
+požadované okraje. Konečně makro `\outboxC` přeboxuje box0 tak, že jsou
+přidány okraje a velikosti tohoto nového boxu použije pro velikosti média
+nastavením `\pdfpagewidth` a `\pdfpageheight`. Nakonec se box 0 vyvrhne do
+samostatné stránky pomocí `\shipout`, což obchází `\output` rutinu.
+
+----lang:en--title:Little pages with sizes given by box
+We create a macro `\outbox` which creates a page with following box in the
+PDF output immediately. Sizes of the page (medium sizes) will be the same
+as sizes of given box (plus margins). The margins can be declared by
+`\outboxmargins(left,right,top,bottom)unit` macro. default values of margins
+are 1pt for all sides. For example:
+
+```
+\outboxmargins(1,1,2,2)pt
+
+\outbox\hbox{text}      % creates a little page with "text"
+                        % and with given margins.
+\outbox\vbox{paragraph} % creates a page with given paragraph.
+```
+
+The implementation follows
+
+```
+\def\outbox{\afterassignment\outboxA \setbox0=}
+\def\outboxA{\aftergroup\outboxC}
+\def\outboxC{\setbox0=\outboxB
+   \begingroup
+      \hoffset=-1in \voffset=-1in
+      \pdfpagewidth=\wd0 \pdfpageheight=\ht0
+      \shipout\box0
+   \endgroup
+}
+\def\outboxmargins (#1,#2,#3,#4)#5 {\def\outboxB{%
+   \vbox{\kern#3#5\hbox{\kern#1#5\box0 \kern#2#5}\kern#4#5}}%
+}
+\outboxmargins (1,1,1,1)pt
+```
+
+The `\outbox` macro sets box0 and runs `\outboxC`. This is done via
+itermediate `\outboxB`, see TBN page 338 for reasons.
+The `\outboxC` macro re-boxes the box0: adds the margins using `\outboxB` macro
+which is defined by `\outboxmargins`. Then the media size `\pdfpagewidth` and
+`\pdfpageheight` are set to sizes of the box and box is put to the page using
+`\shipout`. This circumvents the `\output` routine.

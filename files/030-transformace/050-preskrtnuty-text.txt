@@ -1,0 +1,94 @@
+anchor-name:cancel
+id:0082
+author:P. O.
+date:2014-12-19
+
+----lang:cs--title:Přeškrtnutý text
+Makro `\cancel typ {text}` vytiskne text přeškrtnutý podle typ. Je-li typ `/`,
+bude text přeškrtnutý zdola nahoru, je-li typ `\\`, bude text přeškrtnutý
+shora dolů a je-li typ `X` nebo `x`, bude text přeškrtnutý oběma čarami. Tedy
+například
+
+```
+\cancel /{Tady je text}
+\cancel X {U}
+```
+
+vytvoří první dva řádky ukázky:
+
+![Ukázka škrtanců](img/cancel-ukazka.png)
+
+K implementaci potřebujeme následující kód:
+
+```
+\def\cancel#1#2{\setbox0=\hbox{#2}%
+   \dimen0=.9963\wd0  \dimen1=.9963\ht0 \advance\dimen1 by.9963\dp0
+   \hbox{\rlap{#2}\vbox to0pt{\kern\dp0 \csname cancel:\string#1\endcsname \vss}\kern\wd0}%
+}
+\def\cancelB#1{\expandafter\ignorept\the\dimen#1 }
+\sdef{cancel:x}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 0 m \cancelB0 \cancelB1 l
+                            0 \cancelB1 m \cancelB0 0 l S Q}}
+\expandafter\let\csname cancel:X\expandafter\endcsname \csname cancel:x\endcsname
+\sdef{cancel:/}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 0 m \cancelB0 \cancelB1 l S Q}}
+\sdef{cancel:\string\\}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 \cancelB1 m \cancelB0 0 l S Q}}
+\def\cancelcolor{1 0 0 RG}
+```
+
+Chceme-li škrtat šipkou (jak ukazujeje poslední řádek v ukázce), je možné
+použít makro `\cancel` s typem `^` (šipka šikmo nahoru) nebo `_` (šipka šikmo
+dolů). Ukázka byla vytvořena pomocí `\cancel_{Přeškrtnutý šipkou}`.
+
+V implementaci je využito makro `\arrowcc` z předchozího
+[OPmac triku 0062](#sipky)
+
+```
+\sdef{cancel:^}{\arrowcc 0 0 {} \cancelB0 \cancelB1 (0 0) {}}
+\sdef{cancel:_}{\arrowcc 0 \cancelB1 {} \cancelB0 -\cancelB1 (0 0) {}}
+\def\arrowccparams{1 0 0 rg 1 0 0 RG .4 w 1 J}  % kresba bude červená
+\def\arrowccspike{4 0 m -.3 1 l -.3 -1 l h f}
+```
+
+----lang:en--title:Canceled text
+The macro `\cancel type {text}` prints text and the line over the text.
+If the type is `/` then the line is slanted from bottom left to top right.
+If the type is `\\` then the line is drawn from top left to bottom right.
+If the type is `X` or `x` then both lines are drawn. For example
+
+```
+\cancel /{Tady je text}
+\cancel X {U}
+```
+
+creates first two lines of the following result:
+
+![Cancel example](img/cancel-ukazka.png)
+
+The `\cancel` macro is implemented by the code:
+
+```
+\def\cancel#1#2{\setbox0=\hbox{#2}%
+   \dimen0=.9963\wd0  \dimen1=.9963\ht0 \advance\dimen1 by.9963\dp0
+   \hbox{\rlap{#2}\vbox to0pt{\kern\dp0 \csname cancel:\string#1\endcsname \vss}\kern\wd0}%
+}
+\def\cancelB#1{\expandafter\ignorept\the\dimen#1 }
+\sdef{cancel:x}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 0 m \cancelB0 \cancelB1 l
+                            0 \cancelB1 m \cancelB0 0 l S Q}}
+\expandafter\let\csname cancel:X\expandafter\endcsname \csname cancel:x\endcsname
+\sdef{cancel:/}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 0 m \cancelB0 \cancelB1 l S Q}}
+\sdef{cancel:\string\\}{\pdfliteral{q 0.4 w 1 J \cancelcolor\space 0 \cancelB1 m \cancelB0 0 l S Q}}
+\def\cancelcolor{1 0 0 RG}
+```
+
+If we want to cancel by arrow (see the last line in the example) then we
+can use the `\cancel` macro with the type `^` (slanted up) or `_` (slanted down).
+The last line in the example was created by `\cancel_{Slanted down}`.
+
+The macro `\arrowcc` from previous [OPmac trick 0062](#sipky)
+is used here.
+
+```
+\sdef{cancel:^}{\arrowcc 0 0 {} \cancelB0 \cancelB1 (0 0) {}}
+\sdef{cancel:_}{\arrowcc 0 \cancelB1 {} \cancelB0 -\cancelB1 (0 0) {}}
+\def\arrowccparams{1 0 0 rg 1 0 0 RG .4 w 1 J}  % red arrow
+\def\arrowccspike{4 0 m -.3 1 l -.3 -1 l h f}
+```

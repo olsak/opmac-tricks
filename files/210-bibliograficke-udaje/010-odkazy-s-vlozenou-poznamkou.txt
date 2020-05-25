@@ -1,0 +1,66 @@
+anchor-name:pcite
+id:0038
+author:P. O.
+date:2014-04-01
+
+----lang:cs--title:Odkazy s vloženou poznámkou
+Někdy potřebujeme napsat odkaz s vloženou poznámkou, například s upřesněním
+strany v citovaném dokumentu. Třeba takto:
+
+Obtékání obrázku textem je řešeno v [27, s. 236].
+
+To můžeme zařídit pomocí `\rcite` třeba takto:
+
+```
+Obtékání obrázku textem je řešeno v~[\rcite[tbn], s.~236].
+```
+
+Možná by se ale hodilo rozšířit funkčnost makra `\cite` tak, že když najde za
+`[lejblíkem]` lomítko:
+
+```
+Obtékání obrázku textem je řešeno v~\cite[tbn]/{s.~236}.
+```
+
+vytvoří požadovaný výsledek [27, s. 236]. K tomu poslouží následující
+kód:
+
+```
+\def\cite[#1]{\isnextchar/{\pcite[#1]}{[\rcite[#1]]}}
+\def\pcite[#1]/#2{[\rcite[#1],~#2]}
+```
+
+Makro `\cite` nyní testuje přítomnost lomítka. Pokud není přítomno, zavolá
+`\rcite` s obklopenými závorkami. Pokud je přítomno, zavolá `\pcite`, které
+vykoná požadovanou práci.
+
+----lang:en--title:Cites with the inserted text
+Sometimes we need to print the citation with inserted note, for example
+with the page of the cited book. For example
+
+The flowing the text around the picture is solved in [27, p. 236].
+
+We can do this by `\rcite`:
+
+```
+The flowing the text around the picture is solved in~[\rcite[tbn], p.~236].
+```
+
+Maybe we found usable the extended syntax of the `\cite` macro: when the
+`[label]` is followed by slash:
+
+```
+The flowing the text around the picture is solved in~\cite[tbn]/{p.~236}.
+```
+
+then the result [27, p. 236] is generated. The feature is implemented
+here:
+
+```
+\def\cite[#1]{\isnextchar/{\pcite[#1]}{[\rcite[#1]]}}
+\def\pcite[#1]/#2{[\rcite[#1],~#2]}
+```
+
+Now, the `\cite` macro is sensitive to the presence of the following slash.
+If slash isn't present then `\rcite` surrounded by `[...]` is used.
+Else `\pcite` is executed.

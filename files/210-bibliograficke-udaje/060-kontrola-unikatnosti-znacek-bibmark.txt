@@ -1,0 +1,63 @@
+anchor-name:bibmarkcheck
+id:0098
+author:P. O.
+date:2015-04-12
+
+----lang:cs--title:Kontrola unikátnosti značek bibmark
+Pokud nemáte k dispozici šikovného makroprogramátora, o kterém se hovoří
+v předchozím OPmac triku, možná uvítáte aspoň kontrolu, zda všechny značky
+tištěné v `\cite` při `\nonumcitations` jsou zadány jednoznačně. Implicitně tato
+kontrola neprobíhá, takže se může stát, že se v dokumentu pracuje se dvěma
+nebo více stejnými značkami, které příslušejí různým bibliografickým záznamům.
+
+Kontrola je provedena v makru `\bibmarkcheck`, jehož definici i volání je
+možné vložit například na začátek dokumentu (někam za `\input opmac`).
+
+```
+\def\bibmarkcheck{\ifx\lastbibnum\undefined \else
+   \bgroup
+      \bibnum=0
+      \loop
+         \advance\bibnum by1
+         \isdefined{bim:\the\bibnum}\iftrue
+            \isdefined{\csname bim:\the\bibnum\endcsname}\iftrue
+               \opwarning{Duplicated bibmark: "\csname bim:\the\bibnum\endcsname"}%
+            \fi
+            \sdef{\csname bim:\the\bibnum\endcsname}{}%
+         \fi
+         \ifnum\bibnum<\lastbibnum \relax \repeat
+   \egroup
+   \fi
+}
+\bibmarkcheck
+```
+
+----lang:en--title:Are cite-marks unique?
+If you have no contact to a skilful macro programmer mentioned in the
+previous OPmac trick then you can use the `\bibmarkcheck` macro. It checks if
+all used bibmarks (printed by `\cite` when `\nonumcitations` is set) are unique.
+OPmac doesn't do this check by default, so it is possible to have the same
+bibmark connected to more bibliography records in your document without any
+warning.
+
+The check is done by `\bibmarkcheck`. The macro definition and the macro
+call can be inserted after `\input opmac` at beginning of your document.
+
+```
+\def\bibmarkcheck{\ifx\lastbibnum\undefined \else
+   \bgroup
+      \bibnum=0
+      \loop
+         \advance\bibnum by1
+         \isdefined{bim:\the\bibnum}\iftrue
+            \isdefined{\csname bim:\the\bibnum\endcsname}\iftrue
+               \opwarning{Duplicated bibmark: "\csname bim:\the\bibnum\endcsname"}%
+            \fi
+            \sdef{\csname bim:\the\bibnum\endcsname}{}%
+         \fi
+         \ifnum\bibnum<\lastbibnum \relax \repeat
+   \egroup
+   \fi
+}
+\bibmarkcheck
+```

@@ -1,0 +1,61 @@
+anchor-name:headline
+id:0020
+author:P. O.
+date:2013-08-30
+
+----lang:cs--title:Plovoucí záhlaví
+OPmac neřeší záhlaví v duchu myšlenky, že návrh typografie dokumentu
+patří do jiného souboru maker. Nicméně názvy sekcí vkládá do `\mark`, takže je
+můžeme rovnou vyzvednout pomocí `\firstmark` nebo něčeho podobného.
+Následující kód navíc přidává na sudé stránky názvy kapitol. Kapitoly vždy
+zahajují stránku a na stránce se zahájením kapitoly záhlaví záměrně chybí --
+je až na dalších stránkách.
+
+```
+\edef\oriheadline{\the\headline}
+\def\printchap#1{\vfil\break
+   \headline={\oriheadline\hfil\global\headline={\oriheadline\printheadline}}
+   \xdef\headchap{\ifnonum\else\thechapnum. \fi}\global\addto\headchap{#1}
+   {\chapfont \noindent \mtext{chap} \dotocnum{\thetocnum}\par
+    \nobreak\smallskip\noindent #1\nbpar}\mark{}%
+   \nobreak \remskip\bigskipamount \firstnoindent
+}
+\def\printheadline{\lower4pt\null\vadjust{\hrule}\tenit\thefontsize[10]
+   \ifodd\pageno \hfill\firstmark \else \headchap\hfill \fi}
+```
+
+Tento kód zachovává původní `\headline` v `\oriheadline` (OPmac jej používá
+na tisk vodoznaku DRAFT). Dále je z OPmac opsáno makro `\printchap`, ve kterém
+jsou navíc přidány druhý a třetí řádek. Tam je vyřešeno odložené záhlaví
+a uložení názvu kapitoly do `\headchap` (expandované číslo a neexpandovaný
+zbytek). Tisk samotného záhlaví provádí makro `\printheadline`.
+
+----lang:en--title:Running heads
+OPmac doesn't implement the running heads because this is a part of
+design of the document and OPmac doesn't solve design. Additional macros
+have to be used. But the `\mark` primitive with the title of section is used
+by `\sec` macro, so we can use this in running head by `\firstmark` or something
+similar. For example the following code adds titles of chapters to the head
+of even pages and titles of sections to the head of odd pages. We needn't
+second type of `\mark` because chapters starts the new page every time.
+The page where a chapter begins has empty head.
+
+```
+\edef\oriheadline{\the\headline}
+\def\printchap#1{\vfil\break
+   \headline={\oriheadline\hfil\global\headline={\oriheadline\printheadline}}
+   \xdef\headchap{\ifnonum\else\thechapnum. \fi}\global\addto\headchap{#1}
+   {\chapfont \noindent \mtext{chap} \dotocnum{\thetocnum}\par
+    \nobreak\smallskip\noindent #1\nbpar}\mark{}%
+   \nobreak \remskip\bigskipamount \firstnoindent
+}
+\def\printheadline{\lower4pt\null\vadjust{\hrule}\tenit\thefontsize[10]
+   \ifodd\pageno \hfill\firstmark \else \headchap\hfill \fi}
+```
+
+This code keeps original `\headline` in `\oriheadline` (it is used by OPmac
+for DRAFT marks when `\draft` mode is activated). The macro `\printchap` is
+rewritten here and the second and third line of code is added. The head
+preparation is done here. The title of the chapter is saved to `\headchap`
+(the expanded number but unexpanded title text). The head is printed by
+`\printhead` macro.

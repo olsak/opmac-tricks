@@ -1,0 +1,115 @@
+anchor-name:keyval
+id:0069
+author:P. O.
+date:2014-06-16
+
+----lang:cs--title:Slovníky tvaru klíč=hodnota
+Umožníme zadávat údaje ve tvaru `klíčA=hodnotaA`, `klíčB=hodnotaB`
+atd., tj. čárkami oddělený seznam přiřazení. Makro `\kv{klíč}` pak
+expanduje na hodnotu nebo na `\kvunknown`, jestliže klíč nemá
+přidělenu hodnotu. Ke čtení seznamu přiřazení poslouží makro `\kvscan`, za
+kterým musí následovat seznam přiřazení ukončený čárkou, čárkou, rovnítkem,
+čárkou. Makra `\kv` a `\kvscan` využije programátor maker například takto
+
+```
+\def\mymacrodefault          {color={}, width=0.4pt}
+\optdef\mymacro [] {\bgroup
+   \expandafter \kvscan\mymacrodefault,,=,%  implicitni hodonty
+   \expandafter \kvscan\opt,,=,%  hodnoty dane uzivatelem
+   \if^\kv{color}^\else \localcolor \kv{color}\fi % nastaveni barvy
+   \let\vruleprimitive=\vrule
+   \def\vrule{\vruleprimitive width\kv{width}}% nastaveni sily car
+   ...
+   \egroup
+}
+```
+
+Zde je navíc využito makro `\optdef` z triku
+[0067](#optdef). Uživatel pak může psát `\mymacro` bez parametrů,
+nebo třeba `\mymacro[width=.7pt]` nebo `\mymacro[width=.8pt, color=\Red]`.
+
+Makra `\kv` a `\kvscan` lze implementovat takto:
+
+```
+\def\kv#1{\expandafter\ifx\csname kv:#1\endcsname \relax \expandafter\kvunknown
+   \else \csname kv:#1\expandafter\endcsname\fi
+}
+\def\kvunknown{???}
+\def\kvscan #1#2=#3,{\ifx#1,\else \kvdef{kv:#1#2}{#3}\expandafter\kvscan\fi}
+\let\kvdef=\sdef
+```
+
+Makro `\kvscan` čte klíč rozložen do dvou parametrů `#1#2`. Tím umožní za
+čárkami v seznamu přiřazení dávat nepovinné mezery, které jsou parametrem `#1`
+ignorovány. Pokud umožníte uživateli dávat nepovinné mezery i kolem
+rovnítka, je možné upravit jeho seznam přiřazení třeba takto:
+
+```
+... \let\tmpb=\opt \replacestrings{ =}{=}\replacestrings{= }{=}%
+    \expandafter \kvscan\tmpb,,=,%
+```
+
+Místo `\let\kvdef=\sdef` je možné použít třeba
+
+```
+\def\kvdef#1{\expandafter\edef\csname#1\endcsname}
+```
+
+pokud si přejete, aby
+byly hodnoty expandovány v okamžiku přiřazení. Chcete-li ve svém makru ošetřit,
+zda má klíč přiřazenu hodnotu, použijte `\isdefined{kv:klíč}\iftrue`.
+
+----lang:en--title:The key=value dictionaries
+We want to set the data in the form `keyA=valueA`, `keyB=valueB` etc.
+i.e. the comma separated list of equations. The macro `\kv{key}` expands to
+the appropriate value or to `\kvunknown`, if the key is not set.
+The list of `key=value` pairs is read by `\kvscan` macro and it has to be
+terminated by comma, comma, equal sign, comma. The macros `\kv` and `\kvscan`
+are usable for macro programmer. For example:
+
+```
+\def\mymacrodefault          {color={}, width=0.4pt}
+\optdef\mymacro [] {\bgroup
+   \expandafter \kvscan\mymacrodefault,,=,% default values
+   \expandafter \kvscan\opt,,=,%  valuse given by user
+   \if^\kv{color}^\else \localcolor\kv{color}\fi % color setting
+   \let\vruleprimitive=\vrule
+   \def\vrule{\vruleprimitive width\kv{width}}% wule width setting
+   ...
+   \egroup
+}
+```
+
+The `\optdef` macro is used here from the trick [0067](#optdef).
+User can write the `\mymacro` without parameters or (for example)
+`\mymacro[width=.7pt]` or `\mymacro[width=.8pt, color=\Red]`.
+
+The macros `\kv` and `\kvscan` can be implemented by the code:
+
+```
+\def\kv#1{\expandafter\ifx\csname kv:#1\endcsname \relax \expandafter\kvunknown
+   \else \csname kv:#1\expandafter\endcsname\fi
+}
+\def\kvunknown{???}
+\def\kvscan #1#2=#3,{\ifx#1,\else \kvdef{kv:#1#2}{#3}\expandafter\kvscan\fi}
+\let\kvdef=\sdef
+```
+
+The `\kvscan` macro reads the key in two parameters `#1#2` in order to give
+the possibility to ignore the spaces after commas in the comma separated
+list. But spaces around equal sign are not allowed. If you need to allow
+them then you can pre-process the list of `key=value` pairs by the code:
+
+```
+... \let\tmpb=\opt \replacestrings{ =}{=}\replacestrings{= }{=}%
+    \expandafter \kvscan\tmpb,,=,%
+```
+
+You can use the following code instead `\let\kvdef=\sdef`
+
+```
+\def\kvdef#1{\expandafter\edef\csname#1\endcsname}
+```
+
+if you wish to expand the values in the time of the setting. If you need
+to ask if the key is set already, you can use `\isdefined{kv:key}\iftrue`.

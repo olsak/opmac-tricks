@@ -1,0 +1,74 @@
+anchor-name:fnoteshape
+id:0107
+author:P. O.
+date:2015-04-30
+
+----lang:cs--title:Nastavení tvaru odstavce poznámky pod čarou
+OPmac formátuje odstavec poznámky pod čarou stejně jako běžný odstavec s
+odstavcovou zarážkou, do které umístí značku poznámky. Pokud chcete mít
+druhý a další řádky odsazeny o `\parindent` (takže celý odstavec je zleva
+zarovnán a odsazen o `\parindent`, jen značka je vysunuta do vzniklého levého
+okraje), je možné přistoupit k následujícímu triku:
+
+```
+\addto\footstrut{\hang}
+```
+
+Tento trik rozšiřuje makro plainTeXu `\footstrut` o nastavení
+`\hangindent=\parindent`. Makro `\footstrut` zřejmě není (dle názvu) k tomu
+původně určeno, ale v plainTeXu se použije jen v poznámce pod čarou. Přitom
+přidat takové nastavení do \fnotehook je neúčinné, protože uvnitř makra
+plainTeXu `\vfootnote` se zahajuje `\insert` a v rámci tohoto zahájení se
+automaticky zresetuje `\hangindent` (jako při `\par`). Také `\leftskip` a
+`\rightskip` jsou uvnitř `\vfootnote` přenastaveny, takže jejich změna uvnitř
+`\fnotehook` rovněž nebude mít vliv. Pokud je ale nastavíte v rámci `\footstrut`,
+změna se projeví. Při rozsáhlejší změně designu poznámek pod čarou asi bude
+vhodné předefinovat celé makro plainTeXu `\vfootnote`.
+
+Vzdálenost značky poznámky od prvního znaku textu je v plainTeXu
+nastavena na `\enspace` v rámci makra `\textindent`. Usazení této značky můžete
+změnit předefinováním makra `\textindent`, ovšem plainTeX toto makro používá
+ještě v rámci `\item` a `\itemitem`. OPmac `\texindent` ani `\item` a `\itemitem`
+nepouživá (pro prostředí `\begitems...\enditems` má vlastní makra), takže když
+klasická plainTeXová makra v dokumentu nevyužijete, je možné usazení značky
+v poznámce řídit novou definicí makra `\textindent`. Například
+
+```
+\def\texindent#1{\indent\llap{#1\kern3pt}}
+```
+
+----lang:en--title:Paragraph shape in the footnote
+OPmac prints the footnote paragraph in the same shape as main paragraphs,
+i.e. with the `\parindent` used only in the first line. The footnote mark is
+placed into `\parindent`. If you need to indent second and more lines by
+`\parindent` too (i.e. the whole paragraph is left/right aligned and indented by
+`\parindent`, only footnote mark is placed into this left “margin”) then you
+can do the following trick:
+
+```
+\addto\footstrut{\hang}
+```
+
+This trick extends the plain TeX's macro `\footstrut` by
+`\hangindent=\parindent` setting. Of course, the `\footstrut` macro isn't
+designed for this purpose, but it is used in plain TeX's `\vfootnote` and
+it is used at only one place where such settings can be realized.
+If you try to set this in `\fnotehook` then nothing happens because `\vfootnote`
+(processed after `\fnotehook`) opens `\insert` and the `\hangindent` is reset
+during this opening (like in `\par`). Moreover, `\leftskip`, `\rigtskip` registers
+are reset in `\vfootnote` too, so the setting such registers in `\fnotehook`
+is irrelevant, but you can do such setting in `\footstrut` macro, if you need.
+If you plan general changes of footnotes parshape then you can redefine
+the whole `\vfootnote`.
+
+The distance between footnote mark and the first character of the text is
+set in plain TeX's macro `\texindent` to `\enspace`. You can re-define the
+`\textindent` but you must know that this macro is used in plain TeX's `\item`
+and `\itemitem`. If these macros are not used in your document then your
+re-definition influences only footnote mark formating, because
+`\begitems...\enditems` environment from OPmac does not use `\item`, `\itemitem` nor
+`\texindent`. You can do, for example:
+
+```
+\def\texindent#1{\indent\llap{#1\kern3pt}}
+```

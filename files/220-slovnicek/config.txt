@@ -1,0 +1,4 @@
+----lang:cs--name:Slovníček
+
+----lang:en--name:Glossary
+

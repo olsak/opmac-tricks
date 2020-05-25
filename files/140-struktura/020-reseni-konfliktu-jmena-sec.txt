@@ -1,0 +1,48 @@
+anchor-name:sec
+id:0129
+author:P. O.
+date:2015-11-05
+
+----lang:cs--title:Řešení konfliktu jména \sec
+OPmac předefinovává plainTeXové makro `\sec`, kterému Knuth přidělil úkol
+vytisknout matematickou funkci secans. Makro je v OPmac vyhrazeno pro
+vyznačení nadpisu sekce. Tato likvidace původního významu makra byla autorem
+OPmac provedena záměrně, protože užití `\sec` ve významu secans je velmi
+ojedinělé, ne-li žádné. Pokud ale uživatel chce používat `\sec` mimo
+matematický mód jako sekci a uvnitř matematického módu jako secans, může to
+zařídit třeba takto:
+
+```
+\let\section=\sec
+\def\secans{\mathop{\rm sec}\nolimits}
+\def\sec{\relax\ifmmode\secans \else \expandafter\section\fi}
+\addprotect\sec
+```
+
+Povšimněme si, že je nutné deklarovat `\sec` pomocí `\addprotect`, aby
+i v obsahu správně fungovalo třeba toto:
+
+```
+\sec Význam funkce $\sec$
+```
+
+----lang:en--title:Name conflict with \sec macro
+OPmac redefines the plain TeX original `\sec` (secans) to `\sec` (section).
+This was an intention of OPmac author because the original meaning
+`\sec` (like secans) is almost not used anytime. On the other hand, if you
+need to use `\sec` as secans in math mode and `\sec` as section outside math
+mode then you can do this by:
+
+```
+\let\section=\sec
+\def\secans{\mathop{\rm sec}\nolimits}
+\def\sec{\relax\ifmmode\secans \else \expandafter\section\fi}
+\addprotect\sec
+```
+
+Note that `\sec` is `\addproteced`. The reason is for working `$\sec$` in table
+of contents, for example:
+
+```
+\sec The meaning of the math function $\sec$
+```

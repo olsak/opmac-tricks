@@ -1,0 +1,52 @@
+anchor-name:modcite
+id:0043
+author:P. O.
+date:2014-04-02
+
+----lang:cs--title:Modifikace odkazů typu (jméno rok)
+Někdy se požaduje, aby odkazy typu „jméno rok“
+byly bez čárek mezi autorem a rokem, např. [Olšák 2013].
+V takovém případě stačí použít kód z předchozího triku
+a upravit v něm makro `\ppclink` takto:
+
+```
+\def\ppclink #1, #2!\relax{\def\tmpa{#1}%
+   \ifx \lastcitedname\tmpa \bibmark={#2}%
+   \else \let\lastcitedname=\tmpa \if^#2^\bibmark={#1}\else\bibmark={#1 #2}\fi
+   \fi
+}
+```
+
+BibTeXový styl `apalike` sice čárky pro značky generuje, ale takto
+modifikované makro `\ppclink` je nakonec odstraní.
+
+Taky se často požaduje,
+aby byly odkazy v kulatých závorkách, např. takto (Olšák 2013).
+Není nic jednoduššího, než definovat:
+
+```
+\def\cite[#1]{(\rcite[#1])}
+```
+
+----lang:en--title:The modification of (name year) cites
+Sometimes somebody needs to print cite marks in the form “name year”
+(without comma between them), for example [Olšák 2013].
+You can use the code from previous OPmac trick and correct it in one aspect:
+
+```
+\def\ppclink #1, #2!\relax{\def\tmpa{#1}%
+   \ifx \lastcitedname\tmpa \bibmark={#2}%
+   \else \let\lastcitedname=\tmpa \if^#2^\bibmark={#1}\else\bibmark={#1 #2}\fi
+   \fi
+}
+```
+
+The BibTeX style `apalike` generates the commas between items but
+the `\ppclink` macro defined above removes them during printing.
+
+Sometimes somebody wants to surround the mark(s) in rounded brackets as
+(Olšák 2013). If you needs to do it too then you can define:
+
+```
+\def\cite[#1]{(\rcite[#1])}
+```

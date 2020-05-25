@@ -1,0 +1,85 @@
+anchor-name:verbtab
+id:0150
+author:P. O.
+date:2016-06-02
+
+----lang:cs--title:Tabulátory ve verbatim výpisech
+PlainTeX nastavuje znaku `^^I` (tabulátor, ASCII 9) význam jedné mezery. Pokud
+užíváte ve výpisech zpracovaných pomocí `\begtt...\endtt` nebo `\verbinput`
+tento znak, vytiskne se místo něj jedna mezera. To může být málo. Chcete-li
+místo něj vytisknout více mezer, definujte třeba:
+
+```
+\def\tthook{\adef\^^I{\space\space\space}} % TAB = 3 mezery
+```
+
+Tabulátor v textovém souboru se ale chová obvykle ještě inteligentněji.
+Vytvoří aspoň jednu mezeru a další text pokračuje za nejbližším násobkem osmé
+pozice. Například, pokud předchozí text obsahuje 19 znaků, tabulátor vytvoří
+5 mezer, takže další text začíná za pozicí 24. Pokud ale předchozí text
+zabírá 23 znaků, tabulátor vytvoří jednu mezeru a další text začíná také za
+pozicí 24. V TeXu s užitím OPmac můžeme tuto inteligenci naprogramovat
+takto:
+
+```
+{\obeylines\gdef\everyttline#1^^M{\setbox0=\hbox\bgroup#1\egroup \box0 ^^M}}%
+\def\tthook{\everypar={\everyttline}\adef\^^I{\TABchar}}
+
+\def\TABchar{\egroup
+   \tmpdim=\TABskip \advance\tmpdim by-.1em
+   \loop \ifdim\tmpdim<\wd0 \advance\tmpdim by\TABskip\relax \repeat
+   \advance\tmpdim by-\wd0 \advance\tmpdim by.1em
+   \box0 \kern\tmpdim
+   \setbox0=\hbox\bgroup
+}
+\def\TABskip{4em} % 4em = 8 pozic, protože každý znak má šířku .5em
+```
+
+Uvedené makro pomocí `\everypar` zpracovává každý řádek jako
+`\setbox0=\hbox{text řádku}\box0`. Pokud ale se v textu řádku vyskytne
+tabulátor, spustí se `\TABchar`, který čtení řádku předčasně ukončí,
+změří jeho šířku a podle ní vloží odpovídající `\kern` a znovu zahájí činnost
+`\setbox0=\hbox\bgroup`.
+
+Pro odsazování řádků zdrojového kódu je vhodnější použít následující
+makro, kde v prostoru pro odsazení můžete míchat mezery a tabulátory a navíc
+celkové odsazení můžete nastavit dle potřeby tisku.
+
+----lang:en--title:TABs in verbatim listings
+Plain TeX sets the meaning of TAB character `^^I` (ASCII 9) to one space.
+This is not useful when you are using these characters in verbatim listings
+processed by `\begtt...\endtt` or `\verbinput`. If you need to print more spaces
+instead each TAB then you can define
+
+```
+\def\tthook{\adef\^^I{\space\space\space}} % TAB = 3 spaces
+```
+
+The TAB character is usually more intelligent in text files: it creates
+the space of variable length in order to the next text begins immediately
+after next “tab stop”. The positions of “tabs stops” are fixed in each
+line. Usually, they are positioned per 8 characters, i. e. after 8, 16, 24,
+etc. positions. We can do this in TeX using OPmac, as follows:
+
+```
+{\obeylines\gdef\everyttline#1^^M{\setbox0=\hbox\bgroup#1\egroup \box0 ^^M}}%
+\def\tthook{\everypar={\everyttline}\adef\^^I{\TABchar}}
+
+\def\TABchar{\egroup
+   \tmpdim=\TABskip \advance\tmpdim by-.1em
+   \loop \ifdim\tmpdim<\wd0 \advance\tmpdim by\TABskip\relax \repeat
+   \advance\tmpdim by-\wd0 \advance\tmpdim by.1em
+   \box0 \kern\tmpdim
+   \setbox0=\hbox\bgroup
+}
+\def\TABskip{4em} % 4em = 8 chars, because each character has .5em width
+```
+
+The code mentioned here is activated using `\everypar` in verbatim
+listings. It processes each line by `\setbox0=\hbox{text of line}\box0`.
+The TAB character is active. It executes the `\TABchar` macro which
+closes the `\setbox` immediately, measures the `\box0`, puts the appropriate
+`\kern` and starts the `\setbox0=\hbox\bgroup` again.
+
+If you need to control the indentation of lines of the code, then the
+following OPmac trick 0151 is recommended.

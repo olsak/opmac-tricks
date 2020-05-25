@@ -1,0 +1,87 @@
+anchor-name:opformat
+id:0139
+author:P. O.
+date:2016-03-12
+
+----lang:cs--title:Makra OPmac vložená do formátu
+Aby uživatel neusel na začátku dokumentu neustále psát `\input opmac`,
+může si vygenerovat formát. Například `.ini` soubor pro csplain + OPmac s
+výstupem do PDF může vypadat takto:
+
+```
+\input csfonts    % implicitní fonty budou CSfonty
+\input plain      % Knuthův plain.tex
+\restorefont      % obnova původního významu primitivu font
+\input csfontsm   % základní makra pro zvětšování písma
+\input il2code    % výchozí kódování IL2
+\input etex-mac   % eTeXové rozšíření pro alokace registrů
+\input hyphen.lan % vzory dělení slov
+\input plaina4    % implicitní strana A4
+\input csenc-u    % UTF-8 kódování vstupu
+\pdfoutput=1      % implicitní výstup do PDF
+\input opmac      % makra OPmac
+\everyjob=\expandafter{\the\everyjob
+   \message{The format: csplain + OPmac, PDF output}%
+   \inputref}
+\dump
+generovat pomocí:  pdftex -ini -etex -enc tentosoubor.ini
+```
+
+Protože OPmac během `\input opmac` načítá .ref soubor (pokud existuje) pomocí
+makra `\inputref`, je třeba toto makro přidat do `\everyjob`. Pak nebude muset
+uživatel formátu psát na začátek souboru zhola nic.
+
+Chcete-li kombinovat OPmac s `etex.src` formátem, pak příslušný `.ini` soubor
+může vypadat takto:
+
+```
+\pdfoutput=1
+\input etex.src
+\input opmac
+\everyjob=\expandafter{\the\everyjob
+   \message{The format: etex.src + OPmac, PDF output}%
+   \inputref}
+\dump
+generovat pomocí:  pdftex -ini -etex tentosoubor.ini
+```
+
+----lang:en--title:OPmac macros as part of a format
+A user don't need to write `\input opmac` at beginning of the document if
+the appropriate format is generated. For example csplain + OPmac with PDF
+output can be generate by the following `.ini` file:
+
+```
+\input csfonts    % CSfonts as default fonts
+\input plain      % plain.tex by DEK
+\restorefont      % restoring of \font primitive
+\input csfontsm   % basic macros for font managing
+\input il2code    % default encoding IL2 (of CSfonts)
+\input etex-mac   % eTeX extensions for registers allocation
+\input hyphen.lan % hyphenatinon patterns of various languages
+\input plaina4    % A4 paper as default
+\input csenc-u    % UTF-8 encoding at input (using encTeX)
+\pdfoutput=1      % output to PDF
+\input opmac      % OPmac macros
+\everyjob=\expandafter{\the\everyjob
+   \message{The format: csplain + OPmac, PDF output}%
+   \inputref}
+\dump
+generate by:  pdftex -ini -etex -enc thisfile.ini
+```
+
+The reading of `\jobname.ref` file must be realized by `\inputref`
+macro added in `\everyjob`.
+
+If you want to combine OPmac with `etex.src` format then the `.ini` file can
+look more simple:
+
+```
+\pdfoutput=1
+\input etex.src
+\input opmac
+\everyjob=\expandafter{\the\everyjob
+   \message{The format: etex.src + OPmac, PDF output}%
+   \inputref}
+\dump
+generate by:  pdftex -ini -etex thisfile.ini
+```

@@ -1,0 +1,28 @@
+anchor-name:rotmnote
+id:0071
+author:P. O.
+date:2014-06-18
+
+----lang:cs--title:Poznámky mnote pootočené
+Pokud chcete pootočit poznámky na okraji o 45 nebo 90 stupňů, stačí psát:
+
+```
+\fixmnotes\right
+\def\mnotehook#1\endgraf{\noindent\pdfsave\pdfrotate{45}\rlap{#1}\pdfrestore}
+```
+
+Rotace proběhne kolem výchozího bodu první řádky poznámky. Možná bude na
+základě toho potřeba upravit rozměry `\mnoteindent` a `\mnotesize`.
+
+----lang:en--title:Rotated marginal notes
+If you need to rotate the marginal notes by 45 or 90 degrees then you can
+write:
+
+```
+\fixmnotes\right
+\def\mnotehook#1\endgraf{\noindent\pdfsave\pdfrotate{45}\rlap{#1}\pdfrestore}
+```
+
+The rotation origin is the left point of the first line at the baseline
+of the note text. Maybe you will need to correct the default dimensions of
+`\mnoteindent` and `\mnotesize`.

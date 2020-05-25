@@ -1,0 +1,126 @@
+anchor-name:circletext
+id:0109
+author:P. O.
+date:2015-06-01
+
+----lang:cs--title:Text podél kružnice
+Navrhneme makro `\circletext {poloměr}{úhel}{TEXT}{korekce}`,
+které vypíše TEXT podél kružnice s daným poloměrem, přitom první písmeno
+začíná v místě výchozího úhlu. Čtvrtý parametr umožňuje doplnit mezi
+dvojicemi znaků korekce (kerningové páry) k lepšímu vizuálnímu vyrovnání
+písmen, protože standardní tabulka kerningových párů je v při sazbě do
+kružnice vypnuta. Text jde při kladném údaji `poloměr` ve směru
+hodinových ručiček a střed kružnice je pod písmeny. Při záporném údaji
+`poloměr` jde text proti směru hodinových ručiček a střed kružnice je nad
+písmeny. Makro vytvoří bezrozměrnou sazbu, střed kružnice je v místě
+aktuálního bodu sazby. Například
+
+![Ukázka kruhu](img/uni-ukazka.png)
+
+```
+\hbox{%
+\circletext {1.7cm} {212}  {{$\bullet$} UNIVERSITAS CAROLINA PRAGENSIS {$\bullet$}}
+                           {\spaceskip=.5em \kpcirc TA{-.1}\kpcirc NA{-.05}}
+\circletext {-1.7cm} {237} {Facultas MFF}
+                           {\kpcirc Fa{-.1}}
+}
+```
+
+Ve čtvrtém parametru `korekce` je možné nastavit mezislovní mezeru pomocí
+`\spaceskip=...` a dále korekci mezi písmeny pomocí makra `\kpcirc AB{num}`,
+které vloží mezi každou dvojici písmen AB `\kern num` v jednotkách `em`.
+V ukázce je také sazba „složitějšího“ objektu (`$\bullet$`), který musí být
+v textu uzavřen do svorek.
+
+Jednotlivá písmena ve slovech mohou být prostrkaná, pokud definujete
+`\def\circletextS{\kern hodnota prostrkání}`. Implicitně je nastaveno nulové
+prostrkání.
+
+Makro `\circletext` může být definováno takto:
+
+```
+\newdimen\tmpdimA
+\def\circletext#1#2#3#4{\hbox\bgroup
+    \tmpdim=14668pt \tmpdimA=#1 \divide\tmpdimA by256 \divide\tmpdim by\tmpdimA
+    \edef\tmpC{\expandafter\ignorept\the\tmpdim}% \tmpC=(180/pi)/R
+    \setbox0=\hbox{\ifdim#1<0pt X\fi}% lap letters by X height if R<0
+    \tmpdimA=0pt \baselineskip=#1 \advance\baselineskip by-\ht0 \lineskiplimit=-\maxdimen
+    \tmpdim=#2pt \advance\tmpdim by-\ifdim#1<0pt-\fi 90pt
+    \def\tmpb{{}#3}\replacestrings{ }{{ }}#4% spaces => {spaces}
+    \pdfsave \pdfrotate{\expandafter\ignorept\the\tmpdim}%
+    \expandafter\circletextA\tmpb\relax
+}
+\def\circletextA#1{\ifx#1\relax\pdfrestore\egroup\ignorespaces\else
+    \ifx^#1^\else \setbox0=\hbox{#1\circletextS}%
+       \ifdim\tmpdimA=0pt \else
+          \advance\tmpdimA by.5\wd0 \dimen0=\tmpC\tmpdimA
+          \pdfrotate{-\expandafter\ignorept\the\dimen0}%
+       \fi
+       \tmpdimA=.5\wd0
+       \vbox to0pt{\vss\hbox to0pt{\hss#1\hss}\null}%
+    \fi
+    \expandafter\circletextA\fi
+}
+\def\kpcirc#1#2#3{\replacestrings{#1#2}{#1{\kern#3em}#2}}
+\def\circletextS{}
+```
+
+----lang:en--title:Text around a circle
+We create a macro `\circletext {radius}{angle}{TEXT}{correction}`
+which prints TEXT around a circle with given `radius`. First letter of the
+TEXT starts at given angle. The fourth parameter declares a corrections
+between letter pairs because the standard kerning table is deactivated when
+printing around circle. The TEXT runs clockwise when the `radius` is positive (the
+center of the circle is below the letters). When the `radius` parameter is
+negative then TEXT runs anticlockwise and the center of the circle is above
+the letters. The macro creates a typesetting material with zero dimensions,
+the center of the circle is at the actual typesetting point. For example
+
+![Circle example](img/uni-ukazka.png)
+
+```
+\hbox{%
+\circletext {1.7cm} {212}  {{$\bullet$} UNIVERSITAS CAROLINA PRAGENSIS {$\bullet$}}
+                           {\spaceskip=.5em \kpcirc TA{-.1}\kpcirc NA{-.05}}
+\circletext {-1.7cm} {237} {Facultas MFF}
+                           {\kpcirc Fa{-.1}}
+}
+```
+
+The fourth parameter `correction` can include the declaration of word
+space (using `\spaceskip=...`) and the space corrections between declared
+pairs of letters using `\kpcirc AB{num}`: the `\kern num` (in `em` units) is
+inserted between each pair of letters AB. Note that the example includes
+the "composed object" `$\bullet$`. Such object must be enclosed by braces.
+
+The letterspacing can be set by `\def\circletextS{\kern value}`. The zero
+letterspacing is set by default.
+
+The `\circletext` macro can be defined by:
+
+```
+\newdimen\tmpdimA
+\def\circletext#1#2#3#4{\hbox\bgroup
+    \tmpdim=14668pt \tmpdimA=#1 \divide\tmpdimA by256 \divide\tmpdim by\tmpdimA
+    \edef\tmpC{\expandafter\ignorept\the\tmpdim}% \tmpC=(180/pi)/R
+    \setbox0=\hbox{\ifdim#1<0pt X\fi}% lap letters by X height if R<0
+    \tmpdimA=0pt \baselineskip=#1 \advance\baselineskip by-\ht0 \lineskiplimit=-\maxdimen
+    \tmpdim=#2pt \advance\tmpdim by-\ifdim#1<0pt-\fi 90pt
+    \def\tmpb{{}#3}\replacestrings{ }{{ }}#4% spaces => {spaces}
+    \pdfsave \pdfrotate{\expandafter\ignorept\the\tmpdim}%
+    \expandafter\circletextA\tmpb\relax
+}
+\def\circletextA#1{\ifx#1\relax\pdfrestore\egroup\ignorespaces\else
+    \ifx^#1^\else \setbox0=\hbox{#1\circletextS}%
+       \ifdim\tmpdimA=0pt \else
+          \advance\tmpdimA by.5\wd0 \dimen0=\tmpC\tmpdimA
+          \pdfrotate{-\expandafter\ignorept\the\dimen0}%
+       \fi
+       \tmpdimA=.5\wd0
+       \vbox to0pt{\vss\hbox to0pt{\hss#1\hss}\null}%
+    \fi
+    \expandafter\circletextA\fi
+}
+\def\kpcirc#1#2#3{\replacestrings{#1#2}{#1{\kern#3em}#2}}
+\def\circletextS{}
+```

@@ -1,0 +1,125 @@
+anchor-name:onlycm
+id:0111
+author:P. O.
+date:2015-06-17
+
+----lang:cs--title:Méně implicitně zavedených fontů
+Použijeme-li `\showfonts` z předchozího OPmac triku, shledáme, že OPmac
+implicitně pro matematickou sazbu zavádí kromě standardních CM fontů i AMS
+fonty a EC fonty. Může se stát, že tyto fonty nepotřebujeme a navíc je nemáme
+třeba ani instalovány v TeXové distribuci.
+
+Obejít závislost OPmac na těchto fontech lze pomocí
+`\let\normalmathloading=\relax`, které je třeba vložit před `\input opmac`.
+Pak musí následovat definice matematické sady `\normalmath` a `\boldmath`
+následovaná příkazem `\normalmath`. Pokud například chceme používat výhradně
+CM fonty (v csplainu CSfonty) a žádné jiné, pak je možné psát:
+
+```
+\let\normalmathloading=\relax
+\input opmac
+
+\def\normalmath{%
+  \loadmathfamily 0 cmr  % CM Roman
+  \loadmathfamily 1 cmmi % CM Math Italic
+  \loadmathfamily 2 cmsy % CM Standard symbols
+  \loadmathfamily 3 cmex % CM extra symbols
+  \loadmathfamily 8 cmbx % bold
+  \setmathfamily  9 \tenbi % bold slanted
+  \setmathfamily 10 \tenrm
+  \setmathfamily 11 \tenit
+  \setmathdimens
+}
+\def\boldmath{%
+  \loadmathfamily 0 cmbx  % CM Roman Bold Extended
+  \loadmathfamily 1 cmmib % CM Math Italic Bold
+  \loadmathfamily 2 cmbsy % CM Standard symbols Bold
+  \loadmathfamily 3 cmex  % CM extra symbols
+  \loadmathfamily 8 cmbx  % bold
+  \setmathfamily  9 \tenbi % bold slanted
+  \setmathfamily 10 \tenrm
+  \setmathfamily 11 \tenit
+  \setmathdimens
+}
+\normalmath
+```
+
+Pochopitelně, po tomto nastavení nebudou fungovat matematické znaky z
+ignorovaných fontů, tj. nebude dosažitelné množství AMS symbolů, nebude
+fungovat `\script`, `\frak`, `\bbchar`, přepínače `\bf` a `\bi` vrátí v matematickém
+módu běžné serifové znaky (nikoli bezserifové). Na druhé straně OPmac v tuto
+chvíli není závislý na AMS fontech ani EC fontech a tyto fonty nemusejí být
+ani instalovány.
+
+Jiným řešením stejného problému může být zkopírování souboru
+`ams-math.tex` do nového souboru (řekněme `my-math.tex`), pozměnění obsahu
+tohoto souboru dle soukromých požadavků a načtení tohoto souboru
+*před příkazem* `\input opmac`. Tedy:
+
+```
+\input my-math
+\input opmac
+```
+
+Zdůvodnění: Jestliže je `\normalmath` definován před `\input opmac`, tak
+OPmac soubor `ams-math.tex` vůbec nepoužije.
+
+----lang:en--title:Setting the set of preloaded math fonts
+When we use `\showfonts` from previous OPmac trick then we find that OPmac
+preloads not only standard CM fonts but also a lot of special fonts from AMS
+package and EC fonts package. Maybe, we needn't to use such
+special fonts and, moreover, we have these fonts not installed in TeX
+distribution.
+
+We can avoid this dependency on external fonts using
+`\let\normalmathloading=\relax`. This setting must be done before
+`\input opmac`. Next, you have to define math sets `\normalmath` and
+`\boldmath` followed by execution of `\normalmath`. For example, we want to use
+only CM fonts and nothing else. Then we can write
+
+```
+\let\normalmathloading=\relax
+\input opmac
+
+\def\normalmath{%
+  \loadmathfamily 0 cmr  % CM Roman
+  \loadmathfamily 1 cmmi % CM Math Italic
+  \loadmathfamily 2 cmsy % CM Standard symbols
+  \loadmathfamily 3 cmex % CM extra symbols
+  \loadmathfamily 8 cmbx % bold
+  \setmathfamily  9 \tenbi % bold slanted
+  \setmathfamily 10 \tenrm
+  \setmathfamily 11 \tenit
+  \setmathdimens
+}
+\def\boldmath{%
+  \loadmathfamily 0 cmbx  % CM Roman Bold Extended
+  \loadmathfamily 1 cmmib % CM Math Italic Bold
+  \loadmathfamily 2 cmbsy % CM Standard symbols Bold
+  \loadmathfamily 3 cmex  % CM extra symbols
+  \loadmathfamily 8 cmbx  % bold
+  \setmathfamily  9 \tenbi % bold slanted
+  \setmathfamily 10 \tenrm
+  \setmathfamily 11 \tenit
+  \setmathdimens
+}
+\normalmath
+```
+
+Of course, the math symbols from ignored fonts will not work after such
+setting, i. e. AMS symbols will be unavailable, `\script`, `\frak`, `\bbchar` will
+not work, `\bf` and `\bi` prints normal bold (not sans serif). On the other
+hand, the processing isn't dependent on availability of AMS nor EC fonts
+in your TeX distribution.
+
+Another solution of the same task can be: copy the file `ams-math.tex`
+into your new file (say `my-math.tex`) and do changes in this file as you
+wish. Then you can load this file *before* `\input opmac`. So:
+
+```
+\input my-math
+\input opmac
+```
+
+Explanation: If `\normalmath` is defined before `\input opmac` then OPmac
+doesn't load `ams-math.tex` file any more.

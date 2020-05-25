@@ -1,0 +1,139 @@
+anchor-name:inkinspic
+id:0032
+author:P. O.
+date:2013-10-02
+
+----lang:cs--title:Popisky k obrázkům z programu Inkscape
+Program Inkscape umožňuje při ukládání do PDF rozdělit textové popisky od
+ostatních čar: stačí v dialogovém okně pro ukládání zaškrtnout PDF+LaTeX.
+Ostatní čáry vloží do souboru `file.pdf` a vedle tohoto souboru vytvoří ještě
+soubor `file.pdf_tex` s popisky zapsanými LaTeXovou synaxí.
+V TeXovém dokumentu stačí v místě obrázku psát
+
+```
+\inkinspic file.pdf
+```
+
+Toto makro
+načte soubor `file.pdf` s čarami i soubor `file.pdf_tex` s popisky.
+Šířka obrázku je dána registrem `\picw` jako při použití makra `\inspic`.
+
+Popisky jsou vysázeny ve velikosti a rodině fontu jako okolní sazba, takže
+Inkscape fonty vůbec neřeší. V náhledu Inkscape můžete použít libovolný font
+v libovolné velikosti a nebude to mít žádný vliv na výsledou sazbu.
+Do popisků v náhledu můžete psát TeXové příkazy (např. matematické vzorce vložené mezi
+dolary). Umístění popisku je možné buď nalevo, napravo nebo na centr pomocí
+nabídky v Inkscape. To je pak jediný bod, který se zaručeně v sazbě bude
+shodovat s tím, co vidíte v náhledu. Text můžete také obarvit nebo otáčet.
+
+Abychom mohli v OPmac využít tento rys programu Inkscape
+připravený pro LaTeX, je potřeba
+emulovat některé LaTeXové příkazy, které se v exportovaném souboru
+vyskytují: `\begin{picture}`, `\put`, `\makebox` a další.
+K tomu stačí do definic dokumentu přidat následující kód:
+
+```
+\def\inkinspic #1 {\bgroup
+  \ifdim\picw=0pt
+    \setbox0=\hbox{\inspic#1 }%
+    \picw=\wd0
+  \fi
+  \the\inkdefs \input \picdir#1_tex \egroup
+}
+\newtoks\inkdefs  \inkdefs={% 
+  %\ifdim\picw=0pt \message{inkinspic: \picw set to \hsize}\picw=\hsize \fi 
+  \def\makeatletter#1\makeatother{}% 
+  \def\includegraphics[#1]#2{\inkscanpage#1,page=,\end \inspic #2 \hss}% 
+  \def\inkscanpage#1page=#2,#3\end{\ifx,#2,\else\def\inspicpage{page#2}\fi}% 
+  \def\put(#1,#2)#3{\nointerlineskip\vbox to0pt{\vss\hbox to0pt{\kern#1\picw 
+      \pdfsave\hbox to0pt{#3}\pdfrestore\hss}\kern#2\picw}}% 
+  \def\begin#1{\csname begin#1\endcsname}%
+  \def\beginpicture(#1,#2){\vbox\bgroup\hbox to\picw{}\kern#2\picw \def\end##1{\egroup}}%
+  \def\begintabular[#1]#2#3\end#4{\vtop{\def\\{\cr}\def\tabiteml{}\def\tabitemr{}\table{#2}{#3}}}%
+  \def\color[#1]#2{\scancolor #2,}% 
+  \def\scancolor#1,#2,#3,{\pdfliteral{#1 #2 #3 rg}}% 
+  \def\makebox(#1)[#2]#3{\hbox to0pt{\csname mbx:#2\endcsname{#3}}}% 
+  \sdef{mbx:lb}#1{#1\hss}\sdef{mbx:rb}#1{\hss#1}\sdef{mbx:b}#1{\hss#1\hss}% 
+  \sdef{mbx:lt}#1{#1\hss}\sdef{mbx:rt}#1{\hss#1}\sdef{mbx:t}#1{\hss#1\hss}% 
+  \def\rotatebox#1#2{\pdfrotate{#1}#2}%
+  \def\lineheight#1{}%
+  \def\setlength#1#2{}%
+}
+```
+
+Pozor na mezeru: makro `\inkinspic` je (stejně jako makro `\inspic`)
+naprogramováno tak, že má svůj parametr ukončený mezerou. Chová se tedy
+analogicky, jako příkaz `\input`. Chcete-li například obrázek centrovat,
+pište:
+
+```
+\centerline{\picw=7cm \inkinspic obrazek.pdf }
+```
+
+----lang:en--title:The Inkscape labels for pictures
+The program Inkscape is able to split the text labels from the rest
+graphics: you need to specify PDF+LaTeX option in the dialog window when the
+image is saved. Th rest graphics is saved into `file.pdf` and the additional
+file with the name `file.pdf_tex` is created where the labels and their
+positions are saved by the LaTeX syntax. We can write in our document:
+
+```
+\inkinspic file.pdf
+```
+
+This macro loads the `file.pdf` with the graphics and the `file.pdf_tex` with
+the text labels. The width of the image will be `\picw` like the normal OPmac
+`\inspic` is used.
+
+The text labels are printed in the same font family as the surrounded
+text. Inkscape doesn't solve this font. We can use arbitrary font in
+arbitrary size in the preview in the Inkscape. This is irrelevant for
+the final typesetting. You can write TeX commands into labels when Inkscape
+is used (for example the math symbols between dollars). The text label
+position can be left aligned, right aligned or centered (see the menu items
+in the Inkscape). This alignment defines the point which will be at the same
+place in the final typesetting. You can rotate or colorize the text.
+
+In order we can use these feature (prepared with LaTeX syntax)
+in OPmac we need to emulate some LaTeX macros which are present in the
+exported file: `\begin{picture}`, `\put`, `\makebox`, etc. The following code 
+is sufficient for this:
+
+```
+\def\inkinspic #1 {\bgroup
+  \ifdim\picw=0pt
+    \setbox0=\hbox{\inspic#1 }%
+    \picw=\wd0
+  \fi
+  \the\inkdefs \input \picdir#1_tex \egroup
+}
+\newtoks\inkdefs  \inkdefs={% 
+  %\ifdim\picw=0pt \message{inkinspic: \picw set to \hsize}\picw=\hsize \fi 
+  \def\makeatletter#1\makeatother{}% 
+  \def\includegraphics[#1]#2{\inkscanpage#1,page=,\end \inspic #2 \hss}% 
+  \def\inkscanpage#1page=#2,#3\end{\ifx,#2,\else\def\inspicpage{page#2}\fi}% 
+  \def\put(#1,#2)#3{\nointerlineskip\vbox to0pt{\vss\hbox to0pt{\kern#1\picw 
+      \pdfsave\hbox to0pt{#3}\pdfrestore\hss}\kern#2\picw}}% 
+  \def\begin#1{\csname begin#1\endcsname}%
+  \def\beginpicture(#1,#2){\vbox\bgroup\hbox to\picw{}\kern#2\picw \def\end##1{\egroup}}%
+  \def\begintabular[#1]#2#3\end#4{\vtop{\def\\{\cr}\def\tabiteml{}\def\tabitemr{}\table{#2}{#3}}}%
+  \def\color[#1]#2{\scancolor #2,}% 
+  \def\scancolor#1,#2,#3,{\pdfliteral{#1 #2 #3 rg}}% 
+  \def\makebox(#1)[#2]#3{\hbox to0pt{\csname mbx:#2\endcsname{#3}}}% 
+  \sdef{mbx:lb}#1{#1\hss}\sdef{mbx:rb}#1{\hss#1}\sdef{mbx:b}#1{\hss#1\hss}% 
+  \sdef{mbx:lt}#1{#1\hss}\sdef{mbx:rt}#1{\hss#1}\sdef{mbx:t}#1{\hss#1\hss}% 
+  \def\rotatebox#1#2{\pdfrotate{#1}#2}%
+  \def\lineheight#1{}%
+  \def\setlength#1#2{}%
+}
+```
+
+Warning, space syntax: the `\nkinspic` macro (similar as `\inspic`)
+experts one parameter as file name separated by space. This is analogical
+behavior as \input command. But the space is needed always when `\inspic`,
+`\inkinspic` macros are used. If you need the picture to be centered, you have
+to write:
+
+```
+\centerline{\picw=7cm \inkinspic picture.pdf }
+```

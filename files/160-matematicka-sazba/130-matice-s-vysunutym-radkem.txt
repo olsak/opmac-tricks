@@ -1,0 +1,70 @@
+anchor-name:matrixA
+id:0138
+author:P. O.
+date:2016-01-16
+
+----lang:cs--title:Matice s vysunutým řádkem
+Vytvoříme makro `\matrixA`, které se chová stejně jako makro `\matrixR` z
+předchozího OPmac triku 0137, ale navíc je první řádek vysunut nad matici.
+Uživatel může ale nemusí použít poslední nedeklarovaný sloupec, tj. může
+vysunutí řádku kombinovat s vysunutím sloupce. Kromě toho vytvoříme makro
+`\matrixB`, které na rozdíl od `\matrixA` vysouvá pod matici poslední řádek.
+
+Syntaktické pravidlo pro použití `\matrixA` a `\matrixB` je stejné, jako u
+`\matrixR` tedy:
+
+```
+\matrixA levá-závorka pravá-závorka {deklarace} {data}
+```
+
+Implementace:
+
+```
+\def\matrixA#1#2#3#4{%
+   {\mathop{\matrixI#1#2{#3}{\noalign{\kern-\normalbaselineskip}#4}}%
+    \limits^{\textstyle\mathstrut}}}
+\def\matrixB#1#2#3#4{%
+   {\mathop{\matrixI#1#2{#3}{#4\crcr\noalign{\kern-\normalbaselineskip}}}%
+    \limits_{\textstyle\mathstrut}}}
+\let\matrixI=\matrixR  % use \matrixR from OPmac trick 0137
+```
+
+Matice má vysunutý řádek díky `\noalign{\kern-\normalbaselineskip}`. Celá
+tato matice je schována do `\mathop` a je přidán horní (resp. dolní)
+neviditelný index, který vkládá strut, aby i vysunutý řádek měl svou běžnou
+výšku. Uživatel může napsat `\let\matrixI=\matrixL` nebo
+`\let\matrixI=\matrixLR`, pokud chce vysouvat i první sloupec a pokud si tato
+makra vytvořil.
+
+----lang:en--title:Matrices with one row outside
+We create a macro `\matrixA` which behaves the same as `\matrixR` from
+previous OPmac trick 0137, but the first row is above the matrix. The user
+can combine this feature with the last undeclared column which is alongside the
+matrix. If the undeclared column isn't used then only first row is outside
+the matrix. The macro `\matrixB` acts like `\matrixA`, but first row is normally
+inside the matrix and the last row is below the matrix.
+
+The syntax rule for `\matrixA` and `\matrixB` is the same as for `\matrixR`:
+
+```
+\matrixA left-bracket right-bracket {declaration} {data}
+```
+
+The implementation:
+
+```
+\def\matrixA#1#2#3#4{%
+   {\mathop{\matrixI#1#2{#3}{\noalign{\kern-\normalbaselineskip}#4}}%
+    \limits^{\textstyle\mathstrut}}}
+\def\matrixB#1#2#3#4{%
+   {\mathop{\matrixI#1#2{#3}{#4\crcr\noalign{\kern-\normalbaselineskip}}}%
+    \limits_{\textstyle\mathstrut}}}
+\let\matrixI=\matrixR  % use \matrixR from OPmac trick 0137
+```
+
+The matrix has the row outside because of `\kern-\normalbaselineskip`. The
+matrix is typeset as `\mathop` and the invisible sup/super-script is added
+above/below the matrix in order to the lapped row have its common height.
+The user can say `\let\matrixI=\matrixL` or `\let\matrixI=\matrixLR` if the
+left-outside column is needed and if `\matrixL` and `\matrixLR` macros are
+defined.

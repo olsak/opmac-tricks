@@ -1,0 +1,117 @@
+anchor-name:soul
+id:0063
+author:P. O.
+date:2014-06-06
+
+----lang:cs--title:Podtržení, přeškrtnutí, prostrkání
+Implementujeme makro `\ul{tady je text}`, které vytvoří podtržený nebo
+přeškrtnutý text. Přidáme také makro `\ltsp{tady je text}`, které vytvoří
+prostrkaný text. Vlastnosti rozsáhlého balíčku `soul.sty` vměstnáme do deseti
+řádků kódu za cenu toho, že naše makro bude umět rozdělit text jen v
+mezislovních mezerách a pokud bychom chtěli rozdělit slovo, je potřeba makru
+napovědět `\ul{ta\-ko\-vým způ\-so\-bem}`. Následující trik 0065 ukazuje, jak
+vyhledat tato místa pro dělení slov automaticky.
+
+```
+\def\ul#1{{\ulRedefine\leavevmode\wordscanA #1 {} }}
+\def\wordscanA#1 {\ifx^#1^\unskip\else \wordscanB#1\-\end \expandafter\wordscanA\fi}
+\def\wordscanB#1\-#2\end{\ifx^#2^\wordprintA{#1}\else
+   \wordprintB{#1}\def\next{\wordscanB#2\end}\expandafter\next\fi}
+\def\wordprintA#1{\setbox0=\hbox{#1}\hbox{\rlap{\copy0}\uline\wd0}\uline\uspace\relax}
+\def\wordprintB#1{\setbox0=\hbox{#1}\hbox{\rlap{\copy0}\uline\wd0}\-}
+\def\uline{\leaders \vrule height-1.9pt depth2.3pt\hskip}
+\def\uspace{\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}
+\def\ulRedefine{\def~{\egroup\hbox{\rlap{\copy0}\uline\wd0}\nobreak\uline\uspace\relax
+         \setbox0=\hbox\bgroup}}
+```
+
+Makro spouští opakovaně `\wordscanA` na jednotlivá slova a pomocí `\wordscanB`
+tato slova rozdělí na části vyznačené `ta\-ko\-vým způ\-so\-bem`.
+Celé slovo nebo jeho koncovou část pak tiskne pomocí `\wordprintA` zatímco
+část ukončenou znakem `\-` tiskne pomocí `\printwordB`. Definováním makra `\uline`
+nastavíme výšku a tloušťku podtrhávací nebo přeškrtávací čáry. V příkladu je
+čára podtrhávací začínající 1,9pt pod účařím a mající tloušťku 0.4pt.
+V makru `\uspace` definujeme velikost mezislovní mezery včetně pružnosti.
+V příkladu přebíráme parametry běžné mezislovní mezery z příslušných
+`\fontdimen`.
+
+Přítomnost vlnky jako nezlomitelné mezery v textu
+(např. `\ul{v~textu}`) je ošetřena poněkud
+trikoidním kódem v `\ulRedefine`. Jinak totiž má tato nezlomitelná mezera Wordoidní
+vlastnost, tj. nepruží. To by bylo samozřejmě špatně.
+
+Makro `\ltps{prostrkaný text}` pracuje se stejnými makry `\wordscanA` a
+`\wordscanB`, ale jinak definuje `\printscanA` a `\printscanB`. Tato makra
+rozeberou slova nebo jejich části na jednotlivá písmena. Makro pracuje s
+dimen registry `\ltspA`, `\ltspB` a `\ltspC`. jejich význam je uveden níže v
+komentářích.
+
+```
+\def\ltsp#1{\ifhmode\hskip\ltspA \else\leavevmode\fi \wordscanA #1 {} \hskip\ltspA}
+\def\wordscanA#1 {\ifx^#1^\unskip\else \wordscanB#1\-\end \expandafter\wordscanA\fi}
+\def\wordscanB#1\-#2\end{\ifx^#2^\wordprintA{#1}\else
+   \wordprintB{#1}\def\next{\wordscanB#2\end}\expandafter\next\fi}
+\def\wordprintA#1{\letterspaceA #1{}\unskip\unpenalty\hskip\ltspB}
+\def\wordprintB#1{\letterspaceA #1{}\-}
+\def\letterspaceA#1{\if^#1^\else\hbox{#1}\nobreak\hskip\ltspC \expandafter\letterspaceA\fi}
+
+\newskip\ltspA \ltspA=6pt   % mezera vložená na začátek prostrkaného textu
+\newskip\ltspB \ltspB=5pt plus2pt minus1pt  % mezislovní mezera
+\newskip\ltspC \ltspC=2pt   % mezera mezi písmeny.
+```
+
+----lang:en--title:Underlining, overlining, letterspacing
+We implement the macro `\ul{this is text}` which creates underlined or
+overlined text. We add the macro `\ltsp{this is text}` which creates
+letterspaced text. The features of the large LaTeX package `soul.sty` is
+implemented here on the ten lines of the code. The macro is unable to use
+hyphenation algorithm for breaking words. User can hint the text by
+`\ul{these se\-qences in\-cluded in the text}`. And the following
+[OPmac trick 0065](#hyphprocess) does this work automatically.
+
+```
+\def\ul#1{{\ulRedefine\leavevmode\wordscanA #1 {} }}
+\def\wordscanA#1 {\ifx^#1^\unskip\else \wordscanB#1\-\end \expandafter\wordscanA\fi}
+\def\wordscanB#1\-#2\end{\ifx^#2^\wordprintA{#1}\else
+   \wordprintB{#1}\def\next{\wordscanB#2\end}\expandafter\next\fi}
+\def\wordprintA#1{\setbox0=\hbox{#1}\hbox{\rlap{\copy0}\uline\wd0}\uline\uspace\relax}
+\def\wordprintB#1{\setbox0=\hbox{#1}\hbox{\rlap{\copy0}\uline\wd0}\-}
+\def\uline{\leaders \vrule height-1.9pt depth2.3pt\hskip}
+\def\uspace{\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}
+\def\ulRedefine{\def~{\egroup\hbox{\rlap{\copy0}\uline\wd0}\nobreak\uline\uspace\relax
+         \setbox0=\hbox\bgroup}}
+```
+
+The macro repeats the `\wordscanA` to each word in the parameter and the
+`\wordscanB` divides the words marked by `\-`. The whole word or its last part
+is printed by the `\wordprintA` macro while the parts ended by `\-` are printed
+by the `\wordprintB`. The `\uline` macro sets the height and the thickness of
+the underline or overline. The value 1.9pt and thickness 0.4pt is used in
+our example. The macro `\uspace` defines the size of the underlined/overlined
+space between words including the glue part. The example reads the same
+values as normal space from appropriate `\fontdimen` registers.
+
+The tie as non-breakable space can be present in the parameter text and
+this is solved by `\ulRedefine` macro. We need to keep the
+stretch/schrinkability of this space because we don't accept the Word's
+feature of the nonbreakable space (that it is only in fixed size).
+This feature is totally bad from typographical point of view.
+
+The macro `\ltps{letterspaced text}` works in similar way but the macros
+`\prointscanA` and `\printscanB` are defined differently. These macros decompose
+the words to the letters and add the spaces declared in `\ltspA`, `\ltspB` and
+`\ltspC`.
+
+```
+\def\ltsp#1{\ifhmode\hskip\ltspA \else\leavevmode\fi \wordscanA #1 {} \hskip\ltspA}
+\def\wordscanA#1 {\ifx^#1^\unskip\else \wordscanB#1\-\end \expandafter\wordscanA\fi}
+\def\wordscanB#1\-#2\end{\ifx^#2^\wordprintA{#1}\else
+   \wordprintB{#1}\def\next{\wordscanB#2\end}\expandafter\next\fi}
+\def\wordprintA#1{\letterspaceA #1{}\unskip\unpenalty\hskip\ltspB}
+\def\wordprintB#1{\letterspaceA #1{}\-}
+\def\letterspaceA#1{\if^#1^\else\hbox{#1}\nobreak\hskip\ltspC \expandafter\letterspaceA\fi}
+
+\newskip\ltspA \ltspA=6pt   % the space at beginning of the text
+\newskip\ltspB \ltspB=5pt plus2pt minus1pt  % the space between words
+\newskip\ltspC \ltspC=2pt   % the space between letters in the word
+```

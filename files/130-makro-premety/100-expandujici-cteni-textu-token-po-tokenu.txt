@@ -1,0 +1,93 @@
+anchor-name:etoks
+id:0153
+author:P. O.
+date:2016-06-06
+
+----lang:cs--title:Expandující čtení textu token po tokenu
+Předchozí OPmac trik popisuje možnost čtení jednotlivých tokenů hlavním
+procesorem. Nyní vytvoříme makro, které čte tokeny jen expand procesorem.
+TeX bohužel při čtení následujícího tokenu makrem s neseparovaným
+parametrem přeskočí případnou mezeru. Takže cyklus:
+
+```
+\def\apply#1{[#1]}
+\def\readtokens#1{\ifx\end#1\else\apply{#1}\expandafter\readtokens\fi}
+\readtokens Tady je nějaký text.\end
+```
+
+přečte totéž, jako při `\readtokens Tadyjenějakýtext.\end`. Naším úkolem je
+vytvořit makro, které mezery respektuje a je plně expandující. Další problém
+při čtení tokenů makrem s neseparovaným parametrem spočívá v tom, že třeba `{abc}`
+přečte naráz a navíc odstraní kučeravé závorky. Naše makro `\etoks{tokeny}` oba
+problémy řeší a spustí makro `\eapply` na každý jednotlivý token svého
+parametru. Respektuje mezery i kučeravé závorky. Takže třeba po
+
+```
+\def\eapply#1{[#1]} % co provést s každým jednotlivým tokenem
+\message{... \etoks{ab c{ aa bc {bb}}cb}}
+```
+
+dostaneme `... [a][b][ ][c]{[ ][a][a][ ][b][c][ ]{[b][b]}}[c][b]`.
+
+Implementace makra je následující:
+
+```
+\def\etoks#1{\etoksA #1{\end}}
+\def\etoksA#1#{\etoksB#1 {\end} }
+\def\etoksB#1 #2 {\etoksC#1\end
+    \ifx\end#2\empty\expandafter\etoksD\else\eapply{ }\fihere{\etoksB#2 }\fi}
+\def\etoksC#1{\ifx\end#1\else\eapply{#1}\expandafter\etoksC\fi}
+\def\etoksD#1{\ifx\end#1\empty\else\fihere{{\etoks{#1}}\etoksA}\fi}
+\def\fihere#1\fi{\fi#1}
+```
+
+Makro se opírá o možnost separace závorkou pomocí konstrukce
+`\def\x#1#{...}`. Dále pomocí `\etoksB` odlišuje jednotlivá „slova“ oddělená
+mezerami a `\etoksC` čte teprve jednotlivé tokeny ve slovech. Po ukončení čtení
+slov následuje závorka, kterou zpracuje `\etoksD` a případně rekurzivně zavolá
+`\etoks` na vnitřek závorky.
+
+----lang:en--title:Expandable reading text token per token
+Previous OPmac trick reads the given text token per token at main
+processor level. Now, we'll do the same at expand processor level. There is
+a problem with spaces which are ignored by macro with non-separated parameter.
+So the loop:
+
+```
+\def\apply#1{[#1]}
+\def\readtokens#1{\ifx\end#1\else\apply{#1}\expandafter\readtokens\fi}
+\readtokens This is some text.\end
+```
+
+behaves the same as `\readtokens Thisissometext.\end`. We need to create a
+macro which respect the spaces and it is full expandable. Moreover, the
+macro must respect the braces. Braces is second problem of macros with
+non-separated parameter: `{abc}` is read as one parameter and braces are
+removed. Both these problems are solved by the `\etoks{tokens}` macro which is
+full expandable, executes `\eapply` to each token of its parameter and
+respects spaces and braces. For example:
+
+```
+\def\eapply#1{[#1]} % what to do for each token
+\message{... \etoks{ab c{ aa bc {bb}}cb}}
+```
+
+prints `... [a][b][ ][c]{[ ][a][a][ ][b][c][ ]{[b][b]}}[c][b]`.
+
+The implementation:
+
+```
+\def\etoks#1{\etoksA #1{\end}}
+\def\etoksA#1#{\etoksB#1 {\end} }
+\def\etoksB#1 #2 {\etoksC#1\end
+    \ifx\end#2\empty\expandafter\etoksD\else\eapply{ }\fihere{\etoksB#2 }\fi}
+\def\etoksC#1{\ifx\end#1\else\eapply{#1}\expandafter\etoksC\fi}
+\def\etoksD#1{\ifx\end#1\empty\else\fihere{{\etoks{#1}}\etoksA}\fi}
+\def\fihere#1\fi{\fi#1}
+```
+
+The code is based on the construction `\def\x#1#{...}` where `#1` is
+separated by open brace. The `\etoksB` reads a “words” separated by a space
+and `\etoksC` reads tokens of each such “word”. When all words are read then
+open brace follows and it is processed by `\etoksD`. The contents of the
+braces is processed by `\etoks` recursively here.

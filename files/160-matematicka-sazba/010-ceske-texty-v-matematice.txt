@@ -1,0 +1,66 @@
+anchor-name:alphachars
+id:0025
+author:P. O.
+date:2013-09-02
+
+----lang:cs--title:České texty v matematice
+V matematice nefungují akcentované znaky (č, á, ř atd.), protože
+nemají třídu 7 a nejsou tedy zařazeny do matematické abecedy. Ve zlomku
+`$cena \over výkon$` chceme, aby byly texty zmenšeny (nelze je dát jednoduše
+do `\hbox`u) a navíc chceme, aby byly vytištěny správně. Rychlé řešení
+`$\rm cena\over výkon$` funguje při použití CSfontů, ale po přepnutí na jinou
+rodinu fontů nastávají potíže. Ty lze vyřešit zařazením české abecedy do
+znaků třídy 7 (matematická abeceda) takto:
+
+```
+\def\setmathalphabetcode#1{\ifx\XeTeXmathcode\undefined
+     \tmpnum=\itfam \multiply\tmpnum by256 \advance\tmpnum by`#1
+     \advance\tmpnum by"7000 \mathcode`#1 = \tmpnum \relax
+   \else \XeTeXmathcode`#1 = 7 \itfam `#1 \fi
+}
+\def\mathalphabetchars#1{\if^#1^\else
+   \setmathalphabetcode#1\expandafter\mathalphabetchars\fi}
+
+\mathalphabetchars ÁáÄäČčĎďÉéĚěÍíĹĺĽľŇňÓóÖöÔôŔŕŘřŠšŤťÚúŮůÜüÝýŽž{}
+```
+
+Nyní mají znaky české abecedy stejnou vlastnost, jako jiné znaky matematické
+abecedy a jsou implicitní v kurzívě a dají se přepínat. Je ovšem nutné, aby v
+dané matematické rodině byl zaveden font, který tyto znaky obsahuje (což
+nemusí být vždy splněno).
+
+Makro `\setmathalphabetcode` přidělí znaku třídu 7 s výchozí rodinou
+`\itfam`. Není-li přitomna 16bitová mašina, použije se k tomu primitiv
+`\mathcode`, jinak se použije primitiv `\XeTeXmathcode`.
+
+----lang:en--title:Czech texts in math
+The accented characters from Czech alphabet (č, á, ř etc.) don't work in
+math because they have no class 7 and they are no a part of the math
+alphabet. In the fraction `$cena \over výkon$`
+(i.e. `$price \over performance$`) we need to print the texts in script size.
+The solution `$\hbox{cena}\over\hbox{výkon}$` doesn't set the right size of
+the texts. The solution `$\rm cena\over výkon$` does work with CSfonts but
+when we switch to another font family, the ý will not print. We can put the
+Czech alphabet into math class 7 by:
+
+```
+\def\setmathalphabetcode#1{\ifx\XeTeXmathcode\undefined
+     \tmpnum=\itfam \multiply\tmpnum by256 \advance\tmpnum by`#1
+     \advance\tmpnum by"7000 \mathcode`#1 = \tmpnum \relax
+   \else \XeTeXmathcode`#1 = 7 \itfam `#1 \fi
+}
+\def\mathalphabetchars#1{\if^#1^\else
+   \setmathalphabetcode#1\expandafter\mathalphabetchars\fi}
+
+\mathalphabetchars ÁáÄäČčĎďÉéĚěÍíĹĺĽľŇňÓóÖöÔôŔŕŘřŠšŤťÚúŮůÜüÝýŽž{}
+```
+
+Now, all Czech characters have the same property as another characters
+for math typesetting. The are default in math italics and they are
+switchable to another math families. It is needed to load the math fonts wit
+these characters, of course. This cannot be always implemented
+(unfortunately).
+
+The macro `\setmathalphabetcode` sets the class 7 with the default family
+`\tifam`. If there isn't present Unicoded TeX-engine then the `\mathcode`
+primitive is used else `\XeTeXmathcode` primitive is used.

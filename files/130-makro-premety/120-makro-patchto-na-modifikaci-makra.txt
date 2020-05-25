@@ -1,0 +1,50 @@
+anchor-name:patchto
+id:0087
+author:P. O.
+date:2015-01-18
+
+----lang:cs--title:Makro \patchto na modifikaci makra
+Pokud chceme implemetovat `\patchto`, které ve stávajícím makru vymění text
+za jiný text, tedy
+
+```
+\patchto\makro {vyhledaný text}{vyměněný za}
+```
+
+pak můžeme využít předchozí [OPmac trik 0079](#appendto), ale
+pro jednoduchost provedeme záměnu textu za text po detokenizaci.
+Záměnu provedeme pomocí `\replacestrings` a nakonec tělo makra zpětně
+tokenizujeme. Tedy v tomto případě makro pracuje analogicky jako
+makro `\patchcmd` z LaTeXového etoolbox.
+
+```
+\def\patchto#1#2#3{\appendtoA#1%
+   \edef\tmpb{\detokenize\expandafter{\the\toks1}}%
+   \edef\tmpa{\noexpand\replacestrings{\detokenize{#2}}{\detokenize{#3}}}\tmpa
+   \edef\tmpa{\noexpand\replacestrings{\string##\string##}{\string##}}\tmpa
+   \scantokens\expandafter{\expandafter\toks\expandafter1\expandafter{\tmpb}}%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter{\the\toks1 }}
+```
+
+----lang:en--title:The \patchto macro can modify another macro
+We need to implement the `\patchto` macro which replaces the text by
+another text in the given macro wit the syntax:
+
+```
+\patchto\macro {original text}{replaced text}
+```
+
+We can use previous [OPmac trick 0079](#appendto) but for more
+simplicity we do detokenization of the macro body before replacement.
+The replacement is done by `\replacestrings` and the macro body is tokenized
+by `\scantokens`. This means that this is analogical as in LaTeX command
+`\patchcmd` from LaTeX's etoolbox.
+
+```
+\def\patchto#1#2#3{\appendtoA#1%
+   \edef\tmpb{\detokenize\expandafter{\the\toks1}}%
+   \edef\tmpa{\noexpand\replacestrings{\detokenize{#2}}{\detokenize{#3}}}\tmpa
+   \edef\tmpa{\noexpand\replacestrings{\string##\string##}{\string##}}\tmpa
+   \scantokens\expandafter{\expandafter\toks\expandafter1\expandafter{\tmpb}}%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter{\the\toks1 }}
+```

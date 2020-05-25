@@ -1,0 +1,32 @@
+anchor-name:nopageno
+id:0133
+author:Jan Šustek
+date:2015-12-19
+
+----lang:cs--title:Jednostránkový dokument bez čísla stránky
+Při psaní krátkých dokumentů často dopředu nevíme, jestli budou mít jednu,
+nebo více stran. Přitom, pokud bude mít dokument jen jednu stranu, nechceme,
+aby obsahoval číslo stránky. Abychom se nemuseli starat, jestli číslo
+stránky má být, nebo nemá být, stačí na začátek dokumentu napsat
+
+```
+\openref\ifnum\lastpage=1\footline{\hss}\fi
+```
+
+Pro správné fungování je nutné TeXovat dokument dvakrát.
+
+Trik využívám například při psaní posudků, které mívají 1--2 stránky.
+
+----lang:en--title:No page numbers in one-page documents
+The page number on the one-page document is pointless. But we often do not
+know wether a short document will have one or more pages. The following
+macro prints page numbers to the document if and only if the document
+contains more than one page.
+
+```
+\openref\ifnum\lastpage=1\footline{\hss}\fi
+```
+
+We must run TeX two times.
+
+I use this trick when I write one/two pages of peer review.

@@ -1,0 +1,146 @@
+anchor-name:appendto
+id:0079
+author:P. O.
+date:2015-01-17
+
+----lang:cs--title:Vylepšené \addto pro makra s parametry
+Makro `\addto` z OPmac přidává ke zvolenému makru další text. Ovšem zvolené
+makro musí být bez prametrů. Navrhnul jsem tedy další makra `\appendto` a
+`\prependto`, která dokáží rozšířit stávající makro (vzadu nebo vpředu)
+třebaže toto makro má parametry. Příklady použití:
+
+```
+\def\a#1==#2{#1 is equal #2}
+\appendto\a{ and this means that #1=#2.}
+% \a je nyní makro: #1==#2 -> #1 is equal #2 and this means that #1=#2.
+\prependto\a{We have (#1) and (#2). The }
+% \a je nyní makro: #1==#2 -> We have (#1) and (#2).
+%                        The #1 is equal #2 and this means that #1=#2.
+```
+
+Pomocí `\let\appendprefix=\long` nebo `\let\appendprefix=\global`
+je možné specifikovat, jakého typu rozšířené makro bude. Tip: například
+pomocí
+
+```
+\def\appendtoprefix{\protected\long}\appendto\makro{}
+```
+
+je možné přetypovat stávající `\makro` na jiný typ.
+
+```
+\let\appendtoprefix=\relax
+\def\appendto#1#2{\appendtoA#1%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter
+      {\the\toks1 #2}}
+\def\prependto#1#2{\appendtoA#1\toks2={#2}%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter
+      {\the\toks2\expandafter\space\the\toks1}}
+\def\appendtoA#1{\edef\tmpb{\expandafter\appendtoB\meaning#1\end}%
+   \scantokens\expandafter{\expandafter\toks\expandafter0\expandafter{\tmpb}}%
+   \expandafter\replacestrings\expandafter{\string##}{\#}%
+   {\def\###1{{\noexpand\internalXparam##1}}\xdef\tmpa{\toks1={\tmpb}}}\tmpa
+   \scantokens\expandafter{\expandafter\toks\expandafter1\expandafter{\the\toks1}}%
+   \toks1=\expandafter\expandafter\expandafter{\expandafter#1\the\toks1}%
+   \expandafter\readtoks\expandafter{\the\toks1}%
+}
+\def\appendtoB#1:#2->#3\end{#2}
+\def\readtoksX{%
+   \ifcat##\noexpand\tmpc   \let\next=\readtoksC \def\nexxt{\readtoksD{########}}\fi
+   \ifx\internalXparam\tmpc \let\next=\readtoksC \def\nexxt{\readtoksD{####}}\fi
+}
+\def\internalXparam{\internalXparam}
+
+```
+
+Makra `\appendto` i `\prependto` nejprve připraví pomocí
+`\appendtoA` do `\toks0` masku prametrů
+původního makra a do `\toks1` obsah původního makra. Masku parametrů
+připraví tak, že si ji sejme pomocí `\meaning` a `\appendtoB` z výpisu významu
+makra. Pak ji prožene `\scantokens`, protože kategorie jsou ve výpisu `\meaning`
+nastaveny nevhodně. Dále provede `\appendtoA` tento trik: každý výskyt
+formálního parametru v masce
+parametrů obalí do svorek ve formě `\internalXparam číslo-parametru`
+a toto uloží přechodně do `\toks1`. Je-li třeba maska
+parametrů ve tvaru `#1x#2::#3`, pak v `\toks1` bude
+`{\internalXparam1}x{\internalXparam2}::{\internalXpram3}`.
+To provede pomocí `\replacestings #->\#` a dále definicí `\#` jako makra s
+parametrem, které vytvoří požadovaný výsledek expanzí takové masky.
+Takto připravený `\toks1` předloží
+původnímu makru, které tedy do `#1` nabere `\internalXparam1`, do `#2` nabere
+`\intenralXparam2` atd. Tento výsledek expanze proženeme makrem `\readtoks`
+[z předchozího OPmac triku 0088](#readtoks) a tím dostaneme
+v `\toks1` seznam tokenů připravený k nové definici původního makra.
+Poznamenávám, že na rozdíl od podobného makra `\apptocmd` a `\pretocmd`
+z LaTeXového balíčku etoolbox, naše
+makro zachovává všechny kategorie v těle makra, takže je rozbustnější.
+
+----lang:en--title:An improved \addto for macros with parameters
+The `\addto` macro form OPmac adds it parameter to the body of the given
+macro, but given macro have to be parameterless and without hash token of
+category 6. This trick suggests more general macros `\appendto` and
+`\prependto`. They append or prepend the parameter to the given macro and the
+macro can be defined with parameters. Examples of usage:
+
+```
+\def\a#1==#2{#1 is equal #2}
+\appendto\a{ and this means that #1=#2.}
+% \a is macro: #1==#2 -> #1 is equal #2 and this means that #1=#2.
+\prependto\a{We have (#1) and (#2). The }
+% \a is macro: #1==#2 -> We have (#1) and (#2).
+%                        The #1 is equal #2 and this means that #1=#2.
+```
+
+You can set `\let\appendprefix=\long` or `\let\appendprefix=\global`
+in order to declare the new macro with the prefix \long or define it
+globally. Tip:
+
+```
+\def\appendtoprefix{\protected\long}\appendto\makro{}
+```
+
+re-declares the type of the defined `\macro`.
+
+```
+\let\appendtoprefix=\relax
+\def\appendto#1#2{\appendtoA#1%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter
+      {\the\toks1 #2}}
+\def\prependto#1#2{\appendtoA#1\toks2={#2}%
+   \appendtoprefix\expandafter\def\expandafter#1\the\toks0\expandafter
+      {\the\toks2\expandafter\space\the\toks1}}
+\def\appendtoA#1{\edef\tmpb{\expandafter\appendtoB\meaning#1\end}%
+   \scantokens\expandafter{\expandafter\toks\expandafter0\expandafter{\tmpb}}%
+   \expandafter\replacestrings\expandafter{\string##}{\#}%
+   {\def\###1{{\noexpand\internalXparam##1}}\xdef\tmpa{\toks1={\tmpb}}}\tmpa
+   \scantokens\expandafter{\expandafter\toks\expandafter1\expandafter{\the\toks1}}%
+   \toks1=\expandafter\expandafter\expandafter{\expandafter#1\the\toks1}%
+   \expandafter\readtoks\expandafter{\the\toks1}%
+}
+\def\appendtoB#1:#2->#3\end{#2}
+\def\readtoksX{%
+   \ifcat##\noexpand\tmpc   \let\next=\readtoksC \def\nexxt{\readtoksD{########}}\fi
+   \ifx\internalXparam\tmpc \let\next=\readtoksC \def\nexxt{\readtoksD{####}}\fi
+}
+\def\internalXparam{\internalXparam}
+
+```
+
+The macros `\appendto` and `\prependto` first prepare the parameter mask into
+`\toks0` and the macro body into `\toks1` by calling of `\appanedtoA`.
+The parameter mask is read from detokenized `\meaning` and it is retokenized
+by `\scantokens`. But the macro body is processed by slightly different way
+because we needn't to detokenize and tokenize it because this is error
+prone. We prepare an alternative of the parameter mask where each `#number`
+is replaced by `{\internalXparam number}` and this is temporary saved to
+`\toks1`. For example the parameter mask `#1x#2::#3` is converted to
+the `{\internalXparam1}x{\internalXparam2}::{\internalXpram3}`. This is done
+by `\replacestrings #->\#` and by local definition of `\#` as a macro which
+creates `{\internalXparam number}`. This special parameter mask is used
+after calling of the original macro during expansion of this macro. This
+means that `#1` is saved as `\internalXparam1`, `#2` as `\intenralXparam2` etc.
+The result of this expansion is processed by the `\readtoks` macro from the
+previous [OPmac trick 0088](#readtoks). The output in `\toks1` is
+now the token list ready to use as the macro body in a new definition of
+the original macro. Note, that LaTeX package `etoolbox.sty` does not keep all
+catcodes in the macro body as our macros. Our macros are more robust.

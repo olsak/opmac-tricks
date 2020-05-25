@@ -1,0 +1,52 @@
+anchor-name:capformat
+id:0048
+author:P. O.
+date:2014-04-26
+
+----lang:cs--title:Změna formátu popisků pod obrázky a tabulkami
+OPmac sází popisek jako odstavec s centrovaným posledním řádkem. Využívá k
+tomu trik popsaný v TBN na straně 234. Může se ovšem vyskytnout jiný
+požadavek na formátování popisků. Třeba takový: je-li popisek jednořádkový,
+pak má centrovat. Přeteče-li na více řádků, má se chovat jako normální
+odstavec. Řešení tohoto požadavku přinese následující kód:
+
+```
+\def\printcaption#1#2{\leftskip=\iindent \rightskip=\iindent
+   \setbox0=\hbox\bgroup \aftergroup\docaption{\bf#1 #2.}\enspace}
+\def\docaption{\tmpdim=\hsize \advance\tmpdim by-2\iindent
+   \ifdim\wd0>\tmpdim \unhbox0 \else \hfil\hfil\unhbox0 \fi \endgraf \egroup}
+```
+
+Makro přeměří text popisku uložený v boxu0 a pokud se vejde na jeden řádek,
+předřadí před něj `\hfil\hfil`, což je pružinka stejné síly, jako `\parfillskip`
+(v popiscích dle OPmac) a text centruje. Je-li popisek delší, žádná pružinka
+se nepředřadí a vysází se obyčejný odstavec.
+
+Nenapadlo mě řešení této úlohy postavené na záporných fill, jako to je v
+případě centrování posledního řádku. Moje inteligence na to nestačí. Ani se
+mi nedaří najít důkaz, že to nemá řešení. Má-li někdo jedno nebo druhé,
+prosím o informaci.
+
+----lang:en--title:Different formatting of the table and figure captions
+OPmac prints the caption with the last line of the paragraph centered.
+The trick from TBN, page 234, is used for this. Maybe, you want another
+format for captions. For example: if the caption is one line length then it is
+centered. Else normal paragraph is printed. The solution is here:
+
+```
+\def\printcaption#1#2{\leftskip=\iindent \rightskip=\iindent
+   \setbox0=\hbox\bgroup \aftergroup\docaption{\bf#1 #2.}\enspace}
+\def\docaption{\tmpdim=\hsize \advance\tmpdim by-2\iindent
+   \ifdim\wd0>\tmpdim \unhbox0 \else \hfil\hfil\unhbox0 \fi \endgraf \egroup}
+```
+
+The macro measures the length of the caption text saved in `\box0`. If it
+fits into one line then `\hfil\hfil` is preceded (the same value of the glue
+is used in `\parfillskip` inside captions by OPmac). The result is: the text
+is centered. If text doesn't fit into one line, nothing is preceded and
+normal paragraph is printed.
+
+IMHO, the trick similar as in “last line of paragraph centered” based on
+negative fill values is not possible for this task. But I have no proof that
+this is impossible. If somebody found the solution or the proof of the
+impossibility, please give me an advice.

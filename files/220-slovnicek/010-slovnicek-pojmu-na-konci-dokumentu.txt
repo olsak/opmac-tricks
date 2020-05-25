@@ -1,0 +1,129 @@
+anchor-name:gloslast
+id:0051
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Slovníček pojmů na konci dokumentu
+V textu dokumentu se mohou vyskytovat například zkratky, které je potřeba
+čtenáři vysvětlit, nejlépe na konci dokumentu ve speciální sekci. V místě
+použití zkratky napíšeme `\glos{zkratka}{vysvětlení}`, přitom v tomto místě se
+v sazbě nic neobjeví. Například:
+
+```
+Pracuji na ČVUT.\glos{ČVUT}{České vysoké učení technické v Praze}
+```
+
+Makro `\glos` si ukládá postupně informace do paměti a pak je na konci
+dokumentu vyvrhne v místě, kam napíšeme `\makeglos`. Makra `\glos` a `\makeglos`
+mohou vypadat takto:
+
+```
+\def\gloslist{}
+\def\glos #1#2{%
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \opwarning{Duplicated glossary item `#1'}%
+   \else
+      \global\sdef{;#1}{{#1}{#2}}%
+      \global\expandafter\addto\expandafter\gloslist\csname;#1\endcsname
+   \fi
+}
+\def\makeglos{%
+   \ifx\gloslist\empty \opwarning{Glossary data unavailable}%
+   \else
+      \bgroup
+        \let\iilist=\gloslist
+        \dosorting
+        \def\act##1{\ifx##1\relax \else \expandafter\printglos##1\expandafter\act\fi}
+        \expandafter\act\iilist\relax
+      \egroup
+   \fi
+}
+\newdimen\glosindent  \glosindent=2\parindent
+\def\printglos #1#2{\noindent \hangindent=\glosindent \hbox to\glosindent{#1\hss-- }#2\par}
+```
+
+Slovníček bude abecedně seřazen podle zkratek. Chcete-li jej mít seřazen
+podle pořadí výskytu v textu, zakomentujte příkaz `\dosorting`.
+
+Makro `\printglos` si můžete samozřejmě naprogramovat dle svého přání. Má
+dva parametry `{zkratka}{vysvětlení}` a jeho úkolem je vytisknout jeden údaj
+ve slovníčku. Výše je `\printglos` uděláno tak, že nastavuje pevné odsazení
+`2\parindent` pro všechny zkratky. To nemusí vyjít dobře. Je tedy možné údaj
+`\glosindent` nastavit jinak nebo použít myšlenku z
+[OPmac triku 0041](#bibmarkindent).
+
+Jiný jednodušší příklad makra `\printglos`:
+
+```
+\def\printglos #1#2{\noindent #1 -- #2\par}
+```
+
+Vysvětlení makra. Makro `\glos` si ukládá do `\gloslist` postupně
+`\;zkratka` `\;zkratka` atd. a navíc definuje `\;zkratka` jako
+`{zkratka}{vysvětlení}`. Makro `\makeglos` lokálně převede `\gloslist`
+na `\iilist` a nechá jej seřadit jako rejstřík makrem z OPmac \dosorting.
+Nakonec jej postupným opakováním `\act` vytiskne.
+
+----lang:en--title:Glossary at the end of the document
+The abbreviations or some else can be occurred in the document and we
+need to write some explanations of such items at the end of the document. We
+write `\glos{abbreviation}{explanation}`. Nothing occurs in this place of the
+document. For example:
+
+```
+\input opmac
+...
+I am working at CTU\glos{CTU}{Czech Technical University in Prague} in Prague.
+```
+
+The macro `\glos` saves the information into memory and uses them at the
+place where `\makeglos` is used. You can implement `\glos` and `\makeglos` by:
+
+```
+\def\gloslist{}
+\def\glos #1#2{%
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \opwarning{Duplicated glossary item `#1'}%
+   \else
+      \global\sdef{;#1}{{#1}{#2}}%
+      \global\expandafter\addto\expandafter\gloslist\csname;#1\endcsname
+   \fi
+}
+\def\makeglos{%
+   \ifx\gloslist\empty \opwarning{Glossary data unavailable}%
+   \else
+      \bgroup
+        \let\iilist=\gloslist
+        \dosorting
+        \def\act##1{\ifx##1\relax \else \expandafter\printglos##1\expandafter\act\fi}
+        \expandafter\act\iilist\relax
+      \egroup
+   \fi
+}
+\newdimen\glosindent  \glosindent=2\parindent
+\def\printglos #1#2{\noindent \hangindent=\glosindent \hbox to\glosindent{#1\hss-- }#2\par}
+```
+
+The glossary is automatically sorted by the alphabet. If you needn't such
+sorting and the order by the occurrence is sufficient then you can comment
+out the `\dosorting` sequence in the `\makeglos` definition.
+
+Of course, you can program the `\printglos` by your wish, by your
+typography design. The `\printglos` macro has two parameters:
+{abbreviation}{explanation} and it prints one glossary item in the list.
+The `\printglos` defined above sets fixed indentation `2\parindent` for all
+items. You can use another indentation, for example the indentation is
+calculated fro the maximal length of the abbreviation, see
+[OPmac trick 0041](#bibmarkindent).
+
+Another more simple example of the `\printglos`:
+
+```
+\def\printglos #1#2{\noindent #1 -- #2\par}
+```
+
+Explanation: The `\glos` macro saves `\;abbrev1` `\;abbrev2` etc. into
+`\gloslist` and defines `\;abbrev1` as `{abbrev1}{explanation}`, `\;abbrev2`
+as `{abbrev2}{explanation}` etc. The macro `\makeglos` converts `\gloslist` to
+`\iilist` locally and does the alphabetically sorting by the macro `\dosorting`
+from OPmac. Finally, the `\act` macro prints the items.

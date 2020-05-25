@@ -1,0 +1,91 @@
+anchor-name:colaccent
+id:0074
+author:P. O.
+date:2014-06-24
+
+----lang:cs--title:Obarvení pouze matematického akcentu
+Toto je podobný problém, jako v předchozím triku 0066. Můžeme dát akcentu
+barvu, ale pak chceme předsunout před základ nastavení černé barvy (resp.
+barvy vnějšího okolí) a toto přepnutí se dělá pomocí `\pdfliteral`. Když
+vyzkoušíme
+
+```
+$\widetilde{E}\ \widetilde{\pdfliteral{}E}\ \coloredaccent\Red\widetilde{E}$
+```
+
+dostaneme
+
+![Barvený akcent](img/coloredaccent.png)
+
+Je vidět, že prostřední výskyt akcentu dopadl špatně, protože byl do
+základu vložen `\pdfliteral{}`, což znemožnilo usazení akcentu podle
+kernigového páru se `\skewchar`. Ani nebylo nutné do toho `\pdfliteral{}` psát
+přepnutí na barvu. Poslední výskyt je obarvený a správně, protože používá
+makro `\coloredaccent`, které je definováno takto:
+
+```
+\newmuskip\tmpmudim
+
+\def\coloredaccent#1#2#3{% #1=color, #2=accent, #3=base
+   {\ifnum\skewchar\textfont1<0 \tmpmudim=0mu \else \calculatemukern {#3}{\char\skewchar\textfont1}\fi
+    \let\tmpc=\currentcolor % saving current color
+    \localcolor #1\mkern2\tmpmudim #2{\setcmykcolor\tmpc \mkern-2\tmpmudim#3}
+   }
+}
+\def\calculatemukern #1#2{\setbox0=\hbox{\the\textfont1 #1#2}\setbox1=\hbox{\the\textfont1 #1\null#2}%
+   \tmpdim=\wd0 \advance\tmpdim by-\wd1
+   \tmpmudim=\expandafter\ignorept\the\tmpdim mu \tmpmudim=288\tmpmudim
+   \tmpdim=16em \divide\tmpmudim by\expandafter\ignorefracpart\the\tmpdim\relax
+}
+\def\ignorefracpart#1.#2\relax{#1}
+```
+
+Makro `\coloredaccent` při nastaveném `\skewchar` proměří kerningový pár
+základu se skewchar a převede ho na mu jednotky podobně jako v předchozím
+triku. Pak usadí akcent posunutý o vypočtenou hodnotu doprava a základ vrátí
+o stejnou hodnotu doleva. Není mi jasné, proč musím vypočtenou hodnotu
+vynásobit dvěma. nějak jsem se ve skewchar algoritmu TeXu ztratil. Pokud mi
+to nějaký čtenář vysvětlí, dostane ode mne pochvalu před nastoupenou
+jednotkou.
+
+----lang:en--title:Only math accent colorized
+This is similar problem like the problem solved in the previous
+OPmac trick 0066. We can set the color for the accent but the base have to
+be in outside color and this breaks the right kerning. We can test:
+
+```
+$\widetilde{E}\ \widetilde{\pdfliteral{}E}\ \coloredaccent\Red\widetilde{E}$
+```
+
+and we get:
+
+![Colored accent](img/coloredaccent.png)
+
+Note that the middle `E~` is bad because the `\pdfliteral` command was
+inserted between the accent and the base. This breaks the `\skewchar`
+calculation of the accent position. It is irrelevant if `\pdfliteral` is empty
+(as in the example) or it includes the color command. The last example of `E~`
+is typeset right because the `\coloredaccent` macro is used. This macro is
+defined here:
+
+```
+\newmuskip\tmpmudim
+
+\def\coloredaccent#1#2#3{% #1=color, #2=accent, #3=base
+   {\ifnum\skewchar\textfont1<0 \tmpmudim=0mu \else \calculatemukern {#3}{\char\skewchar\textfont1}\fi
+    \let\tmpc=\currentcolor % saving current color
+    \localcolor #1\mkern2\tmpmudim #2{\setcmykcolor\tmpc \mkern-2\tmpmudim#3}
+   }
+}
+\def\calculatemukern #1#2{\setbox0=\hbox{\the\textfont1 #1#2}\setbox1=\hbox{\the\textfont1 #1\null#2}%
+   \tmpdim=\wd0 \advance\tmpdim by-\wd1
+   \tmpmudim=\expandafter\ignorept\the\tmpdim mu \tmpmudim=288\tmpmudim
+   \tmpdim=16em \divide\tmpmudim by\expandafter\ignorefracpart\the\tmpdim\relax
+}
+\def\ignorefracpart#1.#2\relax{#1}
+```
+
+The macro `\coloredaccent` measures the kerning pair when `\skewchar` is set.
+The conversion to the `mu` units is done similar as in previous trick 0066.
+The accent is mover right by the calculated result and the base is set back
+to left.

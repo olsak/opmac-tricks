@@ -1,0 +1,72 @@
+anchor-name:tabpmod
+id:0160
+author:P. O.
+date:2017-06-17
+
+----lang:cs--title:Modifikace formátu odstavce při použití deklarátoru p
+V manuálu k OPmac je zmíněno, že odstavec v tabulce deklarovaný pomocí
+`p{rozměr}` je implicitně formátován jako obvyklý odstavec mimo tabulku, tedy
+typicky do bloku. To může v úzkých sloupcích dělat potíže. Proto je
+uvedena možnost použití `p{rozměr\raggedright}` pro vytváření odstavců s
+pravým roztřepením. Můžete si definovat další možnosti:
+
+```
+\let\fL=\raggedright
+\def\fR{\leftskip=0pt plus 1fill}
+\def\fC{\leftskip=0pt plus1fill \rightskip=0pt plus 1fill}
+\def\fX{\leftskip=\iindent plus1fil
+        \rightskip=\iindent plus-1fil
+        \parfillskip=0pt plus2fil}
+```
+
+a potom je odstavec v tabulce:
+
+```
+p{42mm}     ... zarovnán do bloku,
+p{42mm\fL}  ... zarovnán vlevo,
+p{42mm\fR}  ... zarovnán vpravo,
+p{42mm\fC}  ... s centrovanými řádky,
+p{42mm\fX}  ... zarovnán do bloku s centrovaným posledním řádkem.
+```
+
+Všimněte si, že při zarovnání vlevo je možné dělení slov ale při zarovnání
+vpravo nikoli, protože dělení slov v takové úpravě odstavce není vhodné.
+Nechcete-li dělit slova ani při `\fL`, definujte jednoduše:
+
+```
+\def\fL{\rightskip=0pt plus 1fil}
+```
+
+----lang:en--title:Variations of paragraphs with p declarator
+The OPmac manual writes that the paragraph in the table cell declared by
+`p{size}` is left-right aligned as default paragraphs. But this can bring some
+problems in narrow columns. This is a reason why `p{size\raggedright}` is
+mentioned in the manual as an alternative which declares left aligned
+paragraps. We can define more alternatives:
+
+```
+\let\fL=\raggedright
+\def\fR{\leftskip=0pt plus 1fill}
+\def\fC{\leftskip=0pt plus1fill \rightskip=0pt plus 1fill}
+\def\fX{\leftskip=\iindent plus1fil
+        \rightskip=\iindent plus-1fil
+        \parfillskip=0pt plus2fil}
+```
+
+and then the `p` declaration gives following paragraps:
+
+```
+p{42mm}     ... left-right alligned,
+p{42mm\fL}  ... left aligned,
+p{42mm\fR}  ... right aligned,
+p{42mm\fC}  ... no aligned, centered lines,
+p{42mm\fX}  ... left-right aligned but last line centered.
+```
+
+Note that left aligned alternative allows word hyphenation but right
+aligned alternative not (for good typographical reasons). If you want to
+deny the word hyphenation when `\fL` is used then you can define simply
+
+```
+\def\fL{\rightskip=0pt plus 1fil}
+```

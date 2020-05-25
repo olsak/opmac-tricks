@@ -1,0 +1,111 @@
+anchor-name:morebibs
+id:0042
+author:P. O.
+date:2014-04-01
+
+----lang:cs--title:Více nezávislých seznamů literatury v dokumentu
+Předpokládejme, že tvoříme třeba sborník,
+takže se náš dokument skládá z několika článků, přitom každý
+článek má svůj seznam literatury. Záznamy se mohou v různých seznamech
+překrývat, ale nebudou pravděpodobně stejně očíslovány. V každém seznamu
+probíhá číslování od jedné. Lejblíky se mohou rovněž pro různé seznamy
+překrývat.
+
+Dejme tomu, že v článku prvním je seznam literatury, kde je TBN uvedeno pod
+číslem 3 a v článku druhém je seznam literatury, kde je TBN pod číslem 21.
+Když se v článku prvním objeví `\cite[tbn]`, musí se vytisknout odkaz [3] a správně
+prolinkovat hyperlink. Když se v článku druhém objeví `\cite[tbn]`, musí se
+vytisknout [21] a rovněž se odpovídajícím způsobem nastaví hyperlink na
+seznam literatury ve druhém článku.
+
+Stačí před každým článkem pronulovat `\bibnum` a nastavit jednoznačný
+identifikátor `\bibpart`:
+
+```
+\bibnum=0 \def\citelist{} \def\bibpart{A} %%% A je identifikátor prvního článku
+... první článek
+...
+\bibnum=0 \def\citelist{} \def\bibpart{B} %%% B je identifikátor druhého článku
+... druhý článek
+...
+```
+
+Aby toto fungovalo, je třeba
+mírně modifikovat makra OPmac následujícím kódem:
+
+```
+\def\wbib#1#2#3{\dest[cite:\bibpart-\the\bibnum]%
+   \ifx\wref\wrefrelax\else \immediate\wref\Xbib{{\bibpart-#1}{\bibpart-#2}{#3}}\fi}
+
+\let\citeAA=\citeA
+\def\citeA #1#2,{\if#1,\def\citeAA##1,##2,{}\fi\citeAA \bibpart-#1#2,}
+
+\def\printcite#1{\citesep \prepcite#1\relax
+   \citelink{#1}{\tmpa}\def\citesep{,\hskip.2em\relax}}
+\def\prepcite #1-#2{\def\tmpa{\citelinkA{#2}}}
+\let\writeXcite=\addcitelist
+
+\def\nonumcitations{\lastcitenum=0 \def\sortcitesA{}\def\etalchar##1{$^{##1}$}%
+   \def\citelinkA##1{%  \citelinkA needs the \bibpart info:
+      \isdefined{bim:\bibpart-##1}\iftrue \csname bim:\bibpart-##1\endcsname
+      \else ##1%
+      \opwarning{\noexpand\nonumcitations + empty bibmark. Maybe bad BibTeX style}\fi}
+}
+```
+
+Makra přidávají před každý lejblík `\bibpart-` a stejný prefix přidávají před
+každé číslo. V REF souboru tedy máme z jednotlivých článků lejblíky i čísla
+prefixovány odpovídajícím způsobem. V rámci zpracování v `\cite` je pak
+tento prefix před lejblík přidán a z čísla odstraněn.
+
+----lang:en--title:More independent bibliography lists
+Suppose we are creating a Proceedings of a conference. Each article have
+its own bibliography list. The bibliography items can be stretch in more
+articles with various numbers. Each bibliography list is numbered from one.
+Labels from various articles can interfere too.
+
+For example, we have an article where TBN is cited under the number 3
+but another article where TBN is cited under the number 21. When the
+`\cite[tbn]` occurs in the first article then the [3] have to be printed and
+the hyperlink have to be created with right aim. When the `\cite[tbn]` occurs
+in the second article then [21] have to be printed and the hyperlink points
+to the second bibliography list.
+
+We need to set `\bibnum` to zero an set an unambiguous identifier of each
+article at the start of reading each article:
+
+```
+\bibnum=0 \def\citelist{} \def\bibpart{A} %%% A is identifier of first article
+... first article
+...
+\bibnum=0 \def\citelist{} \def\bibpart{B} %%% B is identifier of second article
+... second article
+...
+```
+
+The following code is sufficient:
+
+```
+\def\wbib#1#2#3{\dest[cite:\bibpart-\the\bibnum]%
+   \ifx\wref\wrefrelax\else \immediate\wref\Xbib{{\bibpart-#1}{\bibpart-#2}{#3}}\fi}
+
+\let\citeAA=\citeA
+\def\citeA #1#2,{\if#1,\def\citeAA##1,##2,{}\fi\citeAA \bibpart-#1#2,}
+
+\def\printcite#1{\citesep \prepcite#1\relax
+   \citelink{#1}{\tmpa}\def\citesep{,\hskip.2em\relax}}
+\def\prepcite #1-#2{\def\tmpa{\citelinkA{#2}}}
+\let\writeXcite=\addcitelist
+
+\def\nonumcitations{\lastcitenum=0 \def\sortcitesA{}\def\etalchar##1{$^{##1}$}%
+   \def\citelinkA##1{%  \citelinkA needs the \bibpart info:
+      \isdefined{bim:\bibpart-##1}\iftrue \csname bim:\bibpart-##1\endcsname
+      \else ##1%
+      \opwarning{\noexpand\nonumcitations + empty bibmark. Maybe bad BibTeX style}\fi}
+}
+```
+
+The `\bibpart-` is added before each label and the same prefix is added
+before each number. We have labels and numbers prefixed by the appropriate
+prefix. The `\cite` macro removes the prefix when printing numbers
+and adds it to the labels.

@@ -1,0 +1,105 @@
+anchor-name:cislovani
+id:0007
+author:P. O.
+date:2013-08-15
+
+----lang:cs--title:Přehledná deklarace číslování
+OPmac používá `\tnum` pro čísla tabulek, `\fnum` pro čísla obrázků a `\dnum` pro
+čísla rovnic. Dále je `\chapnum` číslo kapitoly, `\secnum` číslo sekce a
+`\seccnum` číslo podsekce. Čísla tabulek, obrázků i rovnic OPmac resetuje v
+každé sekci a vypisuje pro tabulku trojici čísel `chap.sec.tab`, pro obrázek
+`chap.sec.fig` a rovnice vypisuje ve formátu (rce). Pokud bychom toto
+chování chtěli změnit a mít nad tím přehled, je možné nejprve vykostit
+originální resetování registrů v kódu maker `\chap`, `\sec`, `\secc` a převzít
+řízení do svých rukou. Výmaz uvedených kódů obstarají makra `\chaphook`,
+`\sechook` a `\secchook`, která ve svém parametru `#1` sejmou resetovací kód až po
+`\relax` (to ukončuje resetovací kód).
+
+```
+\def\chaphook#1\relax{\dochaphook}  \def\dochaphook{}
+\def\sechook#1\relax{\dosechook}    \def\dosechook{}
+\def\secchook#1\relax{\dosecchook}  \def\dosecchook{}
+
+\def\chapreset#1{\addto\dochaphook{\global#1=0 }}
+\def\secreset#1{\addto\dosechook{\global#1=0 }\chapreset#1}
+\def\seccreset#1{\addto\dosecchook{\global#1=0 }\secreset#1}
+
+\chapreset\secnum   \secreset\seccnum
+```
+
+Makrem `\chapreset\counter` dáváme najevo, že chceme `\counter` resetovat jen
+v kapitole, dále `\secreset\num` zresetuje `\num` v kapitole i sekci a konečně
+`\seccreset\cosi` zresetuje `\cosi` v kapitole, sekci i podesekci. Dejme tomu,
+že chceme obrázky, tabulky i rovnice mít resetovány jen v kapitole a
+průběžně číslovány v sekcích a podsekcích. Chceme je oznažovat pomocí
+dvojice `chap.tab` nebo `chap.fig` a v případě rovnice zvolíme formát
+(`chap.rce`). Pak stačí psát:
+
+```
+\chapreset\tnum   \def\thetnum{\the\chapnum.\the\tnum}
+\chapreset\fnum   \def\thefnum{\the\chapnum.\the\fnum}
+\chapreset\dnum   \def\thednum{(\the\chapnum.\the\dnum)}
+```
+
+Nechť dále třeba chceme číslovat věty (propositions) a budeme třeba úplně
+praštění při návrhu číslování: budou se resetovat v každé podsekci a tisknout ve
+tvaru čtveřice `chap.sec.secc.prop`. Pak můžeme psát:
+
+```
+\newcount\propnum  \seccreset\propnum
+\def\thepropnum{\the\chapnum.\the\secnum.\the\seccnum.\the\propnum}
+
+\def\proposition{\global\advance\propnum by 1
+   \noindent\wlabel{\thepropnum}{\bf Proposition \thepropnum.}\space}
+```
+
+----lang:en--title:Systematic declaration of numbers
+OPmac uses the `\tnum` for table numbers, the `\fnum` for figure numbers and
+the `\dnum` for display equation numbers. The `\chapnum` is the number of the chapter,
+the `\secnum` is the number of the section and the `\seccnum` is the number for the
+subsection. The `\tnum`, `\fnum` and `\dnum` are reset to one in each section and
+the default printing format is chapnum.secnum.tnum or
+chapnum.secnum.fnum or (dnum). User can change the printing format by
+redefining of `\thetnum`, `\thefnum` and `\thednum`. The resetting strategy of
+these numbers can be changed too using `\chaphook`, `\sechook` and `\secchook`.
+These hooks are used in the `\chap`, `\sec`, `\secc` macros followed by default
+resetting followed by `\relax`. We can remove default resetting by:
+
+```
+\def\chaphook#1\relax{\dochaphook}  \def\dochaphook{}
+\def\sechook#1\relax{\dosechook}    \def\dosechook{}
+\def\secchook#1\relax{\dosecchook}  \def\dosecchook{}
+
+\def\chapreset#1{\addto\dochaphook{\global#1=0 }}
+\def\secreset#1{\addto\dosechook{\global#1=0 }\chapreset#1}
+\def\seccreset#1{\addto\dosecchook{\global#1=0 }\secreset#1}
+
+\chapreset\secnum   \secreset\seccnum
+```
+
+The `\chapreset\counter` declares that the `\counter` will be reset at each
+chapter. The `\secreset\num` declares resetting of the `\num` in each chapters
+and sections. Finally, the `\seccreset\foo` declares that `\foo` is reset in
+chapters, sections and subsections.
+
+For example, we need to reset numbers of tables, figures and equations
+only in each chapter and we want to print them in the format `chapnum.num`.
+The equation will be referred by (`chapnum.num`). Then we can write:
+
+```
+\chapreset\tnum   \def\thetnum{\the\chapnum.\the\tnum}
+\chapreset\fnum   \def\thefnum{\the\chapnum.\the\fnum}
+\chapreset\dnum   \def\thednum{(\the\chapnum.\the\dnum)}
+```
+
+For next example, we suppose the numbering of propositions. The number
+will be reset in each subsection and printed in the format
+`chapnum.secnum.seccnum.propnum`.
+
+```
+\newcount\propnum  \seccreset\propnum
+\def\thepropnum{\the\chapnum.\the\secnum.\the\seccnum.\the\propnum}
+
+\def\proposition{\global\advance\propnum by 1
+   \noindent\wlabel{\thepropnum}{\bf Proposition \thepropnum.}\space}
+```

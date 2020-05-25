@@ -1,0 +1,37 @@
+anchor-name:maybebreak
+id:0058
+author:P. O.
+date:2014-05-12
+
+----lang:cs--title:Zlom stránky jen někdy
+PlainTeX nabízí pro zlom stránky použít `\vfill\break`. Pokud autor toto
+začne vpisovat do svého dokumentu, aby „vylepšil“ stránkový zlom, a později
+připíše dopředu nějaké další informace a na toto své vylepšení zapomene, dostane
+ke své škodě třeba jen popolrázdnou stránku. OPmac proto nabízí od verze May
+2014 makro `\maybebreak rozměr` (například `\maybebreak 2cm`),
+které zlomí stránku nebo řádek, pokud do konce stránky nebo řádku zbývá zhruba
+méně než `rozměr`. Když je tam místa více, makro neudělá nic.
+
+Makro v horizontálním módu řeší řádkový zlom a ve vertikálním módu
+stránkový zlom. Pokud tedy chcete stránkový zlom, pište třeba
+
+```
+\par\maybebreak 3.5cm
+```
+
+----lang:en--title:The page/line break only if there is small space to the end of page/line
+PlainTeX provides `\vfil\break` for page breaks. If the authors use this in
+order to “improve” their documents and the document contents is changed
+late then bad page breaks occur, for example almost empty pages can be
+printed. The macro `\maybebreak dimen` can be used instead of `\vfil\break`
+(for example `\maybebreak2cm`). The page is broken here if the space to the
+bottom is approximately less than dimen. If there is more space then the
+macro does nothing.
+
+The macro `\maybebreak` processes the line breaks in horizontal mode and
+page breaks in the vertical mode. If you need to be sure that page break is
+processed then type:
+
+```
+\par\maybebreak 3.5cm
+```

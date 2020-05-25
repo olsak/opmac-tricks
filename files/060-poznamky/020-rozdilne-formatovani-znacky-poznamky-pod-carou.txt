@@ -1,0 +1,32 @@
+anchor-name:thefnote
+id:0044
+author:P. O.
+date:2014-04-02
+
+----lang:cs--title:Rozdílné formátování značky poznámky pod čarou
+Může se stát, že potřebujeme v textu vyznačit číslo poznámky pod čarou
+jinak, než podruhé před vlastní poznámkou pod čarou. K tomu je možné využít
+`\fnotehook`, který lokálně předefinuje `\thefnote`.
+
+Použijete-li ukázkový kód uvedený níže, dostanete do textu v místě odkazů
+šipku dolů následovanou horním indexem s číslem poznámky a před vlastní
+poznámku bude umístěno číslo poznámky přímo na řádku a bez šipky.
+
+```
+\def\thefnote{$\,\downarrow^{\locfnum}$}
+\def\fnotehook{\def\thefnote{\locfnum}}
+```
+
+----lang:en--title:Different formatting of the mark in text and footnote
+It is possible that we need to print the footnote number by another way
+in text and in the footnote itself. We can use `\fnotehook` for this purpose
+and we can redefine `\thefnote` locally.
+
+The example below prints a downarrow followed by a number
+in the text where footnote is referenced, but the footnote itself
+repeats the same number without the downarrow.
+
+```
+\def\thefnote{$\,\downarrow^{\locfnum}$}
+\def\fnotehook{\def\thefnote{\locfnum}}
+```

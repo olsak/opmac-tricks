@@ -1,0 +1,84 @@
+anchor-name:x11rgb
+id:0108
+author:P. O.
+date:2015-05-01
+
+----lang:cs--title:Deklarace sady barev z X11
+Soubor `rgb.txt` obsahuje názvy barev a jejich RGB deklarace používané v
+X Window System. Tato sada názvů je přepsána v LaTeXovém souboru
+`x11nam.def`. Pokud jej správně načteme, budeme mít k dispozici sadu as tří
+set přepínačů barev s názvy dle tohoto souboru, tj. třeba `\DeepPink`, `\Azure`,
+`\CadetBlue` atd. Tyto jednotlivé názvy jsou v souboru navíc vždy ve čtyřech
+variantách. Jedničkou jsou označeny barvy nejvíc zářivé a další v pořadí 2,
+3 a 4 jsou barvy odvozené tak, že je postupně ubrána barva a přidána šedá.
+
+Načteme soubor `x11nam.def` tak, aby barvy označené jedničkou byly
+přístupné v přímém názvu (tj. místo `\Chocolate1` přímo `\Chocolate`) a barva s
+označením 2 měla v názvu připojeno písmeno `B`, barva 3 připojuje v názvu `C` a
+barva 4 připojuje `D`. Například
+
+```
+\def\zkus#1{{#1\vrule height10pt depth5pt width20pt}\kern2pt}
+\zkus\DeepPink \zkus\DeepPinkB \zkus\DeepPinkC \zkus\DeepPinkD
+```
+
+vytvoří sadu čtyř růžových obdélníčků, každý další je poněkud
+zašpiněnější než ten předchozí. Povšimněte si, že barva `\DeepPinkA`
+neexistuje.
+
+Načtení souboru `x11nam.def` provedeme takto:
+
+```
+\long\def\tmp#1\preparecolorset#2#3#4#5{\tmpa #5;,,,;}
+\def\tmpa#1,#2,#3,#4;{\ifx,#1,\else
+   \def\tmpb{#1}\replacestrings{1}{}\replacestrings{2}{B}%
+   \replacestrings{3}{C}\replacestrings{4}{D}%
+   \expandafter\def\csname\tmpb\endcsname{\setrgbcolor{#2 #3 #4}}%
+   \expandafter\tmpa\fi
+}
+\expandafter\tmp\input x11nam.def
+```
+
+Dále je potřeba buď překlopit správu barev na RGB (podle OPmac triku
+[0090](#rgb)) nebo nastavit konverzi z RGB do CMYK
+(podle OPmac triku [0089](#setrgbcolor)).
+
+----lang:en--title:The declaration of color set from X11
+The file `rgb.txt` from X11 includes the color names and their RGB
+declarations used in X window system. This set of color names and
+declarations are rewritten in LaTeX file `x11nam.def`. If we are able to read
+this file then about three hunderds color names from this file will be
+available like `\DeepPink`, `\Azure`, `\CadetBlue` etc. These names are in four
+variants in the file: varinat one is pure color, varaints 2, 3 and 4 are the
+color mixed with a grey.
+
+We read the file `x11nam.def` in order to the colors with variant one have
+the direct name (i.e. instead `\Chocolate1` only `\Chocolate`) and the variant 2
+has the name with `B` added, variant 3 with `C` added and variant 4 with `D`
+added. For example:
+
+```
+\def\trycolor#1{{#1\vrule height10pt depth5pt width20pt}\kern2pt}
+\trycolor\DeepPink \trycolor\DeepPinkB \trycolor\DeepPinkC \trycolor\DeepPinkD
+```
+
+creates the set of four ping rectangles, first with direct pink and next
+rectangles with pink mixed with grey. Note that `\DeepPinkA` color doesn't
+exist.
+
+We can read the file `x11nam.def` by:
+
+```
+\long\def\tmp#1\preparecolorset#2#3#4#5{\tmpa #5;,,,;}
+\def\tmpa#1,#2,#3,#4;{\ifx,#1,\else
+   \def\tmpb{#1}\replacestrings{1}{}\replacestrings{2}{B}%
+   \replacestrings{3}{C}\replacestrings{4}{D}%
+   \expandafter\def\csname\tmpb\endcsname{\setrgbcolor{#2 #3 #4}}%
+   \expandafter\tmpa\fi
+}
+\expandafter\tmp\input x11nam.def
+```
+
+Next, we must use OPmac trick [0090](#rgb) for direct usage of
+RGB color space or OPmac trick [0089](#setrgbcolor) for
+conversion from RGB to CMYK.

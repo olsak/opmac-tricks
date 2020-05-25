@@ -1,0 +1,124 @@
+anchor-name:iindexb
+id:0072
+author:P. O.
+date:2014-06-22
+
+----lang:cs--title:Alternativní seznamy stránek v rejstříku
+Někdy je potřeba mít vedle rejstříkových hesel více seznamů stránek.
+Jeden seznam základní (většinou tištěn antikvou) a potom třeba zvýrazněné seznamy
+tištěné kurzívou nebo tučně. Najdeme to například v rejstříku TeXbooku, kde
+kurzívou nebo podtrženě jsou vytištěny výskyty hesla, které jsou nějakým způsobem
+významnější.
+
+Od verze OPmac Jun. 2014 je k dispozici makro
+`\Xindexg{prefix}{heslo}{strana}`,
+které lze použít v REF souborech podobně, jako `\Xindex{heslo}{strana}`.
+Toto makro vytváří alternativní seznamy stránek uložené v sekvencích
+`\prefixheslo` a seznamy těchto sekvencí ukládá do `\iilist:prefix`.
+Seznam stránek je zpracován stejně jako standardní `\,heslo`, tj. data
+jsou ve dvou částech, v první je příznak zpracování a ve druhé je
+komprimovaný seznam stránek (např. `3,4,4,5` se redukuje na `3--5`).
+
+Jako příklad vytvoříme makro `\iindexb{heslo}`, které uloží výskyt hesla do
+alternativního seznamu stránek prefixovaný pomocí `b:`. Pokud heslo bude mít
+tento seznam, budeme jej tisknout v rejstříku před obecný seznam stránek
+tučně a červeně.
+
+```
+\def\iindexb#1{\openref\wref\Xindexg{{b:}{#1}{\the\pageno}}}
+\def\printiipages#1&{ % second space between word and pagelist
+   \expandafter \isinlist \csname iilist:b:\expandafter\endcsname \csname b:\currii\endcsname
+   \iftrue
+      \expandafter\seconddata \csname b:\currii\endcsname \XindexB
+      {\localcolor\Red \bf \tmp}, \fi
+   #1\par
+}
+```
+
+V prvním řádku je definováno `\iindexb` tak, že výskyt hesla pošle do
+alternativního seznamu prefixovaného `b:`. Dále je předefinováno makro
+`\printiipages`, které dostane v prametru `#1` obecný seznam stránek a má je
+vytisknout. Pomocí `\isinlist \iilist:b: \b:heslo \iftrue` se zeptáme, zda
+heslo má alternativní seznam stránek. Pokud ano, vložíme
+`{\localcolor\Red \bf \tmp}`, přitom
+v `\tmp` je uložen druhý údaj z `\b:heslo` pomocí `\seconddata \b:heslo \Xindex`.
+
+Uvedný příklad bude fungovat jen v případě, že heslo má i svůj normální
+výskyt, protože do rejstříku jsou zařazena a abecedně setříděna jen hesla s
+normálním výskytem. Dále se zde předpokládá, že seznam stránek prefixovaný
+pomocí `b:` bude uzavřen, nebo obsahuje jen izolované stránky.
+Není-li to pravda, je potřeba seznam nejprve uzavřít. Oba tyto problémy řeší
+následující modifikace makra.
+
+```
+\def\iindexb#1{\openref\wref\Xindexg{{b:}{#1}{\the\pageno}}\wref\Xindex{{#1}{}}}
+\def\printiipages#1&{ % second space between word and pagelist
+   \expandafter \isinlist \csname iilist:b:\expandafter\endcsname \csname b:\currii\endcsname
+   \iftrue
+      \expandafter\firstdata  \csname b:\currii\endcsname \XindexA
+      \expandafter\seconddata \csname b:\currii\endcsname \XindexB
+      {\localcolor\Red \bf \tmp\ifx\tmpb-\pgfolioA{\tmpa}\fi}%
+      \if^#1^\else, \fi % comma only if the next list isn't empty
+   \fi
+   #1\par
+}
+```
+
+----lang:en--title:Alternative page-lists in the index
+Sometimes we need alongside the Index items more than one page list. Fox
+example one page list is basic (in roman font), second page list in italics
+or bold with important occurrences of the Index item. You can be inspired in
+the Index of the TeXbook. The italic or underlined page numbers denote
+something more important.
+
+The macro `\Xindexg{prefix}{word}{page}` is provided by OPmac since the
+version Jun. 2014. It can be used in the REF files similarly like
+`\Xindex{word}{page}`. This macro creates alternative pagelists in the
+macros `\prefixword` and the lists of such sequences are saved in
+`\iilist:prefix`. The pagelist is processed analogically as standard `\,word`
+is used, i.e. the data are in two parts. First part includes the attribute of
+the processing and the second part included the condensed page list (for
+example `3,4,4,4,5` is condensed to `3--5`).
+
+Just for example, we create the macro `\iindexb{word}`, which saves the
+word occurrence into the separated page list prefixed by `b:`. If the word
+will have this page list, it will be printed in the Index before common page
+list in red and bold.
+
+```
+\def\iindexb#1{\openref\wref\Xindexg{{b:}{#1}{\the\pageno}}}
+\def\printiipages#1&{ % second space between word and pagelist
+   \expandafter \isinlist \csname iilist:b:\expandafter\endcsname \csname b:\currii\endcsname
+   \iftrue
+      \expandafter\seconddata \csname b:\currii\endcsname \XindexB
+      {\localcolor\Red \bf \tmp}, \fi
+   #1\par
+}
+```
+
+The `\iindexb` is defined at the first line. The word occurrence is sent to
+alternative page list prefixed by `b:`. The `\printiipages` is redefined in
+order it get the common pagelist in `#1` parameter and this to be printed. By
+the code `\isinlist \iilist:b: \b:word \iftrue` we do the test if the word has
+the alternative page list. If it is true then `{\localcolor\Red \bf \tmp}`
+is inserted. The `\tmp` macro includes the second data from `\b:word`.
+
+The example above will work only in the case that the word have its
+normal occurrence because the `\makeindex` processes only `\iilist` with
+normal words. Next, we suppose that the alternative page list is closed or
+it includes only isolated pages. If this isn't true then we need to close
+the alternative page list. Both these problems are solved by the code:
+
+```
+\def\iindexb#1{\openref\wref\Xindexg{{b:}{#1}{\the\pageno}}\wref\Xindex{{#1}{}}}
+\def\printiipages#1&{ % second space between word and pagelist
+   \expandafter \isinlist \csname iilist:b:\expandafter\endcsname \csname b:\currii\endcsname
+   \iftrue
+      \expandafter\firstdata  \csname b:\currii\endcsname \XindexA
+      \expandafter\seconddata \csname b:\currii\endcsname \XindexB
+      {\localcolor\Red \bf \tmp\ifx\tmpb-\pgfolioA{\tmpa}\fi}%
+      \if^#1^\else, \fi % comma only if the next list isn't empty
+   \fi
+   #1\par
+}
+```

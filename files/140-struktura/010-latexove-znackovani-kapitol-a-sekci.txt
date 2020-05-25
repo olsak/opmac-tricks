@@ -1,0 +1,44 @@
+anchor-name:latexchap
+id:0036
+author:P. O.
+date:2014-01-29
+
+----lang:cs--title:LaTeXové značkování kapitol a sekcí
+Některé editory nabízejí inteligentní chování, rozpoznají-li v textu
+LaTeXové značkování. Například podle `\chapter`, `\section`, `\subsection`
+interpretují stromovou strukturu textu a umožňují jednotlivé části textu dle
+potřeby kliknutím otevírat a zavírat. Bohužel OPmac přišel 30 let po LaTeXu
+a editory si na něj ještě nezvykly. Nechcete-li zrovna řešit
+překonfigurování editoru, můžete si jednoduše základní LaTeXové značkování
+doplnit a v dokumentu ty značky používat. Například:
+
+```
+\def\bracedparam#1{\csname\string#1:M\endcsname}
+\def\chapter{\bracedparam\chap}
+\def\section{\bracedparam\sec}
+\def\subsection{\bracedparam\secc}
+```
+
+Pokud někdo naopak upraví konfiguraci svého editoru tak, aby spolupracoval se
+značkováním podle OPmac, uvítám o tom informaci a rád na stránkách OPmac dám
+na takové řešení odkaz.
+
+----lang:en--title:LaTeX markup of chapters and sections
+Some text editors are able hide or extract the whole text of chapters,
+sections, subsections etc. and provides the clickable tree oriented menu for
+this. Unfortunately, OPmac is here 30 years later than LaTeX and editors
+don't support the structure markup of chapters, sections and subsections
+given by OPmac today. If you needn't to solve the reconfiguration of your
+text editor, you can simply define the basics macros and use the LaTeX
+markup. For example:
+
+```
+\def\bracedparam#1{\csname\string#1:M\endcsname}
+\def\chapter{\bracedparam\chap}
+\def\section{\bracedparam\sec}
+\def\subsection{\bracedparam\secc}
+```
+
+If somebody will tune the configuration of used text editor in order to it
+accepts the OPmac markup, I'll welcome information about it and I'll give the
+link at my web pages to such solution with pleasure.

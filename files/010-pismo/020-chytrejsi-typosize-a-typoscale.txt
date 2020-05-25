@@ -1,0 +1,82 @@
+anchor-name:currvf
+id:0132
+author:P. O.
+date:2015-11-23
+
+----lang:cs--title:Chytřejší \typosize a \typoscale
+OPmac definuje makra `\typosize` a `\typoscale` tak, že nastaví odpovídající
+velikost fontu a resetují variantu fontu na `\rm` bez ohledu na to, jaká byla
+zvolena před použitím makra. Tedy
+
+```
+\bf text \typosize[13/15] velký
+```
+
+způsobí, že slovo „velký“ je vytištěno ve variantě `\rm`, nikoli `\bf`.
+Pokud chceme, aby makra `\typosize` a `\typoscale` respektovala naposledy
+zvolenou variantu fontu, pak je možné použít tento kód:
+
+```
+\let\currvf=\rm
+\addto\rm{\let\currvf\rm}   \addprotect\rm
+\addto\it{\let\currvf\it}   \addprotect\it
+\addto\bf{\let\currvf\bf}   \addprotect\bf
+\addto\bi{\let\currvf\bi}   \addprotect\bi
+
+\def\textfontsize[#1]{\if$#1$\else
+  \fontdim=#1\ptunit \ifx\fontdimB\undefined \edef\fontdimB{\the\fontdim}\fi
+  \let\dgsize=\fontdim
+  \edef\sizespec{at\the\fontdim}%
+  \resizeall \currvf
+  \let\dgsize=\undefined
+  \fi
+}
+```
+
+Makra `\rm`, `\bf`, `\it` a `\bi` nyní kromě nastavení varianty uloží zprávu o
+aktuálně nastavené variantě do sekvence `\currvf`. Aby nedošlo ke kolizi při
+expandování ve `\write`, je třeba makra označit pomocí `\addprotect`.
+Interní makro OPmac `\textfontsize` je předefinováno tak, že místo
+makra `\rm` původně se vyskytujícího za voláním `\resizeall` je vloženo
+`\currvf`.
+
+----lang:en--title:More intelligent \typosize and \typoscale
+The macros `\typosize` and `\typoscale` resize the fonts in all variants
+but they don't respect the current variant selected before `\typosize` or
+`\typoscale` is used. They always reset the current variant to `\rm`. This is
+feature of OPmac because `\thefontsize` and `\thefontscale` can be used for
+resizing single selected variant of the font.
+
+The problem can be illustrated in this example:
+
+```
+\bf text \typosize[13/15] big
+```
+
+The word “big” is printed in `\rm`, not in `\bf`. We can redefine `\typosize` and
+`\typoscale` macros so, that they do respect the current variant. This can be
+done by the following code:
+
+```
+\let\currvf=\rm
+\addto\rm{\let\currvf\rm}   \addprotect\rm
+\addto\it{\let\currvf\it}   \addprotect\it
+\addto\bf{\let\currvf\bf}   \addprotect\bf
+\addto\bi{\let\currvf\bi}   \addprotect\bi
+
+\def\textfontsize[#1]{\if$#1$\else
+  \fontdim=#1\ptunit \ifx\fontdimB\undefined \edef\fontdimB{\the\fontdim}\fi
+  \let\dgsize=\fontdim
+  \edef\sizespec{at\the\fontdim}%
+  \resizeall \currvf
+  \let\dgsize=\undefined
+  \fi
+}
+```
+
+The macros `\rm`, `\bf`, `\it` and `\bi` select the appropriate font variant (of
+course) and they save the information about selected variant of font into
+`\currvf`. The `\addprotect` is used in order to avoid the problems when `\rm`,
+`\bf` etc. are inside `\write` parameters.
+The internal macro of OPmac `\textfontsize` is redefined:
+only the occurrence of `\rm` (after `\resizeall`) is replaced by `\currvf`.

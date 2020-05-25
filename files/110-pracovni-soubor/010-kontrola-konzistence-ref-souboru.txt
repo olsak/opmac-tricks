@@ -1,0 +1,93 @@
+anchor-name:refconsistent
+id:0045
+author:P. O.
+date:2014-04-05
+
+----lang:cs--title:Kontrola konzistence REF souboru
+Výjimečně se může stát, že změny v textech odkazů mohou změnit
+stránkování a tato změna stránkování změní po dalším průchodu TeXem texty
+odkazů. Přitom i po opakovaném TeXování se sazba neustálí na konečné podobě.
+Nelze snadno a univerzálně tento problém vyřešit, ale je možné na něj aspoň
+uživatele upozornit. Uživatel si pak může uložit dva po sobě jdoucí obsahy
+REF souborů a porovnat je třeba pomocí diff. Na základě toho zjistí, kde je
+problém a pokusí se to řešit manuálně.
+
+OPmac neimplementuje upozornění na nekonzistenci REF souborů po dvou za
+sebou jdoucích průchodech. Je to ovšem možné doprogramovat tímto kódem:
+
+```
+\let\Xend=\relax
+\long\def\readREFcontents #1\Xend{\def\REFcontents{#1}}
+\openin0=\jobname.ref
+\ifeof0 \def\REFcontents{}
+\else \expandafter \readREFcontents \input \jobname.ref
+\fi
+
+\input opmac
+
+\let\endprimitive=\end
+\def\end{%
+   \ifx\wref\wrefrelax \else
+      \vfil\break
+      \immediate\write\reffile{\string\Xend}
+      \immediate\closeout\reffile
+      \let\tmpa=\REFcontents
+      \expandafter \readREFcontents \input \jobname.ref
+      \ifx\tmpa\REFcontents \message{Congratulations, references are consistent}
+      \else                 \opwarning{Inconsistent REF file, TeX me again}
+   \fi\fi
+   \endprimitive
+}
+```
+
+V tomto makru na začátku uložíme do `\REFcontents` kompletní obsah REF
+souboru z předchozího běhu. To je potřeba učinit ještě před
+`\input opmac`, protože OPmac nám REF soubor přemaže.
+Dále na konci zpracování dokumentu (předefinováním `\end`) proběhne kontrola,
+zda obsah REF souboru zůstal stejný, jako na začátku. REF soubor je v obou
+případech čten makrem `\readREFcontents`, které očekává na konci souboru
+zarážku `\Xend`. Proto je tato zarážka do souboru na konci zpracování vložena.
+
+----lang:en--title:Checks of REF file consistency
+Suppose this rare case: the changes in the text influence the changes of
+the REF file. When changed REF file is read in the next TeX run then this
+influences the changes in the text and this influence changes of the REF
+file and so on and so on. It is not simple to solve this problem in general
+but we can at least to report the problem. The user can save two consecutive
+versions o REF file and he can do diff UNIX command in order to show where
+the problem is. He can solve such problem manually.
+
+OPmac doesn't implement such reporting about REF file inconsistency in
+two consecutive TeX runs. We can add this feature by this:
+
+```
+\let\Xend=\relax
+\long\def\readREFcontents #1\Xend{\def\REFcontents{#1}}
+\openin0=\jobname.ref
+\ifeof0 \def\REFcontents{}
+\else \expandafter \readREFcontents \input \jobname.ref
+\fi
+
+\input opmac
+
+\let\endprimitive=\end
+\def\end{%
+   \ifx\wref\wrefrelax \else
+      \vfil\break
+      \immediate\write\reffile{\string\Xend}
+      \immediate\closeout\reffile
+      \let\tmpa=\REFcontents
+      \expandafter \readREFcontents \input \jobname.ref
+      \ifx\tmpa\REFcontents \message{Congratulations, references are consistent}
+      \else                 \opwarning{Inconsistent REF file, TeX me again}
+   \fi\fi
+   \endprimitive
+}
+```
+
+First, the contents of the REF file from previous TeX run
+is saved to `\REFcontents`. This is done before `\input opmac` because OPmac
+reads and rewrites the REF file. Second, the `\end` is redefined in order to
+do more actions: the check of equivalence of the REF file is performed
+here. The REF file is read by the `\readREFcontents` macro. The `\Xend`
+separator is expected at the end of the REF file.

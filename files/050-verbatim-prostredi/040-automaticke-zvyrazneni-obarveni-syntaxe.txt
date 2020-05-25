@@ -1,0 +1,173 @@
+anchor-name:hisyntax
+id:0124
+author:P. O.
+date:2015-09-27
+
+----lang:cs--title:Automatické zvýraznění/obarvení syntaxe
+Zvýraznění syntaxe (syntax highlighting) nějakého programovacího jazyka
+mezi `\begtt` a `\endtt` provedeme pomocí `\hisyntax{jazyk}`, což napíšeme těsně
+před `\begtt` nebo před `\verbinput`. Například:
+
+![Ukázka hisyntax](img/hisyntax-ukazka.png)
+
+```
+\hisyntax{C}
+\begtt
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+   printf("Hello World!\n"); // Prints the message
+   return 0;
+}
+\endtt
+```
+
+Makro `\hisyntax` lokálně předefinuje zpracování stringu mezi
+`\begtt...\endtt` pomocí `\ptthook` (od verze OPmac Oct. 2015). Makro
+`\ghisyntax` na začátku dokumentu způsobí obarvení všech výpisů v dokumentu.
+Při `\hisyntax{C}` (resp. `\ghisyntax{C}`) se spustí interní `\hisyntaxC` a
+analogicky to můžete udělat pro jiné jazyky. Definice `\hisyntaxC` může
+vypadat takto:
+
+```
+\def\hisyntax#1{\bgroup\def\ptthook{\csname hisyntax#1\endcsname}}
+\def\ghisyntax#1{\def\ptthook{\bgroup\csname hisyntax#1\endcsname}}
+
+\def\hisyntaxC#1\egroup{\let\n=\relax \let\NLh=\relax \let\U=\relax
+   \let\TABchar=\relax % pro OPmac trik 0151
+   \adef{ }{\n\ \n}\adef\^^M{\n\NLh\n}\edef\tmpb{#1\egroup}%
+   \replacestrings{\n\egroup}{\egroup}%
+   \replacestrings{/*}{\tmp}\def\tmp##1*/{\U{commentC}{##1}}\edef\tmpb{\tmpb}%
+   \replacestrings{//}{\tmp}\def\tmp##1\NLh{\U{commentCpp}{##1}}\edef\tmpb{\tmpb}%
+   \edef\tmp{\noexpand\replacestrings{\string\"}{\n{\string\"}}}\tmp
+   \replacestrings{"}{\tmp}\def\tmp##1\tmp{\U{stringC}{##1}}\edef\tmpb{\tmpb}%
+   \doreplace{##1}{\n{\chCcolor##1}\n}\charsC{}%
+   \doreplace{\n##1\n}{\kwC{##1}}\keywordsC{}%
+   \edef\tmp{\noexpand\replacestrings{\NLh\n\string##}{\NLh\noexpand\preprocC}}\tmp
+   \doreplace{\n##1}{\numberC##1}0123456789{}%
+   \let\NLh=\par \def\n{}\def\U##1{\csname##1\endcsname}%
+   \tentt\localcolor\tmpb\egroup}
+\def\doreplace#1#2{\def\do##1{\ifx^##1^\else \replacestrings{#1}{#2}\expandafter\do\fi}%
+   \expandafter\do}
+\def\printttline{\llap{\sevenrm\Black\the\ttline\kern.9em}} % \Black added
+
+\def\commentC#1{{\Green/*#1*/}}
+\def\commentCpp#1{{\Green//#1}\NLh}
+\def\stringC#1{{\def\ {\char32 }\Magenta"#1"}}
+\def\preprocC#1\n{{\Blue\##1}}
+\def\numberC#1\n{{\Cyan#1}}
+\edef\keywordsC{{auto}{break}{case}{char}{continue}{default}{do}{double}%
+   {else}{entry}{enum}{extern}{float}{for}{goto}{if}{int}{long}{register}%
+   {return}{short}{sizeof}{static}{struct}{switch}{typedef}{union}
+   {unsigned}{void}{while}} % zde jsou všechna klíčová slova jazyka C
+\def\kwC#1{{\Red#1}}
+\edef\charsC{()\string{\string}+-*/=[]<>,:;\percent\string&\string^|!?}
+\let\chCcolor=\Blue
+```
+
+Načtený verbatim string je nejpre expandován do `\tmpb`, kde bude dále postupně
+měněn pomocí `\replacestrings`. Při vstupní expanzi jsou mezery vyměněny za
+`\n\ \n` a konce řádků za `\n\NLh\n`. Symbol `\n` je netisknoucí značka, která
+se tak objeví na okrajích slov, takže půjde vyměnit třeba klíčové slovo
+`\n if\n` za `\kwC{if}`, a přitom se nevymění úsek slova `if` třeba v proměnné
+`diff`. Dále jsou provedeny náhrady:
+
+```
+/* cosi */              -->   \U{commentC}{ cosi }
+// cosi (konec řádku)   -->   \U{commentCpp}{ cosi }
+\"                      -->   \n{\"}
+"cosi"                  -->   \U{stringC}{cosi}
+```
+
+Všimněte si, že text „cosi“ je po náhradě uvězněn mezi `{...}`, takže
+takový text je imunní vůči pozdějším pokusům o náhrady. Konečně jsou všechny
+znaky typu `(){}+-...` nahrazeny `\n{\chColor znak}\n`, a dále jsou nahrazena
+všechna klíčová slova a slova preprocesoru. Co nebylo nahrazeno, zůstává
+černé (měly by to být jen identifikátory jazyka). Také je provedena náhrada
+`\n číslo` za `\numC číslo`, aby mohlo makro `\numC` obarvit samotná čísla,
+která nejsou součástí identifikátorů.
+
+----lang:en--title:Automatic syntax highlighting
+We can active a syntax highlighting between `\begtt...\endtt`
+by `\hisyntax{language}` immediately before `\begtt` or before `\verbinput`.
+For example:
+
+![hisyntax example](img/hisyntax-ukazka.png)
+
+```
+\hisyntax{C}
+\begtt
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+   printf("Hello World!\n"); // Prints the message
+   return 0;
+}
+\endtt
+```
+
+The macro `\hisyntax` locally redefines the string post-processing between
+`\begtt...\endtt` using `\ptthook` (from OPmac Oct. 2015). The macro
+`\ghisyntax` activates coloring of all listings in the document. Specially,
+the `\hisyntax{C}` (or `\ghisyntax{C}`) uses an internal macro `\hisyntaxC`
+and you can define analogical macro for another programming languages. The
+`\hisyntaxC` looks like:
+
+```
+\def\hisyntax#1{\bgroup\def\ptthook{\csname hisyntax#1\endcsname}}
+\def\ghisyntax#1{\def\ptthook{\bgroup\csname hisyntax#1\endcsname}}
+
+\def\hisyntaxC#1\egroup{\let\n=\relax \let\NLh=\relax \let\U=\relax
+   \let\TABchar=\relax % used in OPmac trick 0151
+   \adef{ }{\n\ \n}\adef\^^M{\n\NLh\n}\edef\tmpb{#1\egroup}%
+   \replacestrings{\n\egroup}{\egroup}%
+   \replacestrings{/*}{\tmp}\def\tmp##1*/{\U{commentC}{##1}}\edef\tmpb{\tmpb}%
+   \replacestrings{//}{\tmp}\def\tmp##1\NLh{\U{commentCpp}{##1}}\edef\tmpb{\tmpb}%
+   \edef\tmp{\noexpand\replacestrings{\string\"}{\n{\string\"}}}\tmp
+   \replacestrings{"}{\tmp}\def\tmp##1\tmp{\U{stringC}{##1}}\edef\tmpb{\tmpb}%
+   \doreplace{##1}{\n{\chCcolor##1}\n}\charsC{}%
+   \doreplace{\n##1\n}{\kwC{##1}}\keywordsC{}%
+   \edef\tmp{\noexpand\replacestrings{\NLh\n\string##}{\NLh\noexpand\preprocC}}\tmp
+   \doreplace{\n##1}{\numberC##1}0123456789{}%
+   \let\NLh=\par \def\n{}\def\U##1{\csname##1\endcsname}%
+   \tentt\localcolor\tmpb\egroup}
+\def\doreplace#1#2{\def\do##1{\ifx^##1^\else \replacestrings{#1}{#2}\expandafter\do\fi}%
+   \expandafter\do}
+\def\printttline{\llap{\sevenrm\Black\the\ttline\kern.9em}} % \Black added
+
+\def\commentC#1{{\Green/*#1*/}}
+\def\commentCpp#1{{\Green//#1}\NLh}
+\def\stringC#1{{\def\ {\char32 }\Magenta"#1"}}
+\def\numberC#1\n{{\Cyan#1}}
+\def\preprocC#1\n{{\Blue\##1}}
+\edef\keywordsC{{auto}{break}{case}{char}{continue}{default}{do}{double}%
+   {else}{entry}{enum}{extern}{float}{for}{goto}{if}{int}{long}{register}%
+   {return}{short}{sizeof}{static}{struct}{switch}{typedef}{union}
+   {unsigned}{void}{while}} % all keywords of C language are here
+\def\kwC#1{{\Red#1}}
+\edef\charsC{()\string{\string}+-*/=[]<>,:;\percent\string&\string^|!?}
+\let\chCcolor=\Blue
+```
+
+The input string is expanded to `\tmpb` first and then the `\replacestrings`
+is applied to `\tmpb` repeatedly. The spaces are replaced by `\n\ \n` and
+end-lines by `\n\NLh\n` during the first expansion. The symbol `\n` in
+invisible mark which will occur at word boundaries. So, we will be able to
+manage the keyword "if" as replacing `\n if\n` by `\kwC{if}` and this
+process will not replace the part of the variable identifier "diff" (for
+example). Next we do the replacing:
+
+```
+/* foo-text */           -->   \U{commentC}{ foo-text }
+// foo-text (end-line)   -->   \U{commentCpp}{ foo-text }
+\"                       -->   \n{\"}
+"foo-text"               -->   \U{stringC}{foo-text}
+```
+
+Note, that the “foo-text” is enclosed by `{}` after replacing, so such text
+is resistant to next replacing process. Finally, all characters of the type
+`(){}+-...` are replaced by `\n{\chCcolor char}\n`, next all keywords and
+preprocessor words are replaced. The non-replaced rest is printed in black
+and this is only identifiers (of variables, functions etc.). The `\n number`
+is replaced by `\numC number` in order to do the colorization of numeric
+constants (no numbers which are part of identifiers).

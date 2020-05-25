@@ -1,0 +1,60 @@
+anchor-name:urlbreakpoint
+id:0050
+author:P. O.
+date:2014-04-26
+
+----lang:cs--title:Zlom v dlouhém URL
+OPmac nabízí makro `\url` na tisk internetových odkazů. Toto makro dává
+potenciální místa zlomu za lomítka, tečky, otazníky a rovnítka. Dále od
+verze May 2014 nabízí OPmac makro `\|`, které se dá použít v argumentu `\url`
+pro vyznačení dalších míst zlomu. Toto makro se při tisku \url chová jako
+`\urlspecchar`, přitom `\urlspecchar` je definováno implitině jako `\penalty10`.
+Protože je ale v argumentu `\url` schována jen malá pružnost, nemusí vhodné
+místo zlomu přesně vyhovovat. Je možné předefinovat `\urlspecchar` tak, aby v
+případě, že se v tomto místě zlomí, zůstal řádek nezarovnán na pravý okraj.
+
+```
+\def\urlspecchar{\nobreak\hskip0pt plus2em \penalty110 \hskip0pt plus-2em\relax}
+```
+
+Makro umožní zlomit v penaltě 110, pak před ní zůstává pružná mezera.
+Pokud ale ke zlomu nedojde, pak se dvě za sebou jdoucí pružné mezery vyruší,
+takže v sazbě není žádná mezera.
+
+Další možností je vložit mezi každé dva znaky v argumentu `\url` pružnou
+mezeru. To se dá udělat takto:
+
+```
+\addto\urlfont{\replacestrings{}{\nobreak\hskip0pt plus.05em minus.03em\relax}}
+```
+
+Odeberete-li `\nobreak`, bude argument `\url` zlomitelný mezi každými dvěma
+znaky.
+
+----lang:en--title:URL hyphenation
+OPmac provides `\url` macro for printing URLs. This macro gives potential
+line breaks after slashes, dots, questions and equal signs. User can insert
+the `\|` sequences into the URL for declaration of additional allowbreaks.
+This macro expands to `\urlspecchar` which is defined as `\penalty10` by
+default. The linebreak cannot be realized in good place because only small
+glue stretch/schrinkability is included in URL argument. We can redefine
+`\urlspecchar` in order to the right margin is ragged.
+
+```
+\def\urlspecchar{\nobreak\hskip0pt plus2em \penalty110 \hskip0pt plus-2em\relax}
+```
+
+This macro gives possibility to break in the `\penalty110` but the
+stretchable space is before this break. If the line break isn't realized then
+the following `\hskip` removes the values of the previous `\hskip`, so no space
+is printed.
+
+Another solution of problematic URL breaking is to insert little stretchable space
+between each character in the URL parameter. This can be done by:
+
+```
+\addto\urlfont{\replacestrings{}{\nobreak\hskip0pt plus.05em minus.03em\relax}}
+```
+
+If you remove the `\nobreak` from the code above then the `\url` parameter is
+breakable between all pairs of characters.

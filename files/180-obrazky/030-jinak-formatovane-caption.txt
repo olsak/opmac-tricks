@@ -1,0 +1,23 @@
+anchor-name:captiform
+id:0059
+author:P. O.
+date:2014-05-13
+
+----lang:cs--title:Jinak formátované \caption
+OPmac formátuje popisky pod obrázky a tabulkami implicitně tak, že centruje
+poslední řádek odstavce. Je možné, že chcete jiné formátování. Například
+takové, aby popisky centrovaly, pokud jsou na samostatném
+řádku, ale jinak aby se chovaly jako obyčejný odstavec, pokud přetečou na více
+řádků. To by mohl vyřešit následující kód:
+
+```
+\def\printcaption#1#2{\leftskip=\iindent \rightskip=\iindent
+   \setbox0=\hbox\bgroup \aftergroup\docaption{\bf#1 #2.}\enspace}
+\def\docaption{\tmpdim=\hsize \advance\tmpdim by-2\iindent
+   \ifdim\wd0>\tmpdim \unhbox0 \else \hfil\hfil\unhbox0 \fi \endgraf \egroup}
+```
+
+Makro přeměří text popisku uložený v boxu0 a pokud se vejde na jeden řádek,
+předřadí před něj `\hfil\hfil`, což je pružinka stejné síly, jako `\parfillskip`
+(v popiscích dle OPmac) a text centruje. Je-li popisek delší, žádná pružinka
+se nepředřadí a vysází se obyčejný odstavec.

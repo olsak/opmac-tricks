@@ -1,0 +1,102 @@
+anchor-name:sipky
+id:0062
+author:P. O.
+date:2014-05-24
+
+----lang:cs--title:Různě zakřivené šipky
+Vytvoříme makro
+
+```
+\arrowcc x0 y0 {cx0 cy0 cx1 cy1} x1 y1 (dx1 dy1) {Text}
+```
+
+které nakreslí čáru od `x0 y0` po `x1 y1` zakončenou šipkou. Část
+`{cx0 cy0 cx1 cy1}` může být prázdná, tedy `{}`, pak se vykreslí úsečka
+zakončená šipkou. Jinak
+čísla `{cx0 cy0 cx1 cy1}` udávají kontrolní body Bézierovy křivky. Na konci
+šipky se vypíše Text posunutý od konce šipky o `xd1 dy1`.
+Čísla `cx0 cy0 cx1 cy1 x1 y1` jsou relativní k počátku `x0 y0`. Tento počátek je
+relativní k pozici aktuálního bodu sazby. Vše je implicitně v jednotkách `bp`.
+V makru `\arrowccparams` je možné
+uložit výchozí nastavení (barvu, tloušťku čáry) a v makru `\arrowccspike`
+je možné deklarovat jinou kresbu hrotu, než je předdefinovaná.
+Například:
+
+```
+\vglue5cm
+\def\arrowccparams{1 0 0 rg 1 0 0 RG}  % kresba bude červená
+
+Pokus \arrowcc 0 10 {-30 20 -30 50} 20 50 (3 -3) {Text 1}
+dále \arrowcc 0 -3 {} 40 -30 (3 -3) {Text 2}
+a ještě \arrowcc 0 2 {10 20 20 30} 40 40 (3 -2) {Text 3}.
+```
+
+vytvoří:
+
+![Ukázka šipek](img/sipky-ukazka.png)
+
+```
+\def\arrowccspike{2 0 m -5 2 l -5 -2 l h f}
+\def\arrowcc #1 #2 #3 #4 #5 (#6)#7{%
+   % x0 y0 {cx1 cy1 cx2 cy2} x1 y1 (dx1 dy1) {Text}
+   \pdfsave\rlap{\pdfliteral{%
+   .7 w \arrowccparams\space 1 0 0 1 #1 #2 cm 0 0 m
+   \if ^#3^#4 #5 l \else #3 #4 #5 c \fi S 1 0 0 1 #4 #5 cm}%
+   \if^#3^\calculateargofvector(0 0) (#4 #5)\else \preparedirection #3 (#4 #5)\fi
+   \pdfsave\pdfrotate{\argofvector}\pdfliteral{\arrowccspike}\pdfrestore
+   \if^#7^\else\pdfliteral{1 0 0 1 #6 cm}\hbox{#7}\fi}\pdfrestore
+}
+\def\preparedirection #1 #2 #3 #4 {\calculateargofvector(#3 #4) }
+\def\arrowccparams{}
+```
+
+Makro využívá jednoduchou PDF grafiku a výpočet směru podle
+[OPmac triku 0061](#argofvector).
+
+----lang:en--title:Curved arrows
+We prepare the macro
+
+```
+\arrowcc x0 y0 {cx0 cy0 cx1 cy1} x1 y1 (dx1 dy1) {Text}
+```
+
+which draw the curve from `x0 y0` to `x1 y1` ended by arrow spike. The part
+`{cx0 cy0 cx1 cy1}` can be empty, i. e. `{}`. The line is drawn in such case.
+The numbers `{cx0 cy0 cx1 cy1}` gives the control points of a Bézier curve.
+At the end of the arrow is printed the "Text" shifted by `xd1 dy1`.
+The numbers `cx0 cy0 cx1 cy1 x1 y1` are relative to the origin `x0 y0`.
+This origin is relative to the current typesetting point. All numbers are in
+`bp` units by default. The macro `\arrowccparams` can include the additional
+settings (color, line width, etc.). The macro `\arrowccspike` includes the
+drawing of the arrow spike and you can redefine it.
+
+```
+\vglue5cm
+\def\arrowccparams{1 0 0 rg 1 0 0 RG}  % red color is initialized
+
+Pokus \arrowcc 0 10 {-30 20 -30 50} 20 50 (3 -3) {Text 1}
+dále \arrowcc 0 -3 {} 40 -30 (3 -3) {Text 2}
+a ještě \arrowcc 0 2 {10 20 20 30} 40 40 (3 -2) {Text 3}.
+```
+
+creates:
+
+![Arrows example](img/sipky-ukazka.png)
+
+```
+\def\arrowccspike{2 0 m -5 2 l -5 -2 l h f}
+\def\arrowcc #1 #2 #3 #4 #5 (#6)#7{%
+   % x0 y0 {cx1 cy1 cx2 cy2} x1 y1 (dx1 dy1) {Text}
+   \pdfsave\rlap{\pdfliteral{%
+   .7 w \arrowccparams\space 1 0 0 1 #1 #2 cm 0 0 m
+   \if ^#3^#4 #5 l \else #3 #4 #5 c \fi S 1 0 0 1 #4 #5 cm}%
+   \if^#3^\calculateargofvector(0 0) (#4 #5)\else \preparedirection #3 (#4 #5)\fi
+   \pdfsave\pdfrotate{\argofvector}\pdfliteral{\arrowccspike}\pdfrestore
+   \if^#7^\else\pdfliteral{1 0 0 1 #6 cm}\hbox{#7}\fi}\pdfrestore
+}
+\def\preparedirection #1 #2 #3 #4 {\calculateargofvector(#3 #4) }
+\def\arrowccparams{}
+```
+
+The macro uses low level PDF commands for graphics and the calculation of
+the direction from [OPmac trick 0061](#argofvector).

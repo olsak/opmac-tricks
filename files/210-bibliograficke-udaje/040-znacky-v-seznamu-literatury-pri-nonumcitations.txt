@@ -1,0 +1,42 @@
+anchor-name:abib
+id:0096
+author:P. O.
+date:2015-04-12
+
+----lang:cs--title:Značky v seznamu literatury při \nonumcitations
+OPmac při `\nonumcitations` píše místo čísel do místa `\cite` značky, ale
+tyto značky implicitně neopakuje v seznamu literatury. Předpokládá se totiž,
+že seznam je řazený podle jmen prvního z autorů každé citace a tato jména se
+ve značkách vyskytují. Zopakování značky v seznamu literatury je pak
+nadbytečné zejména při použití dlouhých značek typu (Olšák, 2001).
+Ale při použití krátkých značek [Ol01] může být žádoucí
+takovou značku v seznamu literatury zopakovat.
+
+K zopakování značek při `\nonumcitations` v seznamu literatury je třeba
+předefinovat makro `\printbib`, které se stará o zahájení tisku jednoho
+záznamu v seznamu literatury. Třeba takto:
+
+```
+\def\printbib{\hangindent=2\iindent
+   \noindent\hskip2\iindent \llap{[\the\bibmark] }%
+}
+```
+
+----lang:en--title:Cite-marks in the bibliography when \nonumcitations is used
+OPmac (by default) doesn't print the cite-marks in the bibliography list when
+`\nonumcitations` is used. We suppose that the bibliography list is sorted by
+the name of the first author and the same is in the cite-mark. So, the copy
+of the cite-mark in the bibliography list is redundant, especially when the
+marks have long format like (Olsak, 2001). But when the marks are short
+[Ol01] then the copy of the mark may be usable in the bibliography list.
+
+If you need to repeat the cite-marks in bibliography list when
+`\nonumcitations` is used then you have to re-define the `\printbib` macro. This
+macro is processed at the begin of each bibliography entry when the list is
+printed. Example:
+
+```
+\def\printbib{\hangindent=2\iindent
+   \noindent\hskip2\iindent \llap{[\the\bibmark] }%
+}
+```

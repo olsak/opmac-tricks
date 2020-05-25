@@ -1,0 +1,94 @@
+anchor-name:crlpvv
+id:0163
+author:P. O.
+date:2017-06-18
+
+----lang:cs--title:\crlp a dvojité svislé linky
+Makro `\crlp{seznam}`, které ukončí řádek tabulky a vloží pod něj vodorovné
+linky jen ve sloupcích podle seznamu, se chová jako `\crli`, tedy linky
+nezasahují do prostoru mezi dvojitou svislou čarou. Přitom k `\crli` máme
+alternativu `\crl`, která protne dvojité svislé čáry. Jakou alternativu máme,
+chceme-li nakreslit linku jen někde?
+
+Touto alternativou je ukončit řádek pomocí `\cr` a nakreslit jakoby další
+řádek obsahující výhradně `\multispan` buď s prázdným obsahem nebo s `\hrulefill`.
+Například
+
+```
+\cr \multispan2 & \multispan3\hrulefill & \multipan1 & \mutispan4\hrulefill \cr
+```
+
+se chová jako `\crlp { 3-5, 7-10 }`, ale přesahuje případné svislé
+dvojité linky. Vyzkoušejte si:
+
+```
+\def\spankern{\kern-\vvkern\kern-\drulewidth}
+
+\table{||c||c||l}{\crl
+  a & b & c \crli
+  d & e & f \crlp{1-2}
+  g & h & i \cr \multispan2\hrulefill & \multispan1 \cr
+  j & k & l \cr \multispan1\hrulefill & \multispan2 \cr
+  m & n & o \crlp{1}
+  p & q & r \cr \multispan1 & \multispan1\spankern\hrulefill & \multispan1 \cr
+  s & t & u \crlp{2}
+  v & w & x \crl
+}
+```
+
+Když si tuto ukázku vyzkoušíte a podrobně se podíváte na výsledek,
+shledáte, že je zde další problém: vodorovná linka vytvořená pomocí
+`\multispan` v sazbě překáží a v důsledku ní není pravá svislá linka souvislá.
+Je tedy třeba ještě zapustit vodorovnou linku do sazby pomocí
+`\noalign{\kern-\drulewidth}`. Tento příkaz vložte na konec řádků
+`j&k&l` a `p&q&r`
+(vždy za druhé `\cr`). Analogický záporný kern vkládá i
+makro `\crlp`, takže při užití `\crlp` není nutné tento problém řešit.
+
+Konečně si všimněte definice a užití makra `\spankern`, které přidává
+záporný kern, aby čára pod řádem p&q&r protla i dvojitou čáru z
+předchozího sloupce.
+
+----lang:en--title:\crlp and double vertical lines
+The `\crlp{list}` ends the table row and adds the horizontal lines only in
+selected columns given by the list. It behaves like `\crli`, it means that the
+double vertical lines are not intersect. We have the alternative to `\crli`
+with the name `\crl` (including intersections). Is there something similar
+alternative to `\crlp`?
+
+The alternative is following: finish the line by `\cr` and draw the partial
+horizontal line by `\multispan`'s in each columns. The `\multispan` can be with
+empty data cell or with `\hrulefill`. For example:
+
+```
+\cr \multispan2 & \multispan3\hrulefill & \multipan1 & \mutispan4\hrulefill \cr
+```
+
+This example behaves like `\crlp { 3-5, 7-10 }`, but double vertical lines are
+intersect. You can try:
+
+```
+\def\spankern{\kern-\vvkern\kern-\drulewidth}
+
+\table{||c||c||l}{\crl
+  a & b & c \crli
+  d & e & f \crlp{1-2}
+  g & h & i \cr \multispan2\hrulefill & \multispan1 \cr
+  j & k & l \cr \multispan1\hrulefill & \multispan2 \cr
+  m & n & o \crlp{1}
+  p & q & r \cr \multispan1 & \multispan1\spankern\hrulefill & \multispan1 \cr
+  s & t & u \crlp{2}
+  v & w & x \crl
+}
+```
+
+See carefully the result---there is another problem: the line created by
+`\multispan`'s behaves like a little strut, so the another vertical lines are not
+continuous. We need to hide the horizontal line into typesetting by negative
+vertical kern. Insert `\noalign{\kern-\drulewidth}` at the end of the
+`j&k&l` and `p&q&r` lines (after the second `\cr` in both cases).
+The `\crlp` macro inserts such kern automatically,
+so we need not to solve such problem when using `\crlp` macro.
+
+Note the definition and usage of `\spankern` macro. It is used in order to
+intersect the double line in the previous column.

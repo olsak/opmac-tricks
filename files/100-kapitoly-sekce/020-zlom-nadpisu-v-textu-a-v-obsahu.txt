@@ -1,0 +1,69 @@
+anchor-name:notoc
+id:0057
+author:P. O.
+date:2014-05-12
+
+----lang:cs--title:Zlom nadpisu v textu a v obsahu
+V textu se doporučuje lámat dlouhé nadpisy kapitol, sekcí atd. pomocí
+příkazu `\nl`. Ten se v textu projeví jako zlom řádku a v obsahu se projeví
+jako obyčejná mezera. Někdy se ovšem může stát, že potřebujeme specifikovat
+i zlom nadpisu v obsahu. Pak je možné použít:
+
+```
+\let\NL=\nl  \addprotect\NL
+```
+
+Nyní je k dispozici příkaz `\NL`, který způsobí zlom nadpisu v textu i obsahu
+zároveň. Ovšem je možné, že potřebujeme zlom jen v obsahu a ne v textu. Pak
+lze připravit makro `\toclonly{text}`, které zpracuje text jen v obsahu,
+zatímco v běžném textu se neprojeví. Píšeme třeba:
+
+```
+\sec Příliš\nl dlouhý\toconly\NL\ nadpis
+```
+
+a v obsahu máme „Příliš dlouhý/nadpis“ zatímco v textu je „Příliš/dlouhý nadpis“.
+K tomu můžeme použít tento kód:
+
+```
+\let\NL=\nl  \addprotect\NL
+\def\toconly#1{} \addprotect\toconly
+\let\maketocori=\maketoc \def\maketoc{{\def\toconly##1{##1}\maketocori}}
+```
+
+Makro `\toconly` implicitně nedělá nic, ale v obsahu je lokálně
+předefinováno.
+
+Pokud nechcete, aby `\toconly` rozbořilo PDF záložky, použijte `\input pdfuni`
+nebo (xor) definujte `\def\cnvhook{\def\toconly##1{}}`.
+
+----lang:en--title:Different hyphenation of title in text and table of contents
+The recommended macro for breaking lines in titles of chapters, sections
+etc. is `\nl`. This macro breaks line in the actual text of title but it
+expands to the space when TOC or running heads are printing. Why to specify
+the line break in TOC only? We can use:
+
+```
+\let\NL=\nl  \addprotect\NL
+```
+
+Now, the `\NL` breaks line in the actual title and in the TOC. If we need
+to break in TOC only, we can create the macro `\toconly{text}` which ignores
+its parameter in normal title but expands to its parameter in the TOC. We
+can write, for example:
+
+```
+\sec Very\nl long\toconly\NL\ title
+```
+
+and we get “Very long/title” in the TOC and “Very/long title” in the
+text. We can use the code:
+
+```
+\let\NL=\nl  \addprotect\NL
+\def\toconly#1{} \addprotect\toconly
+\let\maketocori=\maketoc \def\maketoc{{\def\toconly##1{##1}\maketocori}}
+```
+
+If you want correct PDFoutlines while using `\toconly` then you can set
+`\input pdfuni` xor you can define `\def\cnvhook{\def\toconly##1{}}`.

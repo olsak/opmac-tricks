@@ -1,0 +1,57 @@
+anchor-name:eqnum
+id:0028
+author:P. O.
+date:2013-09-06
+
+----lang:cs--title:Odkaz na předchozí rovnici
+V matematickém textu s číslovanými rovnicemi často odkazujeme na tu
+poslední nebo předposlední rovnici. Je pak možná zbytečné pro ně vymýšlet
+lejblíky a odkazovat na ně pomocí `\ref[lejblík]`. Stačí napsat `\eqmark` bez
+lejblíku a odkazovat pomocí `\lasteq` (poslední rovnice), `\preveq2`
+(předpolední rovnice), `\preveq3` (před-předposlední rovnice) atd. Takže třeba:
+
+```
+$$a^2 + b^2 = c^2  \eqmark$$
+Předchozí rovnice \lasteq\ je tvrzením Pythagorovy věty.
+```
+
+Makra `\lasteq` a `\preveq` je možné definovat takto:
+
+```
+\newcount\eqlabnum
+\addto\eqmark{{\global\advance\eqlabnum by1
+   \label[.eqlab:\the\eqlabnum]\wlabel\thednum}}
+\def\preveq#1{\tmpnum=\eqlabnum\advance\tmpnum by-#1\advance\tmpnum by1
+   \ref[.eqlab:\the\tmpnum]}
+\def\lasteq{\preveq1}
+```
+
+Je zde zaveden globální registr `\eqlabnum`, pomocí kterého každé rovnici
+označené makrem `\eqmark` se přidělí interní lejblík `.eqlab:\the\eqlabnum`,
+přičemž číslo `\eqlabnum` se vždy zvětší o jedničku.
+
+----lang:en--title:The reference to the previous equation
+We need to refer to the immediate previous equation in our math text
+very often. It is less comfortable to create labels for such references. It
+is sufficient to write `\eqmark` in the equation and to do the reference by
+`\lasteq` sequence and to do the reference to the previous last or pre-previous
+last equation by `\preveq2` or `\preveq3` sequences. For example:
+
+```
+$$a^2 + b^2 = c^2  \eqmark$
+Previous equation \lasteq\ is the assertion of the Pythagoras Theorem.
+```
+
+We can implement the `\lasteq` and `\preveq` by the code:
+
+```
+\newcount\eqlabnum
+\addto\eqmark{{\global\advance\eqlabnum by1
+               \edef\lastlabel{.eqlab:\the\eqlabnum}\wlabel\thednum}}
+\def\preveq#1{\tmpnum=\eqlabnum\advance\tmpnum by-#1\advance\tmpnum by1
+              \ref[.eqlab:\the\tmpnum]}
+\def\lasteq{\preveq1}
+```
+
+The global register `\eqlabnum` is introduced here. The internal label
+`.eqlab:\the\eqlabnum` is saved by `\eqmark` and `\eqlabnum` is incremented.

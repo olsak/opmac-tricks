@@ -1,0 +1,33 @@
+anchor-name:globnonum
+id:0142
+author:P. O.
+date:2016-04-10
+
+----lang:cs--title:Nastavení \nonum pro všechny kapitoly a sekce
+Nechcete psát `\nonum` před každou `\chap`, `\sec` a `\secc` a chcete svou vůli
+deklarovat jedinkrát na začátku dokumentu. V takovém případě lze psát:
+
+```
+\nonum \def\nonumfalse{\pagedepth=\pagedepth}
+```
+
+Trik spočívá v tom, že je zneplatněno makro `\nonumfalse`, které přestane
+vracet logickou hodnotu `\ifnonum` na false. Makru `\nonumfalse` předchází v
+místě jeho užití v makrech OPmac prefix `\global`, takže potřebujeme tento
+prefix uspokojit nějakým přiřazením. Zvolil jsem přiřazení registru
+`\pagedepth`, který je globální sám o sobě, takže výše uvedené přiřazení
+opravdu neudělá vůbec nic.
+
+----lang:en--title:Global \nonum for all chapters and sections
+We need not to write `\nonum` before each `\chap`, `\sec`, `\secc` but we need to
+write only one declaration at the beginning of the document. We can write
+
+```
+\nonum \def\nonumfalse{\pagedepth=\pagedepth}
+```
+
+The trick is based on the deactivating of `\nonumfalse` macro which is used
+inside OPmac macros in order to return the `false` value to the `\ifnonum`
+variable. The `\global` primitive is prefixed before `\nonumfalse` macro, so we
+need to redefine `\nonumfalse` to another assignment. I chose dummy assignment
+applied to global register so really nothing happens.

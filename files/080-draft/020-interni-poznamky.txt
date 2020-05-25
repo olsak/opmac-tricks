@@ -1,0 +1,107 @@
+anchor-name:rfc
+id:0056
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Interní poznámky
+Je užitečné si do textu psát interní poznámky typu „k tomu se ještě
+musím vrátit“, „tady je třeba doplnit obrázek“, které se v dokumentu
+objeví jen při nastaveném `\draft`. Nabízím řešení pomocí maker `\rfc`
+a `\makerfc`. První z nich (request for correction) vloží do textu neviditelnou
+poznámku a druhé z nich sepíše seznam všech poznámek na novou stránku (na
+konci dokumentu) a u každé poznámky je zpětný odkaz do místa, kde byla
+poznámka napsaná. To vše ale funguje jen při zapnutém `\draft`. Jakmile je
+`\draft` vypnuté, žádný seznam poznámek se netiskne. Použití vypadá takto:
+
+```
+Tady je normální text\rfc{ověřit, zda netvrdím blbosti}.
+Tady pokračuje další text\rfc{zjistit, zda naměřené hodnoty nejsou moc ulítlé}.
+...
+% na konci dokumentu:
+\makerfc
+```
+
+Při `\draft` se objeví nyní závěrečná stránka, kde je řečeno:
+
+[rfc-1]  ověřit, zda netvrdím blbosti \\
+[rfc-2]  zjistit, zda naměřené hodnoty nejsou moc ulítlé
+
+a přitom při `\hyperlinks` jsou odkazy [rfc-1] a [rfc-2] klikací a zpětně
+navedou do místa textu, kterého se poznámka týká.
+
+Implementace může vypadat takto:
+
+```
+\newcount\rfcnum
+
+\def\rfclist{}
+\def\rfcactive#1{\global\advance\rfcnum by1
+   \dest[rfc:rfc-\the\rfcnum]\global\addto\rfclist{\rfcitem #1}}
+\def\rfc#1{}
+\def\rfcitem{\advance\rfcnum by1
+   \medskip\noindent\llap{\link[rfc:rfc-\the\rfcnum]{\localcolor\Red}{[rfc-\the\rfcnum] }}}
+
+\addto\draft{\let\rfc=\rfcactive}
+
+\def\makerfc{\ifx\rfc\rfcactive
+   \vfil\break {\secfont \noindent Requests for correction}\par
+   \bgroup\rfcnum=0 \rfclist\egroup\fi}
+```
+
+Makro definuje `\rfc` jako prázdné a do `\draft` přidá `\let\rfc=\rfcactive`,
+tj. při `\draft` se `\rfc` probudí k životu: přidá do `\rfclist` text
+poznámky uvozený makrem
+`\rfcitem`, které se stará o zpětné odkazy. Makro `\makerfc` prostě spustí
+`\rfclist`. Navíc při aktivaci lejblíků, jak je posáno v předchozím triku, se v
+textu, kterého se poznámka týká, objeví v hranaté závorce [rfc-číslo].
+
+----lang:en--title:Request for correction in draft mode
+Sometimes is usable to write individual notes of type “attention, I have
+to add a picture here” into the document. These notes are printed only in
+`\draft` mode. You can use this by macros `\rfc` (request for correction)
+and `\makerfc`. The first one inserts into the text the numbered destination of
+the hyperlink (without changing of the typesetting of normal text) and
+the second one prints the list of all notes. They are hyperlinks.
+When `\draft` mode is off then no destinations and no list of notes is
+printed. The usage of the macro looks like:
+
+```
+There is normal text here.\rfc{check if here isn't fallacy!}
+Next text.\rfc{trace the measured results again!}
+...
+% at the end of the document:
+\makerfc
+```
+
+If `\draft` mode is on, then the last page of the document prints:
+
+[rfc-1]  check if here isn't fallacy! \\
+[rfc-2]  trace the measured results again!
+
+and when `\hyperlinks` mode is on then the texts [rfc-1] and [rfc-2] are
+active hyperlinks with destination in the place of the document
+where the problem is.
+
+The implementation:
+
+```
+\newcount\rfcnum
+
+\def\rfclist{}
+\def\rfcactive#1{\global\advance\rfcnum by1
+   \dest[rfc:rfc-\the\rfcnum]\global\addto\rfclist{\rfcitem #1}}
+\def\rfc#1{}
+\def\rfcitem{\advance\rfcnum by1
+   \medskip\noindent\llap{\link[rfc:rfc-\the\rfcnum]{\localcolor\Red}{[rfc-\the\rfcnum] }}}
+
+\addto\draft{\let\rfc=\rfcactive}
+
+\def\makerfc{\ifx\rfc\rfcactive
+   \vfil\break {\secfont \noindent Requests for correction}\par
+   \bgroup\rfcnum=0 \rfclist\egroup\fi}
+```
+
+The macro `\rfc` is empty by default but `\draft` adds `\let\rfc=\rfcactive`,
+i.e. the macro is activated. It adds the text of the note into `\rfclist`. The
+text of each note is started by the `\rfcitem` sequence. The `\makerfc` runs
+simply `\rfclist`.

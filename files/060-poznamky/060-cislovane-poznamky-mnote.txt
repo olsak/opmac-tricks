@@ -1,0 +1,69 @@
+anchor-name:nmnote
+id:0122
+author:P. O.
+date:2015-08-25
+
+----lang:cs--title:Číslované poznámky mnote
+Vyřešíme požadavek číslovat poznámky po straně podobným způsobem, jako
+poznámky pod čarou. Tj. v textu se objeví číslo a stejné číslo uvozuje
+postranní poznámku. Takové řešení najdeme třeba
+[zde](https://dl.dropboxusercontent.com/u/502901/naurtf.pdf).
+
+Vytvoříme makro `\note{text}`, které způsobí číslovanou poznámku po straně.
+Makro může být implementováno třeba takto:
+
+```
+\margins/1 a4 (2,6,2,2)cm
+\mnotesize=4.5cm
+
+\newcount\notenum
+\fixmnotes\right
+\def\note#1{\global\advance\notenum by 1
+   $^{\the\notenum}$%
+   \mnote{\typoscale[800/800]$^{\the\notenum}$\kern.3em #1}%
+}
+```
+
+Zde je pomocí `\margins` vytvořeno více místa v pravém okraji, kde budou
+poznámky. Čítač `\notenum` se při každém `\note` zvětší o jedničku a zobrazí
+se v textu i v poznámce.
+
+Protože `\note` je implementována pomocí jednoduchého OPmac makra `\mnote`,
+neřeší automat případné překrývání poznámek a vystrčení poznámky dole na
+stránce. Doporučuji při přípravě dokumentu si těchto problémů nevšímat a v
+závěrečné korektuře, kdy už je jasné definitivní rozmístění textu na
+stránkách, případně posunout vertikálně postranní poznámky pomocí
+`\mnoteskip` a doladit tak vzhled jednotlivých stran manuálně.
+
+----lang:en--title:Numbered marginal notes
+We solve the task to do numbered marginal notes similarly like footnotes.
+I. e. the number is printed in the text and the same number is used at the
+beginning of the marginal note. Such solution is used
+[here, for example](https://dl.dropboxusercontent.com/u/502901/naurtf.pdf).
+
+We create the \note{text} macro which prints the numbered marginal note.
+The implementation follows:
+
+```
+\margins/1 a4 (2,6,2,2)cm
+\mnotesize=4.5cm
+
+\newcount\notenum
+\fixmnotes\right
+\def\note#1{\global\advance\notenum by 1
+   $^{\the\notenum}$%
+   \mnote{\typoscale[800/800]$^{\the\notenum}$\kern.3em #1}%
+}
+```
+
+The right margin is enlarged by `\margins`, because the marginal notes will
+be printed here. The `\notenum` register is incremented by one for each `\note` call
+and this number is printed in the text and in the note.
+
+The code doesn't solve the problems with marginal notes overlapping each
+other and leaving notes from the page boundary at the bottom, because simple
+`\mnote` macro is used here. I recommend to ignore such problems during
+document preparating but to correct the positions of `\mnote`s when final
+proofreading is performed and the final page breaking is definitely done.
+Then user can use `\mnoteskip` register for manual correction of `\mnote` positions by
+hand.

@@ -1,0 +1,64 @@
+anchor-name:strcmp
+id:0018
+author:P. O.
+date:2013-08-26
+
+----lang:cs--title:Experiment s lexikografickým řazením
+PdfTeX implementuje primitiv `\pdfstrcmp{string1}{string2}`, který vrátí nulu,
+když jsou stringy stejné, vrátí `-1`, když `string1` je lexikograficky menší než
+`string2`, a vrátí `1` jinak. OPmac řeší abecední řazení rejstříku v makru
+`\isAleB` na úrovní klasických nástrojů TeXu, tj. bez využití tohoto
+primitivu. Kvůli tomu postupně expanduje až do čtyř různých rekurzivních
+maker, odlupuje písmenka a porovnává je.
+Stálo za experiment vyměnit tato makra v OPmac za jednodušší makro, které
+využije `\pdfstrcmp`:
+
+```
+\def\isAleB #1#2{%
+   \edef\tmp{\noexpand\pdfstrcmp{\firstdata#1\empty}{\firstdata#2\empty}}
+   \ifnum\tmp<0 \AleBtrue
+   \else \ifnum\tmp>0 \AleBfalse
+   \else \bgroup \setsecondarysorting
+            \preparesorting#1\let\tmpa=\tmpb \preparesorting#2%
+            \edef\tmp{\noexpand\pdfstrcmp{\tmpa}{\tmpb}}%
+            \ifnum\tmp<0 \global\AleBtrue \else \global\AleBfalse \fi
+         \egroup
+   \fi\fi
+}
+```
+
+Ukazuje se, že jsme si překvapivě ve strojovém čase moc nepomohli. Řazení
+ukázky `kuk8.tex` z přednášky z prosince 2012 obsahující přes šest tisíc hesel
+trvalo s klasickými makry 4,13 sekundy a s využitím `\pdfstrcmp` 4,04 sekundy.
+Je vidět, že je v TeXu expanze maker implementována velmi efektivně a ani
+vestavěná funkce na lexikografické třídění ji o mnoho nepřekoná.
+
+----lang:en--title:The sorting experiment
+PdfTeX implements the `\pdfstrcmp{string1}{string2}` primitive which
+returns zero if the strings are the same, returns `-1` if `string1` is
+less then `string2` else returns `+1`. OPmac don't use this
+primitive when it is sorting the Index because only classical TeX us used.
+This is a reason why OPmac implements this test by four recursive macros,
+reads token per token and does the test. I have performed the experiment to
+replace these recursive macros to mentioned primitive and to measure the
+time. The testing code redefines `\isAleB` form OPmac:
+
+```
+\def\isAleB #1#2{%
+   \edef\tmp{\noexpand\pdfstrcmp{\firstdata#1\empty}{\firstdata#2\empty}}
+   \ifnum\tmp<0 \AleBtrue
+   \else \ifnum\tmp>0 \AleBfalse
+   \else \bgroup \setsecondarysorting
+            \preparesorting#1\let\tmpa=\tmpb \preparesorting#2%
+            \edef\tmp{\noexpand\pdfstrcmp{\tmpa}{\tmpb}}%
+            \ifnum\tmp<0 \global\AleBtrue \else \global\AleBfalse \fi
+         \egroup
+   \fi\fi
+}
+```
+
+The result was surprising. The time is not saved. The sorting of the
+example `kuk8.tex` from my lecture from December 2012 (where are 6 thousands of
+the index words) takes 4.13 sec by classical OPmac macros and 4.04 sec when
+\`pdfstrcmp` is used. It means that the macro expansion is implemented in TeX
+very effectively and build-in function `\pdfstrcmp` doesn't add new real power.

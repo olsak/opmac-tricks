@@ -1,0 +1,105 @@
+anchor-name:coltext
+id:0085
+author:P. O.
+date:2015-01-05
+
+----lang:cs--title:Podbarvený text
+Přímo v dokumentaci k OPmac je ukázka, jak vytvořit makro, které vysází
+text podbarvený specifikovanou barvou. Ovšem toto makro vytvoří text jako
+nezlomitelný box. V následujícím triku ukážeme makro
+`\coltext\BarvaA\BarvaB{text}`, které vytvoří uvnitř odstavce text v bavě
+`\BarvaA` podbarvený barvou `\BarvaB`, přitom tento text podléhá řádkovému
+zlomu jako běžný text v odstavci. Například:
+
+```
+Zde je běžný text odstavce.
+\coltext\Yellow\Blue{Tady je podbarvený textík, který se láme do řádků.}
+A pokračujeme v běžném textu odstavce.
+```
+
+vytvoří:
+
+![Ukázka podbarveného textu](img/coltext.png)
+
+Makro je mírnou modifikací makra `\ul` z OPmac triku
+[0063](#soul), přitom využívá makro `\hyphenprocess` z OPmac triku
+[0064](#hyphprocess).
+
+```
+\def\coltextstrut{height2ex depth.6ex}
+\def\coltext#1#2#3{{\localcolor\let\Tcolor=#1\let\Bcolor=#2\relax
+   \setbox1=\hbox{-\kern.05em}%
+   \setbox1=\hbox{{\Bcolor\vrule\coltextstrut width\wd1}\kern-.05em\llap{\Tcolor -}}%
+   \def\-{\discretionary{\copy1}{}{}}%
+   \def\uline##1{\skip0=##1\advance\skip0 by.05em
+      \Bcolor\leaders \vrule\coltextstrut\hskip\skip0 \hskip-.05em\relax}%
+   \def\uspace{\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}%
+   \def~{\egroup\hbox{\uline{\wd0}\llap{\Tcolor\copy0}}\nobreak{\uline\uspace}\relax \setbox0=\hbox\bgroup}%
+   \leavevmode\coltextA #3 {} }}
+\def\coltextA#1 {\ifx^#1^\unskip\unskip\else
+   \hyphenprocess{#1}\expandafter\coltextB\listwparts\-\end
+\expandafter\coltextA\fi}
+\def\coltextB#1\-#2\end{\ifx^#2^\coltextC{#1}\else
+   \coltextD{#1}\def\next{\coltextB#2\end}\expandafter\next\fi}
+\def\coltextC#1{\setbox0=\hbox{#1}\hbox{\uline{\wd0}\hbox{\llap{\Tcolor\copy0}}}\uline\uspace\relax}
+\def\coltextD#1{\setbox0=\hbox{#1}\hbox{\uline{\wd0}\llap{\Tcolor\copy0}}\-}
+```
+
+Na rozdíl od makra `\ul` zde sázíme „přeškrtnutí a text“ v opačném
+pořadí, tj. nejprve „přeškrtnutí“ a potom „text“. Přitom „přeškrtnutí“
+má nyní výšku a hloubku danou makrem `\coltextstrut`, tedy je natolik široké,
+že vytvoří podbarvení. V úvodu makra `\coltext` je také v odpovídajících
+barvách připraven `\hyphenchar` jako `\box1`.
+
+----lang:en--title:Background-colored text
+There is an example about background-colored text directly in the OPmac
+documentation (the `\coloron` macro). But this macro creates unbreakable box
+with specified background. The macro `\coltext` here keeps the text breakable
+into lines of the paragraph. The usage is
+
+```
+\coltext\ColorA\ColorB{text}
+```
+
+where `\ColorA` is the color of the text and `\ColorB` is the color of the
+background. For example:
+
+```
+Zde je běžný text odstavce.
+\coltext\Yellow\Blue{Tady je podbarvený textík, který se láme do řádků.}
+A pokračujeme v běžném textu odstavce.
+```
+
+gives:
+
+![Colored text example](img/coltext.png)
+
+The macro is only a slight modification of the macro `\ul` from OPmac trick
+[0063](#soul). It uses the macro `\hyphencodes` from OPmac trick
+[0064](#hyphprocess).
+
+```
+\def\coltextstrut{height2ex depth.6ex}
+\def\coltext#1#2#3{{\localcolor\let\Tcolor=#1\let\Bcolor=#2\relax
+   \setbox1=\hbox{-\kern.05em}%
+   \setbox1=\hbox{{\Bcolor\vrule\coltextstrut width\wd1}\kern-.05em\llap{\Tcolor -}}%
+   \def\-{\discretionary{\copy1}{}{}}%
+   \def\uline##1{\skip0=##1\advance\skip0 by.05em
+      \Bcolor\leaders \vrule\coltextstrut\hskip\skip0 \hskip-.05em\relax}%
+   \def\uspace{\fontdimen2\font plus\fontdimen3\font minus\fontdimen4\font}%
+   \def~{\egroup\hbox{\uline{\wd0}\llap{\Tcolor\copy0}}\nobreak{\uline\uspace}\relax \setbox0=\hbox\bgroup}%
+   \leavevmode\coltextA #3 {} }}
+\def\coltextA#1 {\ifx^#1^\unskip\unskip\else
+   \hyphenprocess{#1}\expandafter\coltextB\listwparts\-\end
+\expandafter\coltextA\fi}
+\def\coltextB#1\-#2\end{\ifx^#2^\coltextC{#1}\else
+   \coltextD{#1}\def\next{\coltextB#2\end}\expandafter\next\fi}
+\def\coltextC#1{\setbox0=\hbox{#1}\hbox{\uline{\wd0}\hbox{\llap{\Tcolor\copy0}}}\uline\uspace\relax}
+\def\coltextD#1{\setbox0=\hbox{#1}\hbox{\uline{\wd0}\llap{\Tcolor\copy0}}\-}
+```
+
+There is a difference between the `\ul` and `\coltext` macro: the order of
+typesetting is reverted: firstly is typeset the line and secondly the text
+by `\coltext` macro. And the “line” is somewhat more wide than the line in the
+`\ul` macro. It creates the background. The `\box1` is prepared as hyphenchar at
+the beginning of the macro `\coltext`.

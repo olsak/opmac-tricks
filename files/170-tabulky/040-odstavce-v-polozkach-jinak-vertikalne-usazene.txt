@@ -1,0 +1,53 @@
+anchor-name:tablemb
+id:0161
+author:P. O.
+date:2017-06-17
+
+----lang:cs--title:Odstavce v položkách jinak vertikálně usazené
+OPmac nabízí jen deklarátor `p{rozměr}`, který vytvoří v položce tabulky
+odstavec. Je-li takových odstavců v řádku tabulky více vedle sebe, jsou
+vertikálně umístěny podle prvního řádku (jako `\vtop`). V tomto OPmac triku
+zavedeme LaTeXovský deklarátor `m{rozměr}` chovající se jako `\vcenter`
+(centrování na střed) a
+konečně `b{rozměr}` chovající se jako `\vbox` (usazení podle spodního řádku).
+Návod, jak to udělat, je také v technické dokumentaci k OPmac.
+
+```
+\def\paramtabdeclarem#1{\tabiteml{$\vcenter{\hsize=#1\relax
+   \baselineskip=\normalbaselineskip \lineskiplimit=0pt
+   \noindent\vbox{\hbox{\tabstrutA}\kern-\prevdepth}##\unsskip
+   \vbox to0pt{\vss\hbox{\tabstrutA}}}$}\tabitemr
+}
+\def\paramtabdeclareb#1{\tabiteml\vbox{\hsize=#1\relax
+   \baselineskip=\normalbaselineskip \lineskiplimit=0pt
+   \noindent\vbox{\hbox{\tabstrutA}\kern-\prevdepth}##\unsskip}\tabitemr
+}
+```
+
+Vimněte si, že na začátek textu přidáváme strut, který má výšku jako
+`\tabstrut`, ale nulovou hloubku a na konec textu přidáváme strut, který má
+hloubku jako `\tabstrut`, ale nulovou výšku.
+
+----lang:en--title:Vertical alignment of p cells in table row
+OPmac provides only `p{size}` declarator for pararaph-like table cells. If
+there are more such cells in one table row then they are aligned vertically
+by the first line (like `\vtop`). If you need another alignment
+(`\vcenter` or `\vbox` from TeX primitive point of view), you can define
+LaTeX like declarators `m{size}` for vertical centering and `b{size}`
+for alignment by the last line. The following code solves it.
+
+```
+\def\paramtabdeclarem#1{\tabiteml{$\vcenter{\hsize=#1\relax
+   \baselineskip=\normalbaselineskip \lineskiplimit=0pt
+   \noindent\vbox{\hbox{\tabstrutA}\kern-\prevdepth}##\unsskip
+   \vbox to0pt{\vss\hbox{\tabstrutA}}}$}\tabitemr
+}
+\def\paramtabdeclareb#1{\tabiteml\vbox{\hsize=#1\relax
+   \baselineskip=\normalbaselineskip \lineskiplimit=0pt
+   \noindent\vbox{\hbox{\tabstrutA}\kern-\prevdepth}##\unsskip}\tabitemr
+}
+```
+
+Note that we add one strut at the beginning of the text with zero depth
+and second strut at the end of the text with zero height. The interline
+spacing in the paragraph is given by `\normalbaselineskip`.

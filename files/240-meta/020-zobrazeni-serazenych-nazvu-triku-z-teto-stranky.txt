@@ -1,0 +1,32 @@
+anchor-name:curl
+id:0143
+author:Radek Matoušek
+date:2015-12-11
+
+----lang:cs--title:Zobrazení seřazených názvů triků z této stránky
+Třeba uvítáte možnost si pomocí příkazového řádku zobrazit v terminálu
+seznam názvů všech triků seřazených podle jejich čísla, tedy relativně od
+nejstarších k nejnovějším. Můžete k tou použít tento příkaz:
+
+```
+  curl http://petr.olsak.net/opmac-tricks.html | tac \
+   | sed -n '/CLASS.*datum/{:a;N;/<h2><a/!ba;s/\n.*\n//; s/<a[^>]*>/ : /;s/<[^>]*>//g;p}' | sort
+```
+
+Tuto věc zveřejnil autor
+[na své stránce](http://matouskojc.cz/pisalek.php?file_index=pcblog-2015)
+v článku s názvem Opmac-triky -- sort.
+
+----lang:en--title:Sorted names of these tricks on your terminal
+Maybe you can find useful to show all names of these tricks sorted on
+your terminal, i.e. sorted (relatively) by time form oldest to newest.
+You can do it by the command:
+
+```
+  curl http://petr.olsak.net/opmac-tricks-e.html | tac \
+   | sed -n '/CLASS.*datum/{:a;N;/<h2><a/!ba;s/\n.*\n//; s/<a[^>]*>/ : /;s/<[^>]*>//g;p}' | sort
+```
+
+The author published this trick
+[at his site](http://matouskojc.cz/pisalek.php?file_index=pcblog-2015)
+in the article Opmac-triky -- sort.

@@ -1,0 +1,126 @@
+anchor-name:glosref
+id:0054
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Slovníček pojmů s hyperlinky
+Pokud chcete, aby v textu v místě použití zkratky byla zkratka obarvena a
+fungovala jako hyperlink, je možné psát do textu:
+
+```
+...text... \glosref{zkratka}{význam} ...text... \glosref{jiná zkratka}{význam}
+...text... \glosref{zkratka}{}
+...
+\makeglos
+```
+
+V textu budou pak vytištěny zkratky obarvené barvou a fungující jako hyperlinky
+odkazující do místa, kde je seznam zkratek vytištěný pomocí `\makeglos`.
+Povšimněte si, že pro každou zkratku je třeba zapsat význam jen jednou a
+při opakování stejné zkratky je třeba nechat význam prázdný. Kdyby byla
+zkratka významově určena vícekrát, makro napíše varování a opakovaný
+význam ignoruje.
+
+Řešení může vypadat třeba takto:
+
+```
+\hyperlinks\Blue\Blue
+
+\def\glosref #1#2{\if^#2^\else \glos{#1}{#2}\fi
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \makegloslink{#1}\link[glos:\tmp]{\localcolor\Blue}{#1}%
+   \else #1%
+   \fi
+}
+\def\printglos#1#2{\noindent \makegloslink{#1}\dest[glos:\tmp]#1 .. #2\par}
+
+\def\makegloslink#1{\def\tmp{}\expandafter\makegloslinkA#1\relax}
+\def\makegloslinkA#1{\ifx#1\relax\else
+   \edef\tmp{\tmp\number`#1.}\expandafter\makegloslinkA\fi}
+```
+
+Řešení předpokládá některou z definic maker `\glos` a `\makeglos`, jak je
+uvedeno výše. Makro `\glosref` kontroluje, zda je druhý parametr prázdný a když
+není, použije `\glos`. Tam se zkontroluje, zda není význam deklarován vícekrát.
+Dále makro `\glosref` zavede hyperlink pomocí `\link` jen tehdy, když je údaj
+zanesen do `\gloslist` (což udělalo makro `\glos`, nebo se tak stane až při
+opakovaném TeXování). Důvod tohoto opatření: je třeba zabezpečit, aby link
+měl svůj cíl, což při prvním průchodu TeXem nemusí být pravda.
+
+Makro `\printglos` *musí* obsahovat deklaraci cíle pomocí `\dest`.
+
+Interní link je vytvořen ze zkratky pomocí `\makegloslink`, ale není to přímo
+zkratka, protože ta může obsahovat háčky a čárky a link pak nefunguje. Takže
+je každé píseno převedeno na číslo (svůj kód) a seznam takových kódů
+oddělených tečkami je použit jako interní link.
+
+Pomocí `\def\glosborder{R G B}`, například `\def\glosborder{1 0 0}` je možno
+definovat barvu rámečků pro aktivní hyperlinky týkající se zkratek.
+
+Poznámka: Hyperlinky v tomto řešení fungují od prvního výskytu hesla s
+neprázdným druhým parametrem. Předchází-li totéž heslo s prázdným
+parametrem, není pro něj sestaven hyperlink. Co s tím? Je možné například na
+začátek dokumentu uvést celý soubor dat pomocí `\glos{zkratka}{význam}`
+`\glos{jiná zkratka}{jiný význam}` atd. a poté do textu důsledně psát
+`\glosref` s prázdným druhým parametrem.
+
+----lang:en--title:Glossary with hyperlinks
+If you need to create the hyperlinks in the place where the abbreviation
+is used then you can write:
+
+```
+...text... \glosref{abbrev1}{explanation} ...text... \glosref{abver2}{expl2}
+...text... \glosref{abbrev1}{}
+...
+\makeglos
+```
+
+The abbreviations will be printed in the text colored and as hyperlinks
+with the aim in the glossary list created by `\makeglos`. The explanation
+is possible to give only once and if you repeat the same abbreviation then
+all others have to have the empty explanation. If you write explanation twice
+for the same abbreviation then the macro prints warning and second
+explanation will be ignored.
+
+The solution could be:
+
+```
+\hyperlinks\Blue\Blue
+
+\def\glosref #1#2{\if^#2^\else \glos{#1}{#2}\fi
+   \expandafter\isinlist\expandafter\gloslist\csname;#1\endcsname
+   \iftrue \makegloslink{#1}\link[glos:\tmp]{\localcolor\Blue}{#1}%
+   \else #1%
+   \fi
+}
+\def\printglos#1#2{\noindent \makegloslink{#1}\dest[glos:\tmp]#1 .. #2\par}
+
+\def\makegloslink#1{\def\tmp{}\expandafter\makegloslinkA#1\relax}
+\def\makegloslinkA#1{\ifx#1\relax\else
+   \edef\tmp{\tmp\number`#1.}\expandafter\makegloslinkA\fi}
+```
+
+The macros `\glos` and `\makeglos` are the same as in above OPmac tricks.
+The `\glosref` checks if the second parameter is empty. Else the normal `\glos`
+is used. The twice declaration is checked here. The hyperlink is created by
+`\link` only if the item is saved in `\gloslist`. This saving is done by `\glos`
+or when REF file is read. The reason: we need to avoid the broken links
+which is not typically true after first TeX run.
+
+The `\printglos` macro *must* include the `\dest` declaration.
+
+The internal link is is created using the abbreviation and the
+`\makegloslink`, but this is not exactly the abbreviation because the exact
+abbreviation can include accents but link with accents in its internal
+string doesn't work. So, each character is translated to its numeric code
+and the list of such codes is the internal string used in the link.
+
+You can define the color of the borders around the links by
+`\def\glosborder{R G B}`, for example `\def\glosborder{1 0 0}`.
+
+Note: hyperlinks works from the first occurrence of the `\glosref` with the
+nonempty explanation. If the same `\glosref` with the empty explanation
+precedes then it is not hyperlinked. What to do? You can put the whole list
+of `\glos{abbrev}{explanation}\glos{abbrev2}{expl2}` etc. at the beginning of
+the document and then you can use `\glosref`'s in the text with always empty
+explanation.

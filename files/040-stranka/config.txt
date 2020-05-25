@@ -1,0 +1,4 @@
+----lang:cs--name:Stránka
+
+----lang:en--name:Page
+

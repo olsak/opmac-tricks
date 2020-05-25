@@ -1,0 +1,97 @@
+anchor-name:optdef
+id:0067
+author:P. O.
+date:2014-06-12
+
+----lang:cs--title:Definování makra s nepovinným parametrem
+Budeme chtít definovat `\makro` s dvojím využitím:
+
+```
+\makro parametry
+nebo
+\makro [optional] parametry
+```
+
+K tomu účelu definujeme `\optdef`, což se použije třeba takto:
+
+```
+\optdef\makro [default] #1 #2 {opt=\opt, 1=#1, 2=#2.}
+
+\makro prvni druhy        ... expanduje na: opt=default, 1=prvni, 2=druhy.
+\makro [kuk] treti ctvrty ... expanduje na: opt=kuk, 1=treti, 2=ctvrty.
+```
+
+Například je možné předefinovat kapitoly, sekce a podsekce, aby bylo
+možné zadat lejblík jako nepovinný parametr:
+
+```
+\let\chapOri=\chap  \let\secOri=\sec   \let\seccOri=\secc
+\optdef\chap [] {\ifx\opt\empty\else\label[\opt]\fi \chapOri}
+\optdef\sec  [] {\ifx\opt\empty\else\label[\opt]\fi \secOri}
+\optdef\secc [] {\ifx\opt\empty\else\label[\opt]\fi \seccOri}
+```
+
+Makro `\optdef` může být definováno takto:
+
+```
+\def\optdef#1[#2]{%
+   \def#1{\def\opt{#2}\isnextchar[{\csname oA:\string#1\endcsname}{\csname oB:\string#1\endcsname}}%
+   \sdef{oA:\string#1}[##1]{\def\opt{##1}\csname oB:\string#1\nospaceafter\endcsname}%
+   \sdef{oB:\string#1\nospaceafter}%
+}
+\def\nospaceafter#1{\expandafter#1\romannumeral-`\.}
+```
+
+`\optdef` definuje `\makro` jako `\isnextchar[{\oA:\makro}{\oB:\makro}`
+a dále definuje `\oA:\makro[text]` jako `\def\opt{text}\oB:\makro`
+a konečně definuje `\oB:\makro` jako to, co napsal uživatel za `\opdef[text]`.
+Ignorování případné mezery za zavírací hranatou závorkou obstará
+příkaz `\rommannumeral-``\.`, který expanduje na úplné nic, ale navíc při expanzi
+zkonzumuje případnou mezeru, která může následovat.
+
+----lang:en--title:Defining a macro with optional parameter
+We want to define the `\macro` with two various syntax of usage:
+
+```
+\macro parameters
+or
+\macro [optional] parameters
+```
+
+We define the `\optdef` macro wit the following feature:
+
+```
+\optdef\macro [default] #1 #2 {opt=\opt, 1=#1, 2=#2.}
+
+\macro first second        ... expands to: opt=default, 1=first, 2=second.
+\makro [foo] third fourth  ... expands to: opt=foo, 1=third, 2=fourth.
+```
+
+For example, it is possible to redefine the `\chap`, `\sec` and `\secc` macros
+in order to the label can be written as optional parameter:
+
+```
+\let\chapOri=\chap  \let\secOri=\sec   \let\seccOri=\secc
+\optdef\chap [] {\ifx\opt\empty\else\label[\opt]\fi \chapOri}
+\optdef\sec  [] {\ifx\opt\empty\else\label[\opt]\fi \secOri}
+\optdef\secc [] {\ifx\opt\empty\else\label[\opt]\fi \seccOri}
+```
+
+The `\optdef` macro can be defined as:
+
+```
+\def\optdef#1[#2]{%
+   \def#1{\def\opt{#2}\isnextchar[{\csname oA:\string#1\endcsname}{\csname oB:\string#1\endcsname}}%
+   \sdef{oA:\string#1}[##1]{\def\opt{##1}\csname oB:\string#1\nospaceafter\endcsname}%
+   \sdef{oB:\string#1\nospaceafter}%
+}
+\def\nospaceafter#1{\expandafter#1\romannumeral-`\.}
+```
+
+The `\optdef` defines `\macro` as `\isnextchar[{\oA:\makro}{\oB:\makro}`
+and defines `\oA:\makro[text]` as `\def\opt{text}\oB:\makro`
+and finally defines `\oB:\makro` as the real macro declared after
+`\optdef[default]`. The space (sometimes presented) after the right
+bracket in the macro declaration has to be ignored. This is done by
+the expansion of the `\rommannumeral-``\.` -- this primitive expands
+to nothing and the possible space is consumed during this expansion.

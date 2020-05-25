@@ -1,0 +1,84 @@
+anchor-name:glossort
+id:0053
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Slovníček pojmů setříděný dle českých pravidel
+Slovníček z [OPmac triku 0051](#gloslast) je abecedně seřazen
+podle ASCII hodnot zkratek. Někdy je to postačující (například v anglicky
+psaném dokumentu), ale někdy bychom rádi řadili podle českých pravidel
+řazení stejně, jak to umí OPmac v případě rejstříku. V takovém případě
+přidejte do makra `\makeglos` před `\dosorting` ještě příkaz
+`\preparespecialsorting` (ostatní zůstává nezměněno)
+a tento příkaz definujte následovně:
+
+```
+\def\makeglos{%
+   ...
+   \preparespecialsorting \dosorting
+   ...
+}
+\def\preparespecialsorting{%
+   \setprimarysorting
+   \def\act##1{\ifx##1\relax\else \preparesorting##1%
+      \expandafter\edef\csname\string##1\endcsname{\tmpb}%
+      \expandafter\act\fi}%
+   \expandafter\act\iilist\relax
+   \def\firstdata##1{\csname\string##1\endcsname&}%
+}
+```
+
+Nyní při `\chyph` bude řazení české a při `\ehyph` bude anglické.
+
+Vysvětlení makra. OPmac řadí `\iilist` obsahující `\?cosia \?cosib \?cosic`,
+kde `?` je jakýkoli znak. V rejstříku to je `\,cosia \,cosib \,cosic`
+zatímco ve slovníčku to je `\;cosia \;cosib \;cosic`. Tato makra
+musí osahovat `{první údaj}{druhý údaj}`, přitom OPmac řadí v prvním průchodu
+podle prvního údaje za použití makra `\firstdata`.
+Makro `\preparesorting \?cosi` připraví do `\tmpb` slovo makra (tj. např. cosi)
+zkonvertované přes `\lccode` do stavu vhodného pro české řazení. My si tento
+výsledek uložíme do `\\?cosi` a přesměrujeme tam i makro `\firstdata`,
+takže řazení v prvním průchodu probíhá podle `\\?cosi` a nikoli dle
+prvního údaje. Případný druhý průchod spustí dodatečnou
+konverzi slova (cosi) dle pravidel druhého průchodu a už to nikam neukládá,
+takže i druhý průchod funguje.
+
+----lang:en--title:Glossary sorted by Czech sorting rules
+The glossary from [OPmac trick 0051](#gloslast) is sorted
+alphabetically by ASCII values of letters used in abbreviation. Sometimes
+this is not sufficient, we need to sort by Czech sorting rules, for example.
+The same feature is implemented when index is sorted by OPmac. You can add
+the `\preparespecialsorting` before `\dosorting` sequence into `\makeglos`
+macro and the rest is the same as in previous OPmac trick.
+The `\preparespecialsorting` can be defined by the code:
+
+```
+\def\makeglos{%
+   ...
+   \preparespecialsorting \dosorting
+   ...
+}
+\def\preparespecialsorting{%
+   \setprimarysorting
+   \def\act##1{\ifx##1\relax\else \preparesorting##1%
+      \expandafter\edef\csname\string##1\endcsname{\tmpb}%
+      \expandafter\act\fi}%
+   \expandafter\act\iilist\relax
+   \def\firstdata##1{\csname\string##1\endcsname&}%
+}
+```
+
+If `\chyph` is activated then the sorting will be by Czech rules.
+
+Explanation: OPmac sorts `\iilist` where are control sequences
+`\?fooa \?foob \?fooc` and where `?` is arbitrary character. When Index
+is sorted then `?=comma`, i.e. `\,fooa \,foob \,fooc`. We use semicolon
+for glossary in our code: `\;fooa \;foob \;fooc`. The macros from `\iilist`
+have to include the data in the form `{first data}{second data}`.
+The sorting is done by `{first data}`.
+The macro `\preparesorting\?foo` saves the `csname` (foo in this example) into
+`\tmpb` converted using `\lccode` to the state appropriate for Czech sorting.
+This result is saved into `\\?foo` and the `\firstdata` macro is redirected to
+this new data so the sorting in the first pass is done by the `\\?foo`. The
+second pass of sorting works too because the new data for second pass is
+needn't to be saved.

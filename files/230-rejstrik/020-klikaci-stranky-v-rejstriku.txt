@@ -1,0 +1,61 @@
+anchor-name:klikpgr
+id:0006
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Klikací stránky v rejstříku
+Při vytvoření rejstříku pomocí makra `\makeindex` nejsou vedle hesel čísla
+stránek aktivní, ačkoli je použita deklarace `\hyperlinks`. Aktivní
+(připravené ke klikání) jsou jen čísla stránek v obsahu.
+
+Důvod, proč OPmac neimplementuje aktivní čísla stránek v rejstříku jsou
+dva: drží se kréda „v jednoduchosti je síla“ a šetří pamětí TeXu. Za každý
+odkaz na stránku by totiž do makroprostoru musel přidat tři tokeny. Při
+tisíci heslech a průměrně třech odkazech u hesla dostáváme 9 tisíc tokenů
+navíc. Tomu se chce OPmac vyhnout.
+
+Pokud přesto chcete mít čísla stránek v rejstříku aktivní, stačí použít
+tento kód:
+
+```
+\def\printiipages#1&{\usepglinks#1\relax\par}
+\def\usepglinks{\afterassignment\usepglinksA \tmpnum=}
+\def\usepglinksA{\pglink{\the\tmpnum}\futurelet\next\usepglinksB}
+\def\usepglinksB{\ifx\next\relax \def\next{}\else
+   \ifx\next,\def\next,{, \afterassignment\usepglinksA \tmpnum=}\else
+   \ifx\next-\def\next--{--\afterassignment\usepglinksA\tmpnum=}%
+   \fi\fi\fi\next}
+```
+
+Makro `\usepglinks` má parametr např. `5, 15--18, 24` ukončený `\relax`.
+Makro očichá čísla ve svém parametru a každé z nich promění v `\pglink{číslo}`.
+
+----lang:en--title:Pages in the Index as hyperlinks
+When the Index is created by the `\makeindex` macro then the pages
+alongside the Index items are printed normally without hyperlinks. The
+pages are hyperlinked only in table of contents (after `\hyperlinks`
+declaration).
+
+There are two reasons why OPmac doesn't implement page hyperlinks in the
+Index by default. The credo “power is simplicity” is preferred and the
+macro-space of the TeX memory is spared. When we have thousands of Index
+items and average three pages per item then we need approximately 9
+thousands of tokens more in the TeX memory. This memory wasting is
+not supported by OPmac.
+
+If you explicitly need to have the page numbers in the Index hyperlinked
+then you can use the code:
+
+```
+\def\printiipages#1&{\usepglinks#1\relax\par}
+\def\usepglinks{\afterassignment\usepglinksA \tmpnum=}
+\def\usepglinksA{\pglink{\the\tmpnum}\futurelet\next\usepglinksB}
+\def\usepglinksB{\ifx\next\relax \def\next{}\else
+   \ifx\next,\def\next,{, \afterassignment\usepglinksA \tmpnum=}\else
+   \ifx\next-\def\next--{--\afterassignment\usepglinksA\tmpnum=}%
+   \fi\fi\fi\next}
+```
+
+The macro `\usepglinks` has the parameter (for example) `5, 15--18, 24`
+terminated by `\relax`. The macro scans the numbers in its parameter and
+expands each number to the `\pglink{number}`.

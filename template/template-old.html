@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="$LANG_ISO$">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, shrink-to-fit=no">
+
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+
+	<link rel="alternate" hreflang="cs" href="opmac-tricks.html">
+	<link rel="alternate" hreflang="en" href="opmac-tricks-e.html">
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+
+	<title>$PAGE_TITLE$</title>
+
+	<style>
+		.my-sidebar-toc {
+			max-height: 48vh;
+			overflow-y: auto;
+			max-width: 480px;
+			box-shadow: 0 0 1rem 0 rgba(0,0,0,.15) inset;
+		}
+
+		.my-sidebar-toc ul {
+			list-style-type: none;
+		}
+
+		.my-sidebar-toc ul ul {
+			padding-left: 1.25rem;
+		}
+
+		.my-sidebar-toc ul a {
+			display: block;
+			padding: 0.1rem 1rem 0 2rem;
+			color: #6c757d;
+			text-decoration: none;
+		}
+
+		.my-sidebar-toc ul a:hover {
+			color: #007bff;
+		}
+
+		.my-content {
+			max-width: 720px;
+		}
+
+		.my-content pre {
+			padding: 0.5rem;
+			background-color: #f8f9fa;
+			border-radius: .25rem;
+			box-shadow: 0 0 1rem 0 rgba(0,0,0,.15) inset;
+		}
+
+		@media (min-width: 992px) {
+			.my-sidebar-toc {
+				max-height: initial;
+			}
+
+			@supports (position: sticky) or (-webkit-position:sticky) {
+				.my-sidebar-toc {
+				    max-height: calc(100vh - 8rem);
+				    position: sticky;
+				    top: 7rem;
+				}
+
+				.my-sidebar {
+					-webkit-position: sticky;
+					position: sticky;
+					top: 0;
+					max-height: 100vh;
+				}
+
+				.my-sidebar > h2 {
+				    position: sticky;
+				    top: 2.25rem;
+				}
+			}
+		}
+
+		.back-to-top {
+			cursor: pointer;
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			display:none;
+		}
+
+		.my-shadow {
+			box-shadow: 0 0 1rem 0 rgba(0,0,0,.15);
+		}
+
+		a.list-group-item small {
+		  white-space: nowrap;
+		}
+	</style>
+</head>
+<body style="min-width: 448px">
+
+	<nav class="navbar navbar-expand-md navbar-dark bg-dark px-5">
+		<a class="navbar-brand" href="opmac.html">OPmac</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="#">$PAGE_TITLE$<span class="sr-only"> $PAGE_TITLE_THIS_PAGE$</span></a>
+				</li>
+			</ul>
+			<ul class="navbar-nav ml-auto">
+				<li class="nav-item">
+					<a class="nav-link" href="opmac-tricks-$LANG_ISO$.pdf">PDF <i class="far fa-file-pdf"></i></a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="opmac-tricks-$OTHER_LANG$.html">$OTHER_LANG_NAME$ <img src="img/$OTHER_LANG$.png" style="max-height: 1.33rem"></a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row flex-xl-nowrap">
+
+			<aside class="my-sidebar col-12 col-lg-4 p-0 bg-light">
+				<h2 class="text-center my-2">$TOC$</h2>
+				<nav class="my-sidebar-toc mx-auto mb-3 mb-lg-0 bg-white pb-3">
+					$FULL_TOC$
+				</nav>
+			</aside>
+
+			<div class="col-12 col-lg-8 py-2 px-2 px-sm-3 my-shadow">
+				<main class="my-content mx-auto ml-xl-5" role="main">
+
+					<section class="mb-5">
+						<img src="img/opmac-logo.jpg" class="img-fluid rounded mx-auto d-block" style="max-height: 80px">
+
+						<h1 class="text-center font-weight-light">$PAGE_TITLE$</h1>
+
+						<p>$INTRO_PAR_1$ <a href="opmac.html">OPmac</a>. $INTRO_PAR_2$</p>
+						<p>$INTRO_PAR_3$</p>
+
+						<div class="alert alert-info" role="alert">
+							$PDF_VERSION_INFO$
+							<a href="opmac-tricks-$LANG_ISO$.pdf" class="btn btn-secondary btn-sm">PDF <i class="far fa-file-pdf"></i></a>
+						</div>
+					</section>
+
+
+                    $MOST_RECENT$
+
+                    $SECTIONS$
+
+                    <div style="padding:1.5em 0 2.5em 0; text-align: center; color:#aaa;">
+                        $FOOTER_1$ <a href="">$FOOTER_2$</a> $FOOTER_3$
+                    </div>
+
+				</main>
+			</div>
+
+		</div>
+	</div>
+
+	<a id="back-to-top" href="#" class="btn btn-primary btn-lg back-to-top" role="button" title="$BACK_TO_TOP$" data-toggle="tooltip" data-placement="left">
+		<i class="fas fa-chevron-up"></i>
+	</a>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+	<script>
+	$(document).ready(function(){
+		var offset = 600;
+		var duration = 300;
+
+		$(window).scroll(function () {
+			if ($(this).scrollTop() > offset && $(window).width() < 992) {
+				$('#back-to-top').fadeIn();
+			} else {
+				$('#back-to-top').fadeOut();
+			}
+		});
+
+		$('#back-to-top').click(function () {
+			$('#back-to-top').tooltip('hide');
+			$('body,html').animate({scrollTop: 0}, duration);
+			return false;
+		});
+
+		$('#back-to-top').tooltip();
+	});
+	</script>
+
+</body>
+</html>

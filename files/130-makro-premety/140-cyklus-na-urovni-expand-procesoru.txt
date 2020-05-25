@@ -1,0 +1,87 @@
+anchor-name:rep
+id:0120
+author:P. O.
+date:2015-07-25
+
+----lang:cs--title:Cyklus na úrovni expand procesoru
+Při zpracování cyklu je třeba měnit proměnnou cyklu a to vyžaduje
+přiřazení. Přiřazení ale nelze provést v expand procesoru.
+Ukážeme dvě řešení, jak to obejít. První je hodně trikoidní využívající
+`\romannumeral` a pracuje i v klasickém TeXu. Druhé řešení využívá toho, že
+eTeXový příkaz `\numexpr` pracuje v expand procesoru.
+
+Vytvoříme makro `\rep{kolik}{co}`, které zopakuje `co` `kolik`rát, tedy
+třeba `\rep{5}{uf}` expanduje na `ufufufufuf`.
+
+V klasickém TeXu by implementace makra `\rep` vypadala takto:
+
+```
+\def\rep#1#2{\expandafter\repA\romannumeral#1000.{#2}}
+\def\repA#1.#2{\repB{#2}#1.}
+\def\repB#1#2{\ifx.#2\expandafter\repC\else#1\expandafter\repB\fi{#1}}
+\def\repC#1{}
+```
+
+Nejprve je `\rep{5}{uf}` expandováno na `\repA mmmmm.{uf}`
+(tedy 5krát `m`) a pořadí parametrů je pomocí `\repA` převráceno na
+`\repB {uf}mmmmm`. Makro `\repB` provede cyklus, při němž odebírá
+jednotlivá `m` a končí při tečce.
+
+S využitím eTeXu může implementace makra `\rep` vypadat takto:
+
+```
+\def\rep#1#2{\repA 0{#1}{#2}}
+\def\repA#1#2#3{\ifnum#2>#1 #3\expandafter\repB\else\expandafter\repC\fi{#1}{#2}{#3}}
+\def\repB#1{\expandafter\repA\expandafter{\the\numexpr#1+1}}
+\def\repC#1#2#3{}
+```
+
+V tomto případě se opakuje `\repA` s parametry `{kolik-bylo}{kolik}{co}`.
+Toto makro vloží do výstupu `co` za předpokladu, že `kolik-bylo < kolik`.
+V takovém případě pomocí `\repB` a `\numexpr` zvětší hodnotu kolik-bylo o
+jedničku a zopakuje `\repA`.
+
+Druhé řešení umožní za parametr `kolik` vkládat i registry nebo
+konstanty, tj. třeba `\chardef\x=10 \rep\x{ahoj}`, což první řešení neumožní a
+vyžaduje takový parametr prefixovat pomocí `\the`.
+
+----lang:en--title:The loop at expand processor only
+While loop processing, we need to increment the loop variable and this
+needs setting new value. This is impossible to do it at expand processor.
+We show two solutions how to overcome it. The first solution uses
+`\romannumeral` primitive and works in classical TeX. The second solution uses
+`\numexpr` primitive from eTeX. It works at expand processor level.
+
+We create the macro `\rep{how-many}{what}`. It repeats the `what` parameter
+`how-many` times. For example `\rep{5}{uf}` expands to `ufufufufuf`.
+
+The `\rep` macro in classical TeX looks like:
+
+```
+\def\rep#1#2{\expandafter\repA\romannumeral#1000.{#2}}
+\def\repA#1.#2{\repB{#2}#1.}
+\def\repB#1#2{\ifx.#2\expandafter\repC\else#1\expandafter\repB\fi{#1}}
+\def\repC#1{}
+```
+
+First, the `\rep{5}{uf}` expands to `\repA mmmmm.{uf}` (5-times `m`) and the
+parameters are reordered by `\repA` to `\repB {uf}mmmmm`. The `\repB` does the
+loop: it gets one `m` in each loop step and ends when period is found.
+
+Using eTeX we can iplement the `\rep` macro as this:
+
+```
+\def\rep#1#2{\repA 0{#1}{#2}}
+\def\repA#1#2#3{\ifnum#2>#1 #3\expandafter\repB\else\expandafter\repC\fi{#1}{#2}{#3}}
+\def\repB#1{\expandafter\repA\expandafter{\the\numexpr#1+1}}
+\def\repC#1#2#3{}
+```
+
+In this case, the `\repA` macro does the loop with parameters
+`{how-many-pre}{how-many}{what}`. This macro inserts `what` to the output if
+`how-many-pre < how-many`. Then the macro `\repB` increments `how-many-pre`
+by one using `\numexpr` and repeats `\repA`.
+
+The second solution allows to use registers or constants in `how-many`
+parameter, for example `\chardef\x=10 \rep\x{hello}`. The first solution needs
+such parameter to be prefixed by `\the`.

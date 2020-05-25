@@ -1,0 +1,128 @@
+anchor-name:setrgbcolor
+id:0089
+author:P. O.
+date:2015-01-25
+
+----lang:cs--title:Barvy zadávané v RGB
+OPmac nastavuje barvy interně v CMYK. Jak překlopit toto chování celkově
+do RGB je popsáno v následujícím
+[OPmac triku 0090](#rgb). Nyní je naším cílem zůstat
+interně v CMYK, ale umožnit uživateli zadávat barvy v RGB. Třeba
+
+```
+\def\Pink{\setRGBcolor{213 30 101}}
+nebo
+\def\Pink{\setrgbcolor{.835 .118 .396}}
+nebo
+\def\Pink{\setHEXcolor{D51E65}}
+```
+
+Ve všech třech případech tohoto příkladu je definována stejná barva,
+která je interně realizována jako `\setcmykcolor{0 .859 .526 .165}`.
+Implementace může vypadat takto:
+
+```
+\def\setRGBcolor#1{\setRGBcolorA#1 }
+\def\setRGBcolorA#1 #2 #3 {\def\tmpb{}\tmpdim=0pt
+   \ifdim#1pt>\tmpdim \tmpdim=#1pt \fi
+   \ifdim#2pt>\tmpdim \tmpdim=#2pt \fi
+   \ifdim#3pt>\tmpdim \tmpdim=#3pt \fi
+   \tmpnum=\expandafter\onedecimaldigit\the\tmpdim\relax \relax
+   \ifnum\tmpnum=0 \def\tmpb{0 0 0 1}\else
+      \setRGBcolorB{#1}\setRGBcolorB{#2}\setRGBcolorB{#3}%
+      \tmpdim=2550pt \advance\tmpdim by-\tmpnum pt \divide\tmpdim by2550
+      \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim}\fi
+   \setcmykcolor\tmpb
+}
+\def\setRGBcolorB#1{\tmpdim=#1pt
+   \tmpdim=-\expandafter\onedecimaldigit\the\tmpdim\relax pt
+   \advance\tmpdim by\tmpnum pt \divide\tmpdim by\tmpnum
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim\space}%
+}
+\def\onedecimaldigit#1.#2#3\relax{#1#2}
+\def\setHEXcolor#1{\setHEXcolorA#1}
+\def\setHEXcolorA #1#2#3#4#5#6{\setRGBcolorA "#1#2 "#3#4 "#5#6 }
+\def\setrgbcolor#1{\setrgbcolorA#1 }
+\def\setrgbcolorA#1 #2 #3 {\def\tmpb{}\dimen0=255pt
+   \setrgbcolorB{#1}\setrgbcolorB{#2}\setrgbcolorB{#3}%
+   \expandafter\setRGBcolorA\tmpb
+}
+\def\setrgbcolorB#1{\tmpdim=#1\dimen0
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim \space}}
+\addprotect\setRGBcolor  \addprotect\setrgbcolor  \addprotect\setHEXcolor
+```
+
+Makro `\setRGBcolor` provádí konverzi RGB na CMYK dle jednoduchého
+vzorce (bez použití ICC profilů):
+
+`K'=max(R,G,B),  C=(K'-R)/K', M=(K'-G)/K', Y=(K'-B)/K', K=(255-K')/255`.
+
+Makro umožní pracovat s jedním desetinným místem v údajích `R,G,B`.
+Proto jsou tyto údaje zpracovány makrem `\onedecimaldigit` a dělíme
+číslem 2550 a nikoli 255.
+
+Makro `\setrgbcolor` násobí své parametry číslem 255 a převádí výpočet na
+`\setRGBcolor`. Konečně makro `\setHEXcolor` uvodí své parametry symbolem `"` a
+převede je rovněž na `\setRGBcolor`.
+
+----lang:en--title:Colors given in RGB
+OPmac works internally in CMYK color space. How to change this internal
+commands to RGB is described in the following
+[OPmac trick 0090](#rgb). Now, we have another aim: to give the
+possibility to the user to set colors in RGB coordinates, but keep the CMYK
+color space internal. For example
+
+```
+\def\Pink{\setRGBcolor{213 30 101}}
+or
+\def\Pink{\setrgbcolor{.835 .118 .396}}
+or
+\def\Pink{\setHEXcolor{D51E65}}
+```
+
+All three cases above defines the same color which is realized internally
+as `\setcmykcolor{0 .859 .526 .165}`.
+
+```
+\def\setRGBcolor#1{\setRGBcolorA#1 }
+\def\setRGBcolorA#1 #2 #3 {\def\tmpb{}\tmpdim=0pt
+   \ifdim#1pt>\tmpdim \tmpdim=#1pt \fi
+   \ifdim#2pt>\tmpdim \tmpdim=#2pt \fi
+   \ifdim#3pt>\tmpdim \tmpdim=#3pt \fi
+   \tmpnum=\expandafter\onedecimaldigit\the\tmpdim\relax \relax
+   \ifnum\tmpnum=0 \def\tmpb{0 0 0 1}\else
+      \setRGBcolorB{#1}\setRGBcolorB{#2}\setRGBcolorB{#3}%
+      \tmpdim=2550pt \advance\tmpdim by-\tmpnum pt \divide\tmpdim by2550
+      \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim}\fi
+   \setcmykcolor\tmpb
+}
+\def\setRGBcolorB#1{\tmpdim=#1pt
+   \tmpdim=-\expandafter\onedecimaldigit\the\tmpdim\relax pt
+   \advance\tmpdim by\tmpnum pt \divide\tmpdim by\tmpnum
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim\space}%
+}
+\def\onedecimaldigit#1.#2#3\relax{#1#2}
+\def\setHEXcolor#1{\setHEXcolorA#1}
+\def\setHEXcolorA #1#2#3#4#5#6{\setRGBcolorA "#1#2 "#3#4 "#5#6 }
+\def\setrgbcolor#1{\setrgbcolorA#1 }
+\def\setrgbcolorA#1 #2 #3 {\def\tmpb{}\dimen0=255pt
+   \setrgbcolorB{#1}\setrgbcolorB{#2}\setrgbcolorB{#3}%
+   \expandafter\setRGBcolorA\tmpb
+}
+\def\setrgbcolorB#1{\tmpdim=#1\dimen0
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim \space}}
+\addprotect\setRGBcolor  \addprotect\setrgbcolor  \addprotect\setHEXcolor
+```
+
+The `\setRGBcolor` macro does conversion from RGB to CMYK by the simple
+equations (i.e without ICC profiles):
+
+`K'=max(R,G,B),  C=(K'-R)/K', M=(K'-G)/K', Y=(K'-B)/K', K=(255-K')/255`.
+
+The macro accepts first decimal digit in the `R, G, B` data. This is reason
+why the `\onedecimaldigit` macro is used and why the nominator in the calculation
+isn't 255 but 2550.
+
+The `\setrgbcolor` macro multiplies the parameters by 255 and uses
+`\setRGBcolor`. The macro `\setHEXcolor` uses `"` character before parameters and
+uses `\setRGBcolor` too.

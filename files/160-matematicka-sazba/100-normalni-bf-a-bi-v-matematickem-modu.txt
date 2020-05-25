@@ -1,0 +1,58 @@
+anchor-name:bfmath
+id:0146
+author:P. O.
+date:2016-05-02
+
+----lang:cs--title:Normální \bf a \bi v matematickém módu
+OPmac volá `ams-math.tex` pro zavedení matematických fontů. Tento
+soubor (z CSplainu) nastavuje pro `\bf` a `\bi` v matematickém módu
+*bezserifové* varianty písma, protože to je pro značení matic a vektorů
+v české sazbě obvyklejší. Ovšem někdo může chtít i matematické sazbě použít
+normální serifové varinaty písma pro `\bf` a `\bi`. Pak může psát:
+
+```
+\addto\normalmath{%
+   \setmathfamily {\bffam} \tenbf  \setmathfamily {\bifam} \tenbi
+}
+\addto\boldmath{%
+   \setmathfamily {\bffam} \tenbf  \setmathfamily {\bifam} \tenbi
+}
+\normalmath
+```
+
+Typicky nejsou pro tučnou verzi matematické sazby k dispozici supertučné
+varianty písma, takže jsme se zde museli spokojit v `\boldmath` se stejným
+řešením jako v `\normalmath`. Používáte-li písmovou rodinu, která disponuje
+supertučnými písmy, pak můžete napsat něco podobného tomuto:
+
+```
+\addto\boldmath{%
+   \loadmathfamily {\bffam} heavy-bf \setmathfamily {\bifam} heavy-bi
+}
+```
+
+----lang:en--title:Normal \bf and \bi in math mode
+OPmac uses `ams-math.tex` macro (from CSplain) to load the math fonts. This
+file sets math `\bf` and `\bi` as *sans serif* variants of bold fonts
+becaue it is common in Czech math typesetting. If you need to use normal `\bf`
+and `\bi` in math mode then you can write:
+
+```
+\addto\normalmath{%
+   \setmathfamily {\bffam} \tenbf  \setmathfamily {\bifam} \tenbi
+}
+\addto\boldmath{%
+   \setmathfamily {\bffam} \tenbf  \setmathfamily {\bifam} \tenbi
+}
+\normalmath
+```
+
+It is very uncommon to have super-bold variants in font family, thus
+`\boldmath` is declared with the same fonts as `\normalmath`. If you have
+superbold variants (say heavy-bf and heavy-bi) then you can write:
+
+```
+\addto\boldmath{%
+   \loadmathfamily {\bffam} heavy-bf \setmathfamily {\bifam} heavy-bi
+}
+```

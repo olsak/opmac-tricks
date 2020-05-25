@@ -1,0 +1,85 @@
+anchor-name:tableto
+id:0011
+author:P. O.
+date:2013-08-16
+
+----lang:cs--title:Tabulky se stanovenou šířkou
+Vytvoříme makro `\tableto{šířka}{deklarace}{data}`, které vytvoří tabulku
+se stanovenou šířkou. Mezery mezi sloupci se tomu přizpůsobí.
+K tomu stačí inspirovat se makrem `\table` z OPmac a zapracovat do něj práci s
+registrem `\tabskip`.
+
+```
+\def\tableto{\vbox\bgroup \catcode`\|=12 \tableAto}
+\def\tableAto#1#2#3{\offinterlineskip \def\tmpa{}%
+   \tabdata={\tabskip=0pt plus1fil minus1fil}\scantabdata#2\relax
+   \halign to#1\expandafter{\the\tabdata\tabskip=0pt\tabstrutA\cr#3\crcr}\egroup}
+```
+
+Mezery `\tabiteml` a `\tabitemr` se nyní projeví vlevo od prvního sloupce a
+vpravo od posledního sloupce. Jinde mezi sloupci bude mezera upravena tak,
+aby celková šířka tabulky vyhověla stanovenému údaji.
+
+Toto makro funguje na tabulky například z předchozích dvou příkladů. Nefunguje
+to správně na tabulky se svislými linkami mezi sloupci (na okrajích tabulky
+svislé linky nevadí). Pokud tedy nejste (stejně jako já) ortodoxní
+vyznavači booktabs a tedy výjimečně snesete i kultivovaně vedenou svislou linku,
+je třeba pro natahovací tabulky se svilými linkami použít jiné
+makro:
+
+```
+\newdimen\tabw
+\def\countcols#1{\ifx#1\relax\else
+   \ifx#1|\else\advance\tmpnum by2 \fi \expandafter\countcols \fi}
+\def\tableto#1#2#3{{\def\tabiteml{}\def\tabitemr{}\setbox0=\table{#2}{#3}%
+   \tmpnum=0 \countcols#2\relax \tabw=#1\advance\tabw by-\wd0 \divide\tabw by\tmpnum
+   \def\tabiteml{\kern\tabw}\def\tabitemr{\kern\tabw}\table{#2}{#3}}}
+```
+
+Toto makro nejprve nanečisto do boxu0 vysází tabulku s prázdnými
+`\tabiteml` a `\tabitemr`. Pak odečte od požadované šířky šířku boxu0 a vydělí
+to dvojnásobkem počtu sloupců. Tento rozměr pak nacpe do `\tabiteml` a
+`\tabitemr` a znovu vytiskne. Nyní už bude mít tabulka požadovanou šířku.
+
+Výhoda tohoto řešení (proti postupu např. v TBN, str. 141) je, že
+není potřeba měnit nic v datech tabulky. Počet sloupců zůstává
+zachován.
+
+----lang:en--title:Tables with the given width
+We create the macro `\tableto{width}{declaration}{data}` which prints the
+table with the given width. The intercolumn spaces will be adjusted to this
+width. The macro is inspired by `\table` macro from OPmac and the `\tabskip`
+primitive is used here.
+
+```
+\def\tableto{\vbox\bgroup \catcode`\|=12 \tableAto}
+\def\tableAto#1#2#3{\offinterlineskip \def\tmpa{}%
+   \tabdata={\tabskip=0pt plus1fil minus1fil}\scantabdata#2\relax
+   \halign to#1\expandafter{\the\tabdata\tabskip=0pt\tabstrutA\cr#3\crcr}\egroup}
+```
+
+The spaces `\tabiteml` and `\tabitemr` are used only at the left boundary and
+right boundary of the table. The intercolumn spaces are adjusted.
+
+You can use this macro for example for tables from previous two OPmac
+tricks. The vertical rules between cells don't work. If you are not the
+orthodox advocate of the LaTeX booktabs package (and I am not) then you need
+(we need) to use another macro for vertical rules between cells:
+
+```
+\newdimen\tabw
+\def\countcols#1{\ifx#1\relax\else
+   \ifx#1|\else\advance\tmpnum by2 \fi \expandafter\countcols \fi}
+\def\tableto#1#2#3{{\def\tabiteml{}\def\tabitemr{}\setbox0=\table{#2}{#3}%
+   \tmpnum=0 \countcols#2\relax \tabw=#1\advance\tabw by-\wd0 \divide\tabw by\tmpnum
+   \def\tabiteml{\kern\tabw}\def\tabitemr{\kern\tabw}\table{#2}{#3}}}
+```
+
+This macro does printing into the box0 first and the `\tabiteml` and
+`\tabitemr` are empty at this state. The desired width is subtracted by width
+of the box0 and divided by the double number of columns. The result is used
+in `\tabiteml` and `\tabitemr` and the table is printed again.
+
+The advantage of such solution (in comparison to the solution form TBN,
+page 141) is that we needn't to change the markup of the table in the data.
+The number of the internal columns is kept.

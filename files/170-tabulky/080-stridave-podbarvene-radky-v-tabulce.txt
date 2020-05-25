@@ -1,0 +1,62 @@
+anchor-name:crx
+id:0010
+author:P. O.
+date:2013-08-15
+
+----lang:cs--title:Střídavě podbarvené řádky v tabulce
+V poslední době se rozmohla móda podbarvovat řádky v tabulce.
+
+![Ukázka tabulky](img/tab2-ukazka.png)
+
+Pomocí `\table` vytvoříme výše uvedenou tabulku třeba takto:
+
+```
+\frame{\table{llllll}{\crx
+  aa & bb & cc & dd & ee & ff \crx
+  gg & hh & ii & jj & kk & ll \crx
+  mm & nn & oo & pp & qq & rr \crx
+  ss & tt & uu & vv & ww & xx \crx
+  ab & cd & ef & gh & ij & kl \crx
+  mn & op & qr & st & uv & wx}}
+```
+
+K tomu stačí dodefinovat příkaz `\crx`, který střídavě vkládá/nevkládá do
+vertikálního seznamu mezi řádky šedé pruhy:
+
+```
+\newcount\tabline  \tabline=1
+\def\crx{\crcr \ifodd\tabline \colortabline \fi
+         \global\advance\tabline by1 }
+\def\colortabline{\noalign{\localcolor\LightGrey
+   \hrule height\ht\strutbox depth\dp\strutbox \kern-\ht\strutbox \kern-\dp\strutbox}}
+\def\tabiteml{\quad}\def\tabitemr{\quad}
+```
+
+----lang:en--title:Colored lines in the table
+We can see the trend to use colored tables like this:
+
+![Table example](img/tab2-ukazka.png)
+
+The table above can be created by the `\table` macro from OPmac:
+
+```
+\frame{\table{llllll}{\crx
+  aa & bb & cc & dd & ee & ff \crx
+  gg & hh & ii & jj & kk & ll \crx
+  mm & nn & oo & pp & qq & rr \crx
+  ss & tt & uu & vv & ww & xx \crx
+  ab & cd & ef & gh & ij & kl \crx
+  mn & op & qr & st & uv & wx}}
+```
+
+We need to define the `\crx` macro which inserts the grey rule before each
+odd line into the vertical list:
+
+```
+\newcount\tabline  \tabline=1
+\def\crx{\crcr \ifodd\tabline \colortabline \fi
+         \global\advance\tabline by1 }
+\def\colortabline{\noalign{\localcolor\LightGrey
+   \hrule height\ht\strutbox depth\dp\strutbox \kern-\ht\strutbox \kern-\dp\strutbox}}
+\def\tabiteml{\quad}\def\tabitemr{\quad}
+```

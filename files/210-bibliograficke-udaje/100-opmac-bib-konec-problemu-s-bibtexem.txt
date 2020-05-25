@@ -1,0 +1,88 @@
+anchor-name:bibtexenc
+id:0047
+author:P. O.
+date:2014-04-19
+
+----lang:cs--title:OPmac-bib: konec problémů s BibTeXem
+[BibTeX](http://www.bibtex.org/)
+z roku 1985 umí pracovat jen v ASCII kódování. Máte-li `.bib` databáze
+v tomto kódování (tj. případné akcenty máte přepsány TeXovsky), nemáte
+problém s užitím BibTeXu. Jakmile ale do těchto databází přidáte přímý
+akcentovaný znak nebo něco podobného, mohou nastat problémy. Především podle
+těchto znaků BibTeX neumí řadit. To částečně řeší varianta programu bibtex8,
+která pracuje v osmibitovém kódování a řadí podle pravidel deklarovaných v
+externím souboru `.csf`. Ovšem dnes se používá výhradně vícebytové kódování
+UTF-8, se kterým si tyto varianty BibTeXu neporadí. Navíc často mohou zmršit
+výstup, protože iterpretují byte=znak. Takže když mají za úkol napsat např.
+jméno jen s iniciálním písmenem, může vzniknout po stránce kódování vadný
+soubor. Převádět `.bib` databáze do jednobytového kódování a pak číst .bbl v
+tomto jednobytovém kódování by se dalo, ale jistě uznáte, že to není řešení.
+
+Mezi různými záplatami BibTeXu existuje i varianta nazvaná `bibtexu`,
+která by měla umět UTF-8 vstup/výstup a uvnitř by měla řadit v Unicode s
+využítím ICU knihovny. Bohužel projekt zůstal opuštěn v ne zcela funkčním
+stavu (program se dosti často interně zacyklí).
+
+Vedle BibTeXu existuje nový projekt Biber, který je ale pro uživatele
+plainTeXu *naprosto nepoužitelný*: opustil princip „v jednoduchosti
+je síla“, předpokládá konfigurační soubory i data v XML a spolupracuje s
+makrem biblatex. Toto makro produkuje nadbytek elektronického smetí v podobě
+XML souborů, jež následně čte Biber. Ten na oplátku vyrobí lidsky skoro
+nečitelný .bbl, kterému rozumí jen biblatex. Toto není cesta, kterou by měl
+následovat OPmac.
+
+OPmac je schopen přímo číst `.bib` soubory (pchopitelně v UTF-8 kódování) 
+a nahradit kompletně bibTeX. Slouží k tomu příkaz `\usebib`:
+
+```
+... \cite[cosi] a \cite[jiny].
+
+Seznam:
+\usebib/s (simple) mybase
+\end
+```
+
+Formátování položek seznamu je deklarováno ve stylovém souboru 
+`opmac-bib-simple.tex`. Podrobnosti jsou dokumentovány v souboru
+`opmac-bib.tex` a ve druhém stylovém souboru `opmac-bib-iso690.tex`.
+
+----lang:en--title:OPmac-bib: no more BibTeX problems
+[BibTeX](http://www.bibtex.org/) (1995) is able to work only
+in ASCII encoding, the accents have to be added by \TeX (or more exactly
+BibTeX) syntax. But today, we need to write all characters “natural”. Such
+characters can bring problems with normal BibTeX. It is unable to sort by
+these characters. This is partially solved by bibtex8 variant of BibTeX which
+uses 8bit encoding and sorting rules are expressed in external files `.csf`.
+But today, we are using UTF-8 encoding (this is more than 8bit encoding).
+The BibTeX is unable to work with this encoding. Id doesn't sort right and
+breaks the encoding when converts to the uppercase. Somebody converts the
+bib databases to 8bit encoding, uses BibTeX and the result is converted back to
+UTF-8. This is not so optimal.
+
+There exists a patch of bibtex8 called `bibtexu`. The
+documentation declares that bibtexu is able to work with UTF-8 input/output
+and works internally in Unicode using ICU library. Unfortunately this
+project isn't active and the program doesn't work (sometimes it deads in the
+infinitive loop).
+
+There exist the new and active project Biber which is *absolutely unusable*
+for the plain TeX users because the main principle “power is simplicity”
+is totally lost here. It expected the configuration files in XML (huh!)
+which is read by external program biber. The result of biber is almost human
+unreadable .bbl file which is understandable only by very complicated biblatex
+macros. This is not the way for OPmac.
+
+OPmac is able to read `.bib` file directly in UTF-8 encoding. BibTeX nor
+another external program isn't needed. Use `\usebib` command:
+
+```
+... \cite[cosi] a \cite[jiny].
+
+List:
+\usebib/s (simple) mybase
+\end
+```
+
+The format of the reference list is declared in a style file
+`opmac-bib-simple.tex`. Features are documented in the `opmac-bib.tex` and
+in the second style file `opmac-bib-iso690.tex`.

@@ -1,0 +1,120 @@
+anchor-name:plists
+id:0118
+author:P. O.
+date:2015-07-22
+
+----lang:cs--title:Spojové seznamy
+Jako cvičení vytvoříme v TeXu strukturu spojových senznamů. Makro
+`\addtolist{název}{data}` přidá na konec spojového seznamu `název` další
+uzel obsahující `data`, nebo (pokud je seznam prázdný) založí v seznamu
+první uzel. Každý uzel odkazuje na předchozí a následující uzel
+v seznamu. Makro `\printlist{název}` expanduje na seznam dat odělených
+`\seplist` v pořadí od prvního do posledního a makro `\printlistrev{název}`
+expanduje seznam v opačném pořadí. Tato makra proběhnou na úrovni expand
+procesoru.
+
+```
+\newcount\listnum
+
+\def\addtolist#1#2{\advance\listnum by1
+   \expandafter\ifx\csname l:#1:1\endcsname \relax
+      \setlistnode \relax \relax {#2}{\the\listnum}%
+      \expandafter\edef\csname l:#1:0\endcsname{\the\listnum}%
+   \else
+      \edef\lastnodenum{\csname l:#1:1\endcsname}%
+      \expandafter\resetlistnode \csname l:\the\listnum\endcsname 2\lastnodenum
+      \expandafter\setlistnode \csname l:\lastnodenum\endcsname \relax {#2}{\the\listnum}%
+   \fi
+   \expandafter \edef\csname l:#1:1\endcsname{\the\listnum}%
+}
+\def\setlistnode #1#2#3#4{\expandafter\def\csname l:#4\endcsname{#1#2{#3}}}
+\def\resetlistnode #1#2#3{\def\tmp{\expandafter\def\csname l:#3\endcsname}%
+   \expandafter\expandafter\expandafter\resetlistnumA \csname l:#3\endcsname #2#1}
+\def\resetlistnumA #1#2#3#4#5{\ifcase #4\or\tmp{#5#2{#3}}\or\tmp{#1#5{#3}}\or\tmp{#1#2{#5}}\fi}
+
+\def\printlist#1{\expandafter\ifx\csname l:#1:0\endcsname \relax \else
+   \expandafter\expandafter\expandafter\printlistA
+      \csname l:\csname l:#1:0\endcsname\expandafter\endcsname \fi}
+\def\printlistA#1#2#3{#3\ifx#2\relax \else \listsep
+   \expandafter\expandafter\expandafter\printlistA\expandafter#2\fi}
+
+\def\printlistrev#1{\expandafter\ifx\csname l:#1:1\endcsname \relax \else
+   \expandafter\expandafter\expandafter\printlistAr
+      \csname l:\csname l:#1:1\endcsname\expandafter\endcsname \fi}
+\def\printlistAr#1#2#3{#3\ifx#1\relax \else \listsep
+   \expandafter\expandafter\expandafter\printlistAr\expandafter#1\fi}
+
+\def\listsep{;}
+```
+
+Seznam `název` je reprezentován číslem prvního uzlu v makru `\l:název:0` a
+číslem posledního uzlu v `\l:název:1`. Každý uzel je makro s názvem `\l:číslo`
+a s obsahem `{\předchozí \další {data}}`, přitom `\předchozí` a `\další` jsou
+zase makra typu `\l:číslo` nebo to je `\relax`, pokud předchozí nebo další uzel
+neexistuje. Číslo je pro každý uzel unikátní.
+Pomocné makro `\setlistnode` `\předchozí\další{data}{číslo}` založí
+uzel `\l:číslo` s daným obsahem. Pomocné makro `\resetlistnode{co}{jak}{číslo}`
+pozmění uzel `číslo` tak, že `co` vloží jako první, druhý, nebo třetí údaj
+uzlu v závislosti na `jak`. Ostatní údaje uzlu zůstávají nezměněny. Takže
+třeba `\resetlistnode{data}3{číslo}` aktualízuje v `\l:číslo` jen data
+a ponechá pointery `\předchozí` a `\další` nezměněny.
+
+----lang:en--title:Linked lists
+We implement (as an exercise) the linked lists structure in TeX.
+The macro `\addtolist{name}{data}` adds new node with the `data`
+to the end of the list `name` (if the list `name` is empty then the first
+node is created). Each node points to the previous and next nodes in the
+list. The macro `\printlist{name}` expands to the list of data separated by
+`\seplist` in the order from first to the last node of the list `name`.
+The macro `\printlistrev{name}` does the same but expands in reverse order
+from the last node to the first. These macros work at expand processor
+level.
+
+```
+\newcount\listnum
+
+\def\addtolist#1#2{\advance\listnum by1
+   \expandafter\ifx\csname l:#1:1\endcsname \relax
+      \setlistnode \relax \relax {#2}{\the\listnum}%
+      \expandafter\edef\csname l:#1:0\endcsname{\the\listnum}%
+   \else
+      \edef\lastnodenum{\csname l:#1:1\endcsname}%
+      \expandafter\resetlistnode \csname l:\the\listnum\endcsname 2\lastnodenum
+      \expandafter\setlistnode \csname l:\lastnodenum\endcsname \relax {#2}{\the\listnum}%
+   \fi
+   \expandafter \edef\csname l:#1:1\endcsname{\the\listnum}%
+}
+\def\setlistnode #1#2#3#4{\expandafter\def\csname l:#4\endcsname{#1#2{#3}}}
+\def\resetlistnode #1#2#3{\def\tmp{\expandafter\def\csname l:#3\endcsname}%
+   \expandafter\expandafter\expandafter\resetlistnumA \csname l:#3\endcsname #2#1}
+\def\resetlistnumA #1#2#3#4#5{\ifcase #4\or\tmp{#5#2{#3}}\or\tmp{#1#5{#3}}\or\tmp{#1#2{#5}}\fi}
+
+\def\printlist#1{\expandafter\ifx\csname l:#1:0\endcsname \relax \else
+   \expandafter\expandafter\expandafter\printlistA
+      \csname l:\csname l:#1:0\endcsname\expandafter\endcsname \fi}
+\def\printlistA#1#2#3{#3\ifx#2\relax \else \listsep
+   \expandafter\expandafter\expandafter\printlistA\expandafter#2\fi}
+
+\def\printlistrev#1{\expandafter\ifx\csname l:#1:1\endcsname \relax \else
+   \expandafter\expandafter\expandafter\printlistAr
+      \csname l:\csname l:#1:1\endcsname\expandafter\endcsname \fi}
+\def\printlistAr#1#2#3{#3\ifx#1\relax \else \listsep
+   \expandafter\expandafter\expandafter\printlistAr\expandafter#1\fi}
+
+\def\listsep{;}
+```
+
+The list `name` is implemented as a couple of two macros
+`\l:name:0` (includes the number of the first node) and `\l:name:1` (includes
+the number of the last node). Each node is the macro with name `\l:number`
+and with the contents `{\prev \next {data}}`. The number is unique for
+each node and the `\prev` and `\next` items are another control sequences of
+the type `\l:number` and they are the previous and next node in the list or
+`\relax`, if there is no previous or next node.
+
+The temporary macro `\setlistnode\prev\next{data}{number}` creates the next
+node `\l:number` with given contents. The temporary macro
+`\resetlistnode{what}{how}{number}` replaces only one item in the `\l:number`
+node by `what`. Which item it is depends on the `how` which is the nuber
+from 1 to 3. For example `\resetlistnode{data}3{number}` sets new data to the
+node `number` and keeps the pointers `\prev` and `\next` untouched.

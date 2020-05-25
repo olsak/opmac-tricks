@@ -1,0 +1,55 @@
+anchor-name:embrac
+id:0064
+author:P. O.
+date:2013-06-07
+
+----lang:cs--title:Stojaté závorky v kurzívě
+Ukážeme, jak lze jediným řádkem implementovat vlastnost, kterou řeší cca
+300 řádků naprosto nečitelného kódu v balíčku `embrac.sty`.
+
+Občas se objeví typografický požadavek ponechat závorky `()`
+a případně další i v kurzívě stojaté. Takže když napíšeme
+`{\em kurzíva se (závorkami)}`, měli bychom dostat
+
+```
+{\it kurzíva se {\rm(}závorkami{\/\rm)}}
+```
+
+Toto se dá řešit následující
+definicí:
+
+```
+\addto\em{\adef({\ifmmode(\else{\rm(}\fi}\adef){\ifmmode)\else{\/\rm)}\fi}}
+```
+
+Definice aktivuje závorky v kurzívě a navíc řeší ponechání závorek v
+původním významu v matematickém módu. takže funguje
+
+```
+{\em Text $\bigl((yxy)+z\bigr)$ a něco dalšího (v závorce)}.
+```
+
+----lang:en--title:Upright brackets in italic text
+The feature from LaTeX package `embrac.sty` (300 lines of very
+nontransparent code) can be implemented in OPmac by only one line.
+
+The typographical requirement to keep brackets `()` unslanted in slanted
+text can occur. This means that if we type `{\em italics with (brackets)}`,
+then we get
+
+```
+{\it italics with {\rm(}brackets{\/\rm)}}
+```
+
+This can be solved by following definition:
+
+```
+\addto\em{\adef({\ifmmode(\else{\rm(}\fi}\adef){\ifmmode)\else{\/\rm)}\fi}}
+```
+
+This definition set the brackets as active in italics and keeps the
+original meaning of brackets in math mode. So, it works:
+
+```
+{\em Text $\bigl((yxy)+z\bigr)$ and something (in brackets)}.
+```

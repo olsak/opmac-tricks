@@ -1,0 +1,4 @@
+----lang:cs--name:Verbatim prostředí
+
+----lang:en--name:Verbatim
+

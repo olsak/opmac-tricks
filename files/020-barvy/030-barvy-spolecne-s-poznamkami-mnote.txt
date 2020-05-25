@@ -1,0 +1,47 @@
+anchor-name:colmnote
+id:0037
+author:P. O.
+date:2014-03-22
+
+----lang:cs--title:Barvy společně s poznámkami mnote
+Chcete-li přepínat barvy v odstavci a současně používat poznámky na okraji
+`\mnote`, dočkáte se pravděpodobně barevného zmatení. Poznámky `\mnote` jsou
+dodatečně vloženy jakoby pod aktuální řádek odstavce, takže přebírají barvu,
+jakou má řádek na svém konci. Pokud chcete mít barvu poznámek stále stejnou,
+pište na začátek dokumentu třeba:
+
+```
+\def\mnotehook{\noindent\localcolor\Blue}
+```
+
+Příkaz `\noindent` je potřebný, protože jinak se značka barvy vloží do
+vertikálního módu a `\mnote` nebude mít správné vertikální umístění.
+
+Proč nedefinuje OPmac `\mnotehook` jako `\Black` implicitně? Protože
+implicitní chování předpokládá, že poznámky budou přebírat barvu textu, ve
+kterém jsou napsány, a tato barva může být neměnná (např. přes několik odstavců).
+
+V parametru `\mnote` je možné mít další vnořené barvy, které jsou ohraničeny
+skupinami.
+
+----lang:en--title:Colors in margin notes
+If you set colors of text inside the paragraph and you are using `\mnote`
+simultaneously then you can be surprised. The `\mnote` text is inserted after
+the current line (like special virtual line), so it is colorized by the
+color used at the end of the current line (no at the moment when macro
+`\mnote` were used). If you need to have the color of the mnotes unchanged,
+you can write at beginning of the document:
+
+```
+\def\mnotehook{\noindent\localcolor\Blue}
+```
+
+The `\noindent` command is needed because the color-set mark have to be
+inserted in horizontal mode else `\mnote` will not be vertically aligned.
+
+Why OPmac doesn't define `\Black` in `\mnotehook` by default? Because the
+implicit behavior supposes that the `\mnotes` will inherit their color from
+the color of the relevant paragraph. This color can be set for more pages,
+for example.
+
+You can use nested colors in nested groups in the `\mnote` parameter.

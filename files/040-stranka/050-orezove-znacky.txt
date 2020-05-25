@@ -1,0 +1,118 @@
+anchor-name:crop
+id:0081
+author:P. O.
+date:2014-12-16
+
+----lang:cs--title:Ořezové značky
+Vytvoříme makro `\cropmarks`, které po použití makra `\margins` přidá ke
+stránce ořezové značky. Tj. například:
+
+```
+\sdef{pgs:spec}{(150,170)mm}
+\margins/1 spec (7,7,7,7)mm \cropmarks
+```
+
+Tento příklad deklaruje stránku rozměru `150x170mm` s okraji `7mm`. Příkaz
+`\cropmarks` zvětší stránku na všech čtyřech stranách o `10mm` a v tomto
+přidaném okraji v rozích umístí ořezové značky. Je možné po takové deklaraci
+použít ještě třeba:
+
+```
+\margins/1 a4 (,,,)mm \cropcenter
+```
+
+což zachová značky vzhledem k sazbě na stejném místě, ale vše
+umístí doprostřed stránky A4.
+
+Implementace makra může být následující:
+
+```
+\newdimen\cropw \cropw=10mm
+\def\ltcrop{\vbox{\hbox to\cropw{\hfil\vrule height\cropw depth-.2\cropw}
+                  \hbox to\cropw{\vrule height.4pt width.8\cropw \hfil}}}
+\def\rtcrop{\vbox{\hbox to\cropw{\vrule height\cropw depth-.2\cropw\hfil}
+                  \hbox to\cropw{\hfil\vrule height.4pt width.8\cropw}}}
+\def\lbcrop{\vbox{\hbox to\cropw{\vrule height.4pt width.8\cropw \hfil}
+                  \kern.2\cropw \hbox to\cropw{\hfil\vrule height.8\cropw}}}
+\def\rbcrop{\vbox{\hbox to\cropw{\hfil\vrule height.4pt width.8\cropw}
+                  \kern.2\cropw \hbox to\cropw{\vrule height.8\cropw\hfil}}}
+
+\newdimen\lmar \newdimen\tmar \tmar=1truein \lmar=1truein
+\def\cropmarks{%
+   \ifx\cropwidth\undefined
+      \advance\lmar by\hoffset \advance\tmar by\voffset
+      \hoffset=-1truein \voffset=-1truein
+      \advance\pdfpagewidth by2\cropw \advance\pdfpageheight by2\cropw
+      \dimen0=\pgwidth \advance\dimen0 by2\cropw \edef\cropwidth{\the\dimen0}%
+      \edef\cropheight{\the\pgheight}
+      \let\shipoutori=\shipout
+      \def\shipout##1 {\shipoutori % \opmacoutput uses \shipout\box0
+         \vbox{\let\vrule=\orivrule \let\hrule=\orihrule
+               \offinterlineskip \kern.2pt
+               \hbox to\cropwidth{\kern.2pt\ltcrop\hfil\rtcrop\kern.2pt}%
+               \kern-.2pt
+               \vbox to\cropheight{\kern\tmar\hbox{\kern\cropw\kern\lmar\box0}\vss}
+               \kern-.2pt
+               \hbox to\cropwidth{\kern.2pt\lbcrop\hfil\rbcrop\kern2.pt}}}%
+   \else\errmessage{\noexpand\cropmarks can't by used twice}\fi
+}
+\def\cropcenter{\advance\hoffset by-\lmar \advance\hoffset by-\cropw
+                \advance\voffset by-\tmar \advance\voffset by-\cropw}
+```
+
+----lang:en--title:Crop marks
+We prepare the macro `\cropmark` which adds crop mark to the page and
+cooperates with the `\margins` macro. For example
+
+```
+\sdef{pgs:spec}{(150,170)mm}
+\margins/1 spec (7,7,7,7)mm \cropmarks
+```
+
+This example declares the page dimension `150x170mm` with the margins `7mm`. The
+`\cropmarks` sequence enlarges the page at all four sides by `10mm` and prints
+the crop marks in this new margins. It is possible use the declaration above
+followed by
+
+```
+\margins/1 a4 (,,,)mm \cropcenter
+```
+
+which keeps the crop marks on their place but all is centered in the
+A4 page.
+
+The implementation:
+
+```
+\newdimen\cropw \cropw=10mm
+\def\ltcrop{\vbox{\hbox to\cropw{\hfil\vrule height\cropw depth-.2\cropw}
+                  \hbox to\cropw{\vrule height.4pt width.8\cropw \hfil}}}
+\def\rtcrop{\vbox{\hbox to\cropw{\vrule height\cropw depth-.2\cropw\hfil}
+                  \hbox to\cropw{\hfil\vrule height.4pt width.8\cropw}}}
+\def\lbcrop{\vbox{\hbox to\cropw{\vrule height.4pt width.8\cropw \hfil}
+                  \kern.2\cropw \hbox to\cropw{\hfil\vrule height.8\cropw}}}
+\def\rbcrop{\vbox{\hbox to\cropw{\hfil\vrule height.4pt width.8\cropw}
+                  \kern.2\cropw \hbox to\cropw{\vrule height.8\cropw\hfil}}}
+
+\newdimen\lmar \newdimen\tmar \tmar=1truein \lmar=1truein
+\def\cropmarks{%
+   \ifx\cropwidth\undefined
+      \advance\lmar by\hoffset \advance\tmar by\voffset
+      \hoffset=-1truein \voffset=-1truein
+      \advance\pdfpagewidth by2\cropw \advance\pdfpageheight by2\cropw
+      \dimen0=\pgwidth \advance\dimen0 by2\cropw \edef\cropwidth{\the\dimen0}%
+      \edef\cropheight{\the\pgheight}
+      \let\shipoutori=\shipout
+      \def\shipout##1 {\shipoutori % \opmacoutput uses \shipout\box0
+         \vbox{\let\vrule=\orivrule \let\hrule=\orihrule
+               \offinterlineskip \kern.2pt
+               \hbox to\cropwidth{\kern.2pt\ltcrop\hfil\rtcrop\kern.2pt}%
+               \kern-.2pt
+               \vbox to\cropheight{\kern\tmar\hbox{\kern\cropw\kern\lmar\box0}\vss}
+               \kern-.2pt
+               \hbox to\cropwidth{\kern.2pt\lbcrop\hfil\rbcrop\kern2.pt}}}%
+   \else\errmessage{\noexpand\cropmarks can't by used twice}\fi
+}
+\def\cropcenter{\advance\hoffset by-\lmar \advance\hoffset by-\cropw
+                \advance\voffset by-\tmar \advance\voffset by-\cropw}
+```

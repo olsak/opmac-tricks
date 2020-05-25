@@ -1,0 +1,65 @@
+anchor-name:dekadic
+id:0016
+author:P. O.
+date:2013-08-17
+
+----lang:cs--title:Desetinná čísla v tabulkách
+Vytvoříme deklarátor `D`, který umožní sazbu desetinných čísel s desetinnou
+čárkou pod sebou.
+
+```
+\def\tabdeclareD{\tabiteml\hfil\scandecnumber##&##\hfil\tabitemr}
+\def\scandecnumber#1,{#1\ifdim\lastskip>0pt \unskip\phantom,\else,\fi&}
+```
+
+Příklad použití:
+
+```
+\table{lDr}{číslo &   3,24   & první \cr
+            jiné  & 112,1    & druhé \cr
+            celé  &  13     ,& čárka vzadu \cr
+            další &   0,123  & malé}
+```
+
+Je vidět, že pokud chceme do sloupce s desetinnými čísly vložit číslo
+celé bez desetinné čárky, musíme to ošetřit jako výjimku. Tj. vložit čárku
+na úplný konec položky. Tato čárka se pak nevytiskne.
+
+Chtít po makru, aby výjimku pro celé číslo vyřešilo samo, je sice taky
+možné, ale makro by bylo podstatně komplikovanější. Ctíme přitom zásadu:
+„v jednoduchosti je síla“ a nevytváříme zbytečné komplikovanosti.
+
+Sloupec D je implementován jako dva sloupce tabulky. Pokud jej tedy
+chceme přeskakovat pomocí `\multispan`, musíme toto vědět a započítat ho za dva
+sloupce.
+
+----lang:en--title:The decimal point aligned in the table
+We create the `D` declaration which provides the typesetting of the aligning
+of the decimal numbers with decimal comma (the decimal comma is used instead
+decimal point in Czech).
+
+```
+\def\tabdeclareD{\tabiteml\hfil\scandecnumber##&##\hfil\tabitemr}
+\def\scandecnumber#1,{#1\ifdim\lastskip>0pt \unskip\phantom,\else,\fi&}
+```
+
+The example of the usage:
+
+```
+\table{lDr}{číslo &   3,24   & první \cr
+            jiné  & 112,1    & druhé \cr
+            celé  &  13     ,& čárka vzadu \cr
+            další &   0,123  & malé}
+```
+
+Note that if there is a number without decimal comma we need to treat wit
+this as an exception, i. e. to put the comma at the end of the cell. Such
+comma will be ignored.
+
+If we need to treat this exception automatically without the decimal
+comma at the end of the cell then the macro will be much more complicated.
+It will be outside the slogan “simplicity is power”. We needn't to create
+useless complicated macros.
+
+The D declaration declares two internal columns of the table. This have to
+be considered when we skip the cells by `\multispan`, for example.

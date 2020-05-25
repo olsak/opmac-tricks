@@ -1,0 +1,71 @@
+anchor-name:bibmarkindent
+id:0041
+author:P. O.
+date:2014-04-01
+
+----lang:cs--title:Odsazení seznamu literatury dle nejširší značky
+Seznam literatury nemusí být vždy číslovaný; může obsahovat například
+značky.
+Přitom poslední značka (na rozdíl od posledního čísla) nemusí být ta
+nejširší. Přesto chceme podle nejširší značky formátovat celý seznam literatury.
+
+Je sice možné k tomu účelu použít `\halign`, ale seznamy literatury generované
+BibTeXem jsou celé ukryté ve skupině a to by činilo problémy. Ukážeme si
+zde jiné řešení přes REF soubor. Toto řešení je použitelné i v obdobných
+případech, kdy zrovna nemusí jít o seznam literatury.
+
+Požádáme uživatele, aby na konec seznamu literatury přidal pokyn
+`\setbibindent`. Toto makro zapíše údaj o nejširší značce do REF souboru a při
+příštím čtení tohoto souboru jej využije formátovací makro `\printbib`.
+Makro `\printbib` mimo jiné měří šířky značek a údaj o nejširší z nich dává do
+`\bibindent`, aby jej mohlo makro `\setbibindent` uložit. Kód obou maker může
+vypadat takto:
+
+```
+\nonumcitations
+\def\printbib{%
+   \setbox0=\hbox{[\the\bibmark]\quad}%
+   \ifx\bibindent\undefined \def\bibindent{0pt}\fi
+   \ifdim\wd0>\bibindent \edef\bibindent{\the\wd0}\fi
+   \ifx \Xbibindent\undefined
+      \hangindent=\wd0 \noindent [\the\bibmark]\quad
+   \else
+      \hangindent=\Xbibindent \noindent \hskip\Xbibindent \llap{[\the\bibmark]\quad}%
+   \fi
+}
+\def\setbibindent{\ifx\bibindent\undefined \else
+   \openref\immediate\write\reffile{\def\noexpand\Xbibindent{\bibindent}}\fi}
+```
+
+----lang:en--title:Bibliography indentation by maximal mark
+The bibliography list needn't to be numbered; the marks can be used
+instead numbers. The last mark cannot be the mark with the maximal width (as
+opposite to the numbers). We need to indent the bibliography list by the
+maximal width of the marks.
+
+The `\halign` primitive is one choice as to do it but this is not most
+practical here. We show another solution using REF file. The solution is
+usable for another similar situations, no only bibliography lists.
+
+We ask user to add the sequence `\setbibindent` at the end of the
+bibliography list. This macro writes the value of the maximal width of
+used marks into REF file and this value is read in the next TeX run when REF
+file is read. The `\printbib` macro uses it. But `\printbib` measures the width
+of the marks and sent the value to `\setbibitem` macro in the `\bibindent`
+control sequence. The code is here:
+
+```
+\nonumcitations
+\def\printbib{%
+   \setbox0=\hbox{[\the\bibmark]\quad}%
+   \ifx\bibindent\undefined \def\bibindent{0pt}\fi
+   \ifdim\wd0>\bibindent \edef\bibindent{\the\wd0}\fi
+   \ifx \Xbibindent\undefined
+      \hangindent=\wd0 \noindent [\the\bibmark]\quad
+   \else
+      \hangindent=\Xbibindent \noindent \hskip\Xbibindent \llap{[\the\bibmark]\quad}%
+   \fi
+}
+\def\setbibindent{\ifx\bibindent\undefined \else
+   \openref\immediate\write\reffile{\def\noexpand\Xbibindent{\bibindent}}\fi}
+```

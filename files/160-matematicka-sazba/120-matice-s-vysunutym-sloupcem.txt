@@ -1,0 +1,105 @@
+anchor-name:matrixR
+id:0137
+author:P. O.
+date:2016-01-15
+
+----lang:cs--title:Matice s vysunutým sloupcem
+![MaticeR](img/ukazka-matrixR.png)
+
+Vytvoříme makro `\matrixR`, které vytvoří matici s typickými natahovacími
+závorkami, ale poslední sloupec matice nebude umístěný „uvnitř matice“,
+ale vně obklopujících závorek. Například
+
+```
+$$
+  \matrixR(){ccc}{1&2&3&první řádek\cr 4&5&6&druhý\cr 7&8&9\cr 10&11&12&poslední}
+$$
+```
+
+vytvoří matici, jak je ukázáno na obrázku. Syntaktické pravidlo pro
+`\matrixR` je
+
+```
+\matrixR levá-závorka pravá-závorka {deklarace} {data}
+```
+
+přitom `deklarace` obsahuje jen deklaraci sloupců unitř matice, zatímco
+`data` obsahují i jeden sloupec navíc, který se objeví mimo matici a je
+vytištěn v textovém módu.
+
+Implementace:
+
+```
+\def\matrixR#1#2#3#4{%
+   \bgroup \def\tabiteml{$\ }\def\tabitemr{\ $}\dimen0=0pt
+   \def\tabdeclareR{\setbox0=\hbox{\,####\unsskip}\ifdim\dimen0<\wd0 \global\dimen0=\wd0 \fi}%
+   \setbox1=\vbox{\table{#3R}{#4}}%
+   \setbox2=\hbox{$\left#1\vcenter{\copy1}\right#2$}%
+   \dimen1=\wd2 \advance\dimen1 by-\wd1 \divide\dimen1 by2
+   \def\tabdeclareR{\rlap{\kern\dimen1 \,####\unsskip}}%
+   \left#1\vcenter{\table{#3R}{#4}}\right#2\kern\dimen0
+   \egroup
+}
+```
+
+V prvém průchodu je použita `\table` s přidanou deklarací R, která poslední
+sloupec pouze změří, ale nevytiskne. Nejširší položka z tohoto sloupce má
+šířku `\dimen0`. Výsledek prvního průchodu je uložen do boxu 1.
+Dále je sestaven `\box2`, který navíc obsahuje okolní závorky.
+Z rozdílů šířek těchto dvou boxů je vypočtena šířka natahovací závorky a
+uložena do `\dimen1`. Ve druhém průchodu je poslední sloupec R tištěn jako
+`\rlap` s odpovídajícím `\kern` o šířce natahovací závorky. Tento průchod už je
+skutečně tištěn do výstupu a je připojen `\kern\dimen0`, aby následující text
+za maticí pokračoval až za posledním sloupcem.
+
+Analogicky můžete vytvořit `\matrixL` nebo `\matrixLR`.
+
+----lang:en--title:Matrices with one column outside
+![MatrixR](img/ukazka-matrixR.png)
+
+We create a macro `\matrixR` for matrices with typical large brackets, but
+the last column insn't placed inside these brackets, but alongside the right
+bracket. For example
+
+```
+$$
+  \matrixR(){ccc}{1&2&3&první řádek\cr 4&5&6&druhý\cr 7&8&9\cr 10&11&12&poslední}
+$$
+```
+
+creates the matrix like in the image. The syntax rule for `\matrixR` is
+
+```
+\matrixR left-bracket right-bracket {declaration} {data}
+```
+
+where `declaration` includes a declaration of the inside columns only but
+`data` includes next undeclared column which will be printed in text mode
+outside the matrix brackets.
+
+The implementation:
+
+```
+\def\matrixR#1#2#3#4{%
+   \bgroup \def\tabiteml{$\ }\def\tabitemr{\ $}\dimen0=0pt
+   \def\tabdeclareR{\setbox0=\hbox{\,####\unsskip}\ifdim\dimen0<\wd0 \global\dimen0=\wd0 \fi}%
+   \setbox1=\vbox{\table{#3R}{#4}}%
+   \setbox2=\hbox{$\left#1\vcenter{\copy1}\right#2$}%
+   \dimen1=\wd2 \advance\dimen1 by-\wd1 \divide\dimen1 by2
+   \def\tabdeclareR{\rlap{\kern\dimen1 \,####\unsskip}}%
+   \left#1\vcenter{\table{#3R}{#4}}\right#2\kern\dimen0
+   \egroup
+}
+```
+
+The printing is done in two steps. The `\table` with additional declarator R
+is used in the first step. The R declaration doesn't print the column, only
+measures the maximal width and stores it to `\dimen0`. The result of the first
+step is saved to box1. The box2 includes the large brackets around box1. We
+calculate the width of the large bracket (from the difference between box2
+and box2) and save this width to `\dimen1`. The second step prints the matrix.
+The last column R is printed as `\rlap` with `\kern\dimen1`. Finally the
+`\kern\dimen0` is added after matrix is printed in order to the (possibly)
+next printing material be placed after the last column.
+
+You can create `\matrixL` or `\matrixLR` macros analogically.

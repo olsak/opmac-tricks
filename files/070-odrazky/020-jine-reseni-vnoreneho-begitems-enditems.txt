@@ -1,0 +1,34 @@
+anchor-name:vnoreniB
+id:0031
+author:Jan Šustek
+date:2013-09-28
+
+----lang:cs--title:Jiné řešení vnořeného \begitems...\enditems
+Abychom nemuseli ve výčtovém prostředí pokaždé psát příkaz `\style`, můžeme si
+nadefinovat implicitní styl.
+Tak navíc jednodušeji zajistíme jednotnost odrážek v celém dokumentu.
+Implicitní styl můžeme nadefinovat i pro vnořené výčty.
+
+```
+\addto\begitems{\style a
+   \addto\begitems{\style n
+      \addto\begitems{\style i }}}
+```
+
+Syntaxi `\begitems\style` můžeme používat i nadále, čímž podle očekávání
+přebijeme implicitní chování.
+
+----lang:en--title:Another solution for nested \begitems...\enditems
+In order to avoid the usage of `\style` sequence in `\begitems...\enditems`
+environment we can define the default style. This ensures the visual
+compatibility of the item marks in the whole document. The default `\style`
+can be declared for nested lists too.
+
+```
+\addto\begitems{\style a
+   \addto\begitems{\style n
+      \addto\begitems{\style i }}}
+```
+
+The syntax `\begitems\style x` works too and this redefines the declared
+default behavior.

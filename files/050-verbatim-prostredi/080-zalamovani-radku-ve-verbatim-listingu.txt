@@ -1,0 +1,98 @@
+anchor-name:verbbreak
+id:0127
+author:P. O.
+date:2015-10-11
+
+----lang:cs--title:Zalamování řádků ve verbatim listingu
+OPmac implicitně neřeší automatické zalamování řádků v listingu, pokud je
+řádek příliš dlouhý. Řádek sice ulomí, ale doplní hlášení o overfull box.
+V následující ukázce si ukážeme nastavení, při kterém jsou řádky zlomitelné v
+mezerách a při zlomení se v místě zlomu na konci řádku objeví smluvená
+značka (v ukázce `$\setminus$`) a pokračovací řádek respektuje odsazení
+výchozího řádku. Takže při:
+
+```
+\begtt
+if i=0
+   tady je velmi dlouhý řádek kódu, který se bohužel nevejde do šířky výstupního řádku
+fi
+\endtt
+```
+
+bude pokračovací řádek začínat o tři mezery posunut, tedy přesně pod
+slovem „tady“.
+
+```
+\def\tthook{\rightskip=0pt plus1fil
+   \def\ {\discretionary{\hbox{$\;\setminus$}}{}{\kern.5em}}%
+   \everypar={\countspaces}}
+\def\countspaces#1\fi{#1\fi\hangindent=\ttindent \countspacesA}
+\def\countspacesA{\futurelet\next\countspacesB}
+\def\countspacesB{\ifx\next\spacemacro \expandafter\countspacesC\fi}
+\def\countspacesC#1{\advance\hangindent by.5em\ \countspacesA}
+\def\spacemacro{\ }
+```
+
+Makro `\countspaces` spuštěné v `\everypar` nejprve dokončí práci
+předefinovaného `\par` (až po `\fi`) a pak spočítá mezery ze začátku řádku. Za
+každou mezeru zvětší `\hangindent` o šířku mezery.
+
+Toto řešení není v souladu s možností orámovat listing dle předchozího
+OPmac triku. Rámeček se nám v pokračovacích řádcích
+po stranách začne trhat. Aby se netrhal, je
+třeba do definice `\tthook` vložit `\offinterlineskip\everypar={\makeframe}`
+a makro `\makeframe` definovat takto:
+
+```
+{\catcode`\^^M=13
+\gdef\makeframe#1^^M{\endgraf\hbox{\vrule\vbox{%
+   \normalbaselines\everypar={}\strut\countspaces#1\strut}\vrule}^^M}%
+}
+```
+
+----lang:en--title:Long line breaking in listings
+OPmac doesn't solve the automatic long line breaking in listings by
+default. The line is broken but overfull `\hbox` occurs. The reason: it is
+much better to prepare the whole code under user control. But we show in the
+following example, how to activate the following behavior: The lines are
+breakable in spaces without Overfull `\hbox` messages, the breakpoints are
+marked by given mark (the `$\setminus$` in our example) and the continuing
+lines are indented by the same number of spaces as the first line. This mean
+that:
+
+```
+\begtt
+if i=0
+   Oops, the very long line of code is here, it does not fit into the line width unfortunately.
+fi
+\endtt
+```
+
+The continuing line will be start exactly under the word “Oops”.
+
+```
+\def\tthook{\rightskip=0pt plus1fil
+   \def\ {\discretionary{\hbox{$\;\setminus$}}{}{\kern.5em}}%
+   \everypar={\countspaces}}
+\def\countspaces#1\fi{#1\fi\hangindent=\ttindent \countspacesA}
+\def\countspacesA{\futurelet\next\countspacesB}
+\def\countspacesB{\ifx\next\spacemacro \expandafter\countspacesC\fi}
+\def\countspacesC#1{\advance\hangindent by.5em\ \countspacesA}
+\def\spacemacro{\ }
+```
+
+The macro `\countspaces` is invoked by `\everypar`. It finishes the special
+verbatim `\par` (until `\fi`) and then it counts the spaces at the start of the
+line. Each space enlarges the `\hangindent` by space width.
+
+This solution is incompatible with frames around listings by the previous
+OPmac trick. The frame have gaps at it sides if continuous line occurs. If
+we need to solve this then we must to insert
+`\offinterlineskip\everypar={\makeframe}` into `\tthook` and to define:
+
+```
+{\catcode`\^^M=13
+\gdef\makeframe#1^^M{\endgraf\hbox{\vrule\vbox{%
+   \normalbaselines\everypar={}\strut\countspaces#1\strut}\vrule}^^M}%
+}
+```

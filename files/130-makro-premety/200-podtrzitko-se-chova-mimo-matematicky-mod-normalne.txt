@@ -1,0 +1,91 @@
+anchor-name:sb
+id:0156
+author:P. O.
+date:2016-06-09
+
+----lang:cs--title:Podtržítko se chová mimo matematický mód normálně
+Kategorie znaku `_` (podtržítko) je v plainTeXu nastavena na 8, aby jej
+bylo možno použít jako konstrutor indexů v matematické sazbě.
+Pak ale jeho užití mimo matematickou sazbu ohlásí chybu. Málokdo asi
+ví, že není nutno podtržítku dávat takovou katogorii. Když mu dáte třeba
+kategorii 12 (normální znak) pak se mimo matematickou sazbu bude chovat
+„normálně“, a v matematické sazbě zůstane jeho funkce konstruktoru indexu
+zachována. Vyzkoušejte:
+
+```
+\catcode`_=13 \let_=\sb \catcode`_=12
+
+% test:
+Tady je {\tt cosi_kdesi}. A v matematice stále funguje: $a_i^2$.
+```
+
+Pointa je v tom, že plainTeX nastavuje mathkód podtržítka na `"8000`, ale
+protože je defaultně nastavena jeho kategorie na 8, není tento mathhkód
+využit. Ten se uplatní jen u znaků kategorie 11 nebo 12. A tento speciální
+kód `"8000` říká: chovej se v matematickém módu, jakobys byl aktivní. V době
+krátkého aktivního života tohoto znaku jsme mu přidělili význam `\sb`, což je
+alternativa znaku s kategorií 8, tedy je to konstruktor indexů. Podtržítko
+bude v matematice tvořit indexy, jako obvykle.
+
+Sice jsme tímto jediným řádkem osvobodili podtržítko od přítěže býti pouze
+konstruktorem indexů, ale některé obskurity zůstávají. Knuth s tímto řešením
+asi nepočítal a dal do svého neobvyklého kódování CM fontů na pozici podtržítka
+akcent tečky. Takže nebude přímo fungovat toto_zde, dokud nevyměníte
+Knuthovsky kódovaný font za normálně kódovaný font. Všimněte si, že v ukázce
+výše jsme pro tisk podtržítka použili font `\tt`, který jako jediný ze sady
+Computer Modern fontů respektuje ASCII, takže s tímto fontem podtržítko
+funguje.
+
+Opustit Knutovsky kódované fonty můžete například přechodem na XeTeX, ve
+kterém zavedete OTF fonty v Unicode. Nebo v pdfTeXu lze přejít na kódování
+T1 (Cork), které také respektuje ASCII. Používáte-li csplain s UTF8 vstupem,
+stačí na začátek dokumentu psát:
+
+```
+v pdfTeXu:  \input t1code  % přechod na T1 kódování
+            \input lmfonts % LM fonty (náhrada CM fontů) v T1 kódování
+
+v XeTeXu:   \input ucode   % přechod na Unicode kódování
+            \input lmfonts % LM fonty (náhrada CM fontů) v Unicode
+```
+
+----lang:en--title:Normal underscore outside the math mode
+The catcode of the `_` (underscore) is set to 8 in plain TeX, so it can be
+used as a constructor of subscripts in math mode. But the usage of such
+character outside math mode gives an error. It is less known that you can
+set normal catcode to underscore (for example 12) but this character works
+as subscripts constructor in math mode constantly. You can try:
+
+```
+\catcode`_=13 \let_=\sb \catcode`_=12
+
+% test:
+Here is {\tt foo_bar}. And math mode still works: $a_i^2$.
+```
+
+The main idea is that mathcode of underscore is set to `"8000` by plain TeX,
+so this character behaves as an active character in math mode and only in
+math mode. Plain TeX sets catcode of the `_` to 8, so the mathcode `"8000` of
+this character isn't used (it works only for characters of catcode 11 or
+12). The “active behavior” of undescore is declared as `\sb` and `\sb` is an
+alternative to the character of catcode 8, i.e. math subscripts constructor.
+The result: underscore works as math subscripts constructor only in math
+mode.
+
+The simple line of code mentioned above gives freedom to the undercore
+character outside the math mode, but it cannot work porperly if a font with
+Knuth's obscure encoding is used. This is typical for default fonts CM with
+one exception: the `\tt` font respects ASCII encoding. Knuth decided
+(unfortunately) that ASCII slot for undercore is used for dot accent in
+other CM fonts. You can leave such curiously encoded fonts for example when
+you load OTF font in Unicode (in XeTeX) or T1 encoded font (in pdfTeX). If
+you are using csplain with UTF-8 support then you can do this by adding the
+following lines at beginning of your document:
+
+```
+in pdfTeX:  \input t1code  % T1 encoding is set
+            \input lmfonts % LM fonty (alternative of CM fonts) in T1 encoding
+
+in XeTeX:   \input ucode   % Unicode encoding is set
+            \input lmfonts % LM fonty (alternative of CM fonts) in Unicode
+```

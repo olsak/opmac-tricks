@@ -1,0 +1,120 @@
+anchor-name:qrcode
+id:0116
+author:P. O.
+date:2015-07-02
+
+----lang:cs--title:Data QR kódu v REF souboru
+![QRcode](img/qrkuk.png)
+
+Pro tvorbu QR kódů je možné použít balíček
+[qrcode.tex](ftp/olsak/makra/qrcode.tex) pro
+plainTeX, který je dostupný
+[zde](http://petr.olsak.net/ftp/olsak/makra/). Tento balíček sice
+ukládá výsledek výpočtu QR kódu do makra `\qrdata` k rychlému opakovanému
+použití, ale tyto údaje nejsou uloženy do pracovního souboru. Použít při
+dalším běhu TeXu už jednou předpočítaná data výrazně urychlí zpracování
+dokumentu, protože výpočet QR kódu zabere jistý výpočetní čas.
+Ukážeme, jak k tomu účelu využít REF soubor.
+
+Makro `\qrcode` z `qrcode.tex` obsahuje (implicitně prázdná) „hook“ makra
+`\qrbeginhook` a `\qrendhook`, která definujeme tak, aby se do REF souboru
+ukládala informace o QR kódu ve tvaru:
+
+```
+\Xqrdata{kódovaný-text}{velikost}{11111110111110...0010111001}
+```
+
+kde `velikost` a jedničky a nuly jsou údaje z `\qrdata` vypočteného QR
+kódu. Dále je třeba před `\input opmac` definovat `\Xqrdata`, které definuje
+řídicí sekvenci `\qr:kódovaný-text` tak, že obsahuje vypočtená data.
+Konečně je potřeba modifikovat chování makra `\qrcode` tak, aby v případě, že
+existuje již definovaná řídicí sekvence `\qr:kódovaný-text`, tak ji využije a
+nepočítá QR kód znovu. Makra mohou vypadat takto:
+
+```
+\def\Xqrdata{\bgroup\qrverbatim\XqrdataA}
+\def\XqrdataA#1#2#3{\sxdef{qr:#1}{{#2}{#3}}\egroup}
+\input qrcode
+\input opmac
+
+\openref
+\def\qrendhook{%
+   \qrmessage{<Saving calculated QR code...}%
+      \sxdef{qr:\qretext\expandafter}{\qrdata}%
+      \toks0=\expandafter{\qrtext}%
+      \immediate\wref\Xqrdata{{\the\toks0}\qrdata}%
+   \qrmessage{done>^^J}%
+}
+\def\qrbeginhook#1\qrendhook{%
+   \expandafter \ifx \csname qr:\qretext\endcsname \relax
+      #1%                  %%% do calculation
+   \else
+      \qrmessage{<Restoring QR code from saved \string\qrdata...}%
+         \global\expandafter\let \expandafter\qrdata \csname qr:\qretext\endcsname
+         \qrrestore\qrdata %%% printing QR code from saved data
+      \qrmessage{done>^^J}%
+   \fi
+   \qrendhook
+}
+```
+
+Poznamenejme, že na pořadí záleží. Nejprve je třeba definovat `\Xqrdata`,
+pak provést `\input qrcode` dřív než `\input opmac` a nakonec definovat “hooks”.
+Poté může následovat dokument s QR kódy.
+
+----lang:en--title:Data of QR code in REF file
+![QRcode](img/qrkuk.png)
+
+You can use [qrcode.tex](ftp/olsak/makra/qrcode.tex)
+package for plain TeX when you need to print QR codes.
+The package is available
+[here](http://petr.olsak.net/ftp/olsak/makra/).
+The data from QR calculation are saved in `\qrdata` macro but the data aren't
+used by default in `qrcode.tex` package. If we were able to re-use this data
+(in next run of TeX, for example) then the speed is increased because QR
+calculation takes time. We use REF file for this purpose.
+
+The `\qrcode` macro from `qrcode.tex` uses “hook” macros `\qrbeginhook` and
+`\qrendhook`. We redefine these macros in order to save to REF file the
+following information:
+
+```
+\Xqrdata{encoded-text}{size}{11111110111110...0010111001}
+```
+
+where `size` and binary data are items from `\qrdata` from previous QR
+calculation. We need to define `\Xqrdata` in order to define the control
+sequence `\qr:encoded-text` as qrdata. Finally, we need to modify the `\qrcode`
+macro behavior: if `\qr:encoded-text` is defined then don't calculate QR code
+again but use the qrdata only. The implementation:
+
+```
+\def\Xqrdata{\bgroup\qrverbatim\XqrdataA}
+\def\XqrdataA#1#2#3{\sxdef{qr:#1}{{#2}{#3}}\egroup}
+\input qrcode
+\input opmac
+
+\openref
+\def\qrendhook{%
+   \qrmessage{<Saving calculated QR code...}%
+      \sxdef{qr:\qretext\expandafter}{\qrdata}%
+      \toks0=\expandafter{\qrtext}%
+      \immediate\wref\Xqrdata{{\the\toks0}\qrdata}%
+   \qrmessage{done>^^J}%
+}
+\def\qrbeginhook#1\qrendhook{%
+   \expandafter \ifx \csname qr:\qretext\endcsname \relax
+      #1%                  %%% do calculation
+   \else
+      \qrmessage{<Restoring QR code from saved \string\qrdata...}%
+         \global\expandafter\let \expandafter\qrdata \csname qr:\qretext\endcsname
+         \qrrestore\qrdata %%% printing QR code from saved data
+      \qrmessage{done>^^J}%
+   \fi
+   \qrendhook
+}
+```
+
+Note that the order is important. First we need to define `\Xqrdata`,
+second do `\input qrcode` before `\input opmac` and finally we can redefine
+“hook” macros. Then the normal documment (which uses `\qrcode` macro) follows.

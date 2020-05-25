@@ -1,0 +1,44 @@
+anchor-name:vnoreni
+id:0003
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Odrážka pro vnořené \begitems...\enditems
+Prostředí `\begitems...\enditems` pracuje s implicitní odrážkou, která se
+použije, pokud se nepoužije `\style`. Je přitom možné mít tuto implicitní
+odrážku automaticky nastavenu jinak pro vnořená prostředí
+`\begitems...\enditems` a ani pro ně tedy autor nemusí používat `\style`.
+Stačí přidat na začátek dokumentu následující kód:
+
+```
+\def\slet#1#2{\expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname}
+\addto\begitems{\slet{normalitem}{item:o}}
+```
+
+Implicitně je `\normalitem` nastaven na velký puntík. Po aplikaci uvedeného
+kódu budou mít odrážky první úrovně velký puntík a odrážky druhé úrovně malý
+puntík bez nutnosti používat `\style`. Chcete-li mít odlišné i odrážky třetí
+úrovně, pište místo předchozího druhého řádku toto:
+
+```
+\addto\begitems{\slet{normalitem}{item:o}\addto\begitems{\slet{normalitem}{item:-}}}
+```
+
+----lang:en--title:Nested \begitems...\enditems with given item marks
+The `\begitems...\enditems` environment works with default item mark (if no
+`\style` is used). It is possible that the default item mark depends on the
+level of the list. You can use the code:
+
+```
+\def\slet#1#2{\expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname}
+\addto\begitems{\slet{normalitem}{item:o}}
+```
+
+The big bullet is set as default item mark. If you use the code above then
+the item mark for first level of items is big bullet and the item mark for
+second level is small bullet. If you need the different item marks for
+third level, then you can type:
+
+```
+\addto\begitems{\slet{normalitem}{item:o}\addto\begitems{\slet{normalitem}{item:-}}}
+```

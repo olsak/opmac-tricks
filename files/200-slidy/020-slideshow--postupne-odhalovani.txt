@@ -1,0 +1,102 @@
+anchor-name:slidekuk
+id:0022
+author:Mirek + P. O.
+date:2013-08-30
+
+----lang:cs--title:Slideshow -- postupné odhalování
+Někteří promítači svých myšlenek rádi odhalují skutečnosti postupně, tj.
+nejprve jen část stránky, pak další část a nakonec celou stránku. Takoví
+promítači do místa, kde se má myšlenka poodhalit, napíší `\kuk`. To vytvoří
+stránku až do tohoto místa. Na následující stránce bude vše opsáno a
+přidán případný další text po další `\kuk`. Definitivní konec stránky musí být
+označen pomocí `\pg\kuk` (před `\pg` se `\kuk` nepíše) a dokument končí
+sekvencí `\enditems\end\kuk`.
+Na začátku dokumentu (po přečtení všech maker) musí být napsáno `\kukstart`.
+Pokud je tento příkaz schován za procentem, probíhá normální stránkování a
+příkazy `\kuk` jsou ignorovány.
+
+Implementace `\kuk` navazuje na předchozí ukázku o slídech spartánského
+vzhledu a přidává (za první `\begitems`) tato makra:
+
+```
+\let\kuk=\relax % je-li \kukstart zakomentovano, tiskne normalne dokument
+\def\kukdata{}
+\long\def\kukstart#1\kuk{\addto\kukdata{#1}%
+   \tmpnum=0 \def\endkukdata{}\expandafter\sumkuk \kukdata\sumkuk
+   \kukdata\endkukdata \vfil\break \kukstart
+}
+\long\def\sumkuk#1{\ifx\sumkuk#1% jsem na konci seznamu
+   \loop \ifnum\tmpnum>0 \addto\endkukdata{\enditems}\advance\tmpnum by-1 \repeat
+   \else
+     \ifx\begitems#1\global\advance\tmpnum by1 \fi
+     \ifx\enditems#1\global\advance\tmpnum by-1 \fi
+     \expandafter\sumkuk \fi
+}
+\count1=1
+\def\advancepageno{\ifx\kukdata\empty \global\advance\pageno by1 \global\count1=1
+                   \else \global\advance\count1 by1 \fi}
+\def\pg{\def\kukdata{}\vfil\break}
+\kukstart
+```
+
+Makro `\kukstart` se točí dokola a nabírá text až po `\kuk`, přidává ho k už
+nabranému textu z minula do `\kukdata` a tiskne stránky. Makro `\pg` nabraný
+text promaže. Nejvíce péče je vněnováno případu, kdy je `\kuk` napsáno uvnitř
+další úrovně odrážek (tedy ve skupině). Makro `\sumkuk` si spočítá úroveň
+vnoření a na základě toho doplní do `\endkukdata` příslušný počet `\enditems`.
+
+Poznámka: důkladnější řešení postupného odhalování slíd najdete
+v [CTUslides](http://petr.olsak.net/ftp/olsak/ctustyle/slidy.pdf), které je součástí
+[CTUstyle](http://petr.olsak.net/ctustyle.html).
+
+----lang:en--title:Slideshow -- partial exposure
+Some projectionists prefer the gradual uncovering of
+their ideas: first only a part of the slide, next uncover another part etc.
+These projectionists can write `\kuk` in the place, where the next idea could
+be hidden first. The page will be created from the beginning of the page to
+the `\kuk`. The next page copies all information from previous page but adds
+the text after `\kuk` (from this `\kuk` to another `\kuk` or to the end of the
+page). The next page follows this principle, i.e copies previous page, if
+the `\kuk` was used. The definitive end of the page is marked by `\pg\kuk`
+(no `\kuk\pg`) and the document ends by `\enditems\end\kuk`. We have to use the
+`\kukstart` at the begin of the document (after all macro definitions are read
+and after the first `\begitems`). If the `\kukstart` sequence is commented out
+then normal slides are generated and `\kuk` sequences are ignored.
+
+The `\kuk` implementation follows the previous OPmac trick and adds the
+following macros after first `\begitems`:
+
+```
+\let\kuk=\relax
+\def\kukdata{}
+\long\def\kukstart#1\kuk{\addto\kukdata{#1}%
+   \tmpnum=0 \def\endkukdata{}\expandafter\sumkuk \kukdata\sumkuk
+   \kukdata\endkukdata \vfil\break \kukstart
+}
+\long\def\sumkuk#1{\ifx\sumkuk#1% the end of the list
+   \loop \ifnum\tmpnum>0 \addto\endkukdata{\enditems}\advance\tmpnum by-1 \repeat
+   \else
+     \ifx\begitems#1\global\advance\tmpnum by1 \fi
+     \ifx\enditems#1\global\advance\tmpnum by-1 \fi
+     \expandafter\sumkuk \fi
+}
+\count1=1
+\def\advancepageno{\ifx\kukdata\empty \global\advance\pageno by1 \global\count1=1
+                   \else \global\advance\count1 by1 \fi}
+\def\pg{\def\kukdata{}\vfil\break}
+\kukstart
+```
+
+The macro `\kukstart` repeats in the loop and reads the text to the `\kuk`
+sequence. It adds the read parameter to the `\kukdata` from previous step of
+the loop and prints the pages. The `\pg` macro removes the `\kukdata`. If the
+`\kuk` is used inside the next level of the `\begitems...\enditems` environment
+then special care is needed. The `\sumkuk` macro calculates the level of the
+nesting and inserts the right number of closing `\enditems` into `\endkukdata`.
+
+**Note**: More elaborate solution of creating slides with OPmac can
+be found in
+[CTUslides](http://petr.olsak.net/ftp/olsak/ctustyle/slidy.pdf)
+which is a part of the
+[CTUstyle](http://petr.olsak.net/ctustyle-e.html)
+package.

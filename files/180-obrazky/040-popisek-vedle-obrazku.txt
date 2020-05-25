@@ -1,0 +1,45 @@
+anchor-name:capside
+id:0136
+author:P. O.
+date:2016-01-06
+
+----lang:cs--title:Popisek vedle obrázku
+![Popisek vedle obrázku](img/cap-side.png)
+
+Je-li obrázek spíše vysoký než široký, může se hodit umístit popisek k
+němu vedle obrázku a ne pod ním nebo nad ním. To lze provést třeba takto
+
+```
+\hbox to\hsize{\picw=.4\hsize \inspic mapa.jpg
+  \hfil\vbox{\hsize=.55\hsize \iindent=0pt \emergencystretch=2em
+    \caption/f Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+       ...
+       Fusce sagittis lobortis nisi sed consectetur.
+   \par}}
+```
+
+Poznamenejme, že je potřeba vnitřní `\vbox` ukončit `\par`, protože OPmac pro
+popisky lokálně předefinovává `\par` a jeho první použití vrací věci do
+normálu. Dále je zde nastaveno `\iindent=0pt`, protože nechceme mít zúžené
+okraje.
+
+----lang:en--title:Caption beside of the image
+![Caption side by image](img/cap-side.png)
+
+If the image is more tall than wide then it is more convenient to put the
+caption beside of the image, no above or below. This can be done by the
+following code:
+
+```
+\hbox to\hsize{\picw=.4\hsize \inspic mapa.jpg
+  \hfil\vbox{\hsize=.55\hsize \iindent=0pt \emergencystretch=2em
+    \caption/f Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+       ...
+       Fusce sagittis lobortis nisi sed consectetur.
+   \par}}
+```
+
+Note that the internal `\vbox` must be finished by `\par` because OPmac
+redefines `\par` in `\caption` macro. The first usage of `\par` returns the
+original meaning of `\par`. Next issue is setting `\iindent=0pt` because we
+need not to print the narrower text here.

@@ -1,0 +1,103 @@
+anchor-name:ltable2
+id:0024
+author:P. O.
+date:2013-08-31
+
+----lang:cs--title:Dlouhá tabulka s opakujícím titulkem
+Chce-li uživatel vytvořit dlouhou tabulku, která se bude lámat do
+stránek, na každé stránce zopakuje svůj titulek, a přitom bude
+mít čáru nad titulkem tabulky, pod titulkem tabulky,
+na konci stránek a na konci tabulky a jinde ne, může použít `\longtableT`
+takto:
+
+```
+\def\strutT {\vrule height1.1em depth.8em width0pt} % strut pro titulek
+\longtableT {|c|c|c|}{ hlava1 & hlava2 & hlava22 \cr \tskip3pt  % titulek
+                       data   & data   & data    \cr
+                       data   & ... mraky & dat ...\cr}
+```
+
+Je třeba definovat `\strutT`, který vypodloží titulek. Kolem titulku budou
+čáry, které by při normálním `\strut` působily stísněně. Dále je povinnost za
+titulkem dát `\tskip`, který se použije nejen pod čárou titulku, ale taky na
+konci každé stránky před uzavírací čárou. V tabulce samotné nesmí být
+požadavek na vodorovnou čáru. Uvedené makro `\longtableT` je implementováno
+takto:
+
+```
+\def\longtableT#1#2{\goodbreak \bgroup \setbox0=\table{#1}{\strutT\relax#2}
+   \setbox1=\vbox{\unvbox0 \setbox2=\vbox{}\revertbox}
+   \setbox2=\vbox{\unvbox2 \global\setbox4=\lastbox\unskip \global\setbox5=\lastbox\unskip}
+   \whatfree4 \advance\tmpdim by-.8pt \ifdim\tmpdim<\baselineskip \vfil\break \fi
+   \offinterlineskip \crule\center4\crule\center5 \printboxes
+   \center5\crule \egroup \goodbreak
+}
+\def\whatfree#1{\tmpdim=\vsize \advance\tmpdim by-\pagetotal
+   \advance\tmpdim by-\prevdepth \advance\tmpdim by-.4pt
+   \advance\tmpdim by-\ht#1 \advance\tmpdim by-\dp#1 \advance\tmpdim by-\ht5 }
+\def\revertbox {\setbox0=\lastbox\unskip
+   \ifvoid0 \else \global\setbox2=\vbox{\unvbox2\box0} \revertbox\fi }
+\def\printboxes{\setbox2=\vbox{\unvbox2 \global\setbox0=\lastbox\unskip}
+   \ifvoid0 \else \whatfree0
+      \ifdim\tmpdim<0pt \center5\crule\vfil\break \crule\center4\crule\center5 \fi
+      \center0 \nobreak \printboxes \fi }
+\def\crule{\centerline{\hbox to\wd4{\hrulefill}}\nobreak}
+\def\center#1{\centerline{\copy#1}\nobreak}
+```
+
+Makro nejprve sestaví tabulku do `\box0`, ten rozebere a boxy v opačném
+pořadí pomocí `\revertbox` vloží do boxu2. Titulek si z boxu2 odebere jako
+box4 a prostor pod ním z `\tskip` jako box5. Dále makrem `\printboxes`
+odebírá boxy zezadu z boxu2 a klade je do stránky pomocí \center, aby
+byly centrovány. Pomocí `\whatfree` vždy nejprve změří zbylý prostor na
+stránce a pokud se
+tam už další box nevejde, přidá `\box5\crule`, odstránkuje a na začátek
+další stránky přidá `\crule\box4\crule\box5`.
+
+----lang:en--title:Long tables with the repeated title
+The `\longtableT` macro creates the long table over more pages
+with repeated title at the start of each page with rules above and below the
+title and the rule below the part of the table at each page. The usage:
+
+```
+\def\strutT {\vrule height1.1em depth.8em width0pt} % strut for the title
+\longtableT {|c|c|c|}{ head1 & head2 & head22 \cr \tskip3pt  % title
+                       data  & data  & data   \cr
+                       data  & ... much more & data ...\cr}
+```
+
+The `\strutT` have to be defined for the header. The header will be
+surrounded by the horizontal rules and the normal interline strut seems
+to be small in such special case. The `\tskip` usage after the header is
+mandatory, it is used after each occurrence of the header and before the
+closing rule at the bottom of the pages. The horizontal rule between data
+lines isn't allowed. The `\longtableT` macro is implemented by:
+
+```
+\def\longtableT#1#2{\goodbreak \bgroup \setbox0=\table{#1}{\strutT\relax#2}
+   \setbox1=\vbox{\unvbox0 \setbox2=\vbox{}\revertbox}
+   \setbox2=\vbox{\unvbox2 \global\setbox4=\lastbox\unskip \global\setbox5=\lastbox\unskip}
+   \whatfree4 \advance\tmpdim by-.8pt \ifdim\tmpdim<\baselineskip \vfil\break \fi
+   \offinterlineskip \crule\center4\crule\center5 \printboxes
+   \center5\crule \egroup \goodbreak
+}
+\def\whatfree#1{\tmpdim=\vsize \advance\tmpdim by-\pagetotal
+   \advance\tmpdim by-\prevdepth \advance\tmpdim by-.4pt
+   \advance\tmpdim by-\ht#1 \advance\tmpdim by-\dp#1 \advance\tmpdim by-\ht5 }
+\def\revertbox {\setbox0=\lastbox\unskip
+   \ifvoid0 \else \global\setbox2=\vbox{\unvbox2\box0} \revertbox\fi }
+\def\printboxes{\setbox2=\vbox{\unvbox2 \global\setbox0=\lastbox\unskip}
+   \ifvoid0 \else \whatfree0
+      \ifdim\tmpdim<0pt \center5\crule\vfil\break \crule\center4\crule\center5 \fi
+      \center0 \nobreak \printboxes \fi }
+\def\crule{\centerline{\hbox to\wd4{\hrulefill}}\nobreak}
+\def\center#1{\centerline{\copy#1}\nobreak}
+```
+
+The macro creates the draft of the table in the box0. This box is
+reassembled by `\revertbox` and saved to box2. The header is saved to box4 and
+the `\tskip` after header is in the box5. The macro `\printboxes` takes the
+lines from box2 and puts them into the page by `\center`. The `\whatfree` macro
+measures the rest of the free space on the page. If there isn't free space
+here then `\box5\crule` is added, new page is started and
+`\crule\box4\crule\box5` is printed at the begin of the next page.

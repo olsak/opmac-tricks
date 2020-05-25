@@ -1,0 +1,73 @@
+anchor-name:inspic
+id:0110
+author:P. O.
+date:2015-06-04
+
+----lang:cs--title:\inspic natáhne do PDF stejný obrázek jen jednou
+Víme, že pomocí pimitivního příkazu pdfTeXu `\pdfximage` lze zařídit jedno
+vložení obrázku do výstupního PDF a dále tento obrázek opakovaně zobrazovat
+pomocí `\pdfrefximage`. Makro `\inspic` z OPmac je ale koncipováno jen pro
+jednorázové vložení obrázku, takže když použijete `\inspic` opakovaně se
+stejným obrázkem, vloží se do PDF dokumentu vícekrát a zbytečně
+plýtváte místem v PDF souboru.
+
+Pro potřebu postupně odhalovaných slíd (viz
+[OPmac trik 0022](#slidekuk) a viz také
+CTUslides v [CTUstyle](http://petr.olsak.net/ctustyle.html))
+jsem potřeboval zvýšit inteligenci makra \inspic tak, aby opakovaně volaný
+obrázek nevkládal do PDF výstupu data obrázku opakovaně. Řešení je snadné:
+
+```
+\let\oriinspic=\inspic
+\def\picdim{\the\picwidth:\the\picheight}
+\def\inspic#1 {%
+   \expandafter\ifx\csname pic:#1:\picdim\endcsname \relax
+      \oriinspic#1 % prvé vložení obrázku
+      \global\expandafter\mathchardef\csname pic:#1:\picdim\endcsname=\pdflastximage
+   \else \expandafter\pdfrefximage \csname pic:#1:\picdim\endcsname % opakované vložení
+   \fi
+}
+```
+
+Je vidět, že refenenční číslo obrázku je řídicí sekvence obsahující jednak
+název obrázku a také stav parametrů `\picwidth` a `\picheight`. Při jiném
+nastavení těchto parametrů je potřeba obrázek natáhnout znovu, nebo je
+potřeba využít už natažený obrázek a podrobit jej vhodné lineární
+transformaci. To by sice šlo, ale pro jednoduchost jsem se tím nezabýval.
+Opakované vložení různě velkých ale jinak stejných obrázků by si musel
+makroprogramátor ošetřit sám.
+
+Řešení se bohužel opírá o vlastnosti pdfTeXu (dostupné i v LuaTeXu), které
+nejsou použitelné v XeTeXu. Tam by se to muslelo dělat jinak.
+
+----lang:en--title:\inspic loads the same image only once
+We know that `\pdfximage` primitive provides the possibility to insert ti
+image only once and if you need to thow it at different places in the
+document then all such occurrences are realized only by pointer
+`\pdfrefximage`. But `\inspic` macro from OPmac doesn't provide this feature. If
+you print the same image using `\inspic`, then the PDF file has bigger size.
+
+We implemented the partial show of slides (see [OPmac trick 0022](#slidekuk)
+and [CTUstyle](http://petr.olsak.net/ctustyle.html)).
+The `\inspic` macro was modified for this purpose: the data of each unique
+image are stored only once in the PDF file. The solution is simple:
+
+```
+\let\oriinspic=\inspic
+\def\picdim{\the\picwidth:\the\picheight}
+\def\inspic#1 {%
+   \expandafter\ifx\csname pic:#1:\picdim\endcsname \relax
+      \oriinspic#1 % first insertion of the image
+      \global\expandafter\mathchardef\csname pic:#1:\picdim\endcsname=\pdflastximage
+   \else \expandafter\pdfrefximage \csname pic:#1:\picdim\endcsname % second and more
+   \fi
+}
+```
+
+We see that the reference number of the image is a part of control
+sequence with the values of `\picwidth` and `\picheight` registers.
+The different values of these registers needs new loading of the image
+or user can use it but with a linear transformation.
+
+The solution is based on the features of pdfTeX (available in LuaTeX too)
+but this isn't usable in XeTeX. The XeTeX implementation isn't done.

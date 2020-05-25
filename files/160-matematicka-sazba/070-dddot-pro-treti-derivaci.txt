@@ -1,0 +1,44 @@
+anchor-name:dddot
+id:0145
+author:P. O.
+date:2016-04-27
+
+----lang:cs--title:\dddot pro třetí derivaci
+Plain TeX nabízí nejvýše `\ddot x` pro druhou derivaci `x` dle času a toto makro
+je implementováno pomocí `\mathaccent`. Akcent pro trojtečku v matematických
+fontech nemáme, takže makro `\dddot x` pro třetí derivaci bude trochu
+složitější:
+
+```
+\def\dddot#1{{\mathpalette\dddotA{#1}}}
+\def\dddotA#1#2{\setbox0=\hbox{$#1#2$}\tmpdim=\ht0 \mathop{#2\kern0pt}\limits
+   ^{\vbox to0pt{\kern-.04em\hbox to0pt{\hss\it$#1.\mkern-1.5mu.\mkern-1.5mu.$%
+     \kern-\slantcorr\hss}\vss}}}
+```
+
+Makro díky `\mathpalette` pracuje správně i ve skriptoidní či
+skriptskriptoidní velikosti. Také díky makru `\slantcorr` z OPmac je umístění
+nad znakem s ohledem na skloněnou osu základního znaku. Konstanty v makru
+jsou voleny tak, aby to vizuálně co nejlépe navazovalo na `\ddot` z CM fontů.
+Můžete porovnat výstup `\dddot` z LaTeXu při použití `amstex.sty` s tímto
+řešením.
+
+----lang:en--title:\dddot for third derivation
+Plain TeX provides only `\ddot x` for second derivations of `x` by t. The macro
+`\ddot` is implemented by `\mathaccent`. But there is no triple dot as an accent
+in math fonts. So, the macro `\dddot` for third derivations is slight more
+complicated:
+
+```
+\def\dddot#1{{\mathpalette\dddotA{#1}}}
+\def\dddotA#1#2{\setbox0=\hbox{$#2$}\tmpdim=\ht0 \mathop{#2\kern0pt}\limits
+   ^{\vbox to0pt{\kern-.04em\hbox to0pt{\hss\it$#1.\mkern-1.5mu.\mkern-1.5mu.$%
+     \kern-\slantcorr\hss}\vss}}}
+```
+
+The macro works in all math sizes due to `\mathpalette`. The `\slantcorr`
+macro from OPmac is used for horizontal placement of the accent with
+respect to the slanted axis of the base character. The constants used in
+the macro were chosen in order to reach the maximal likeness with `\ddot`
+output. You can compare the quality of the output of this `\dddot` and the
+LaTeX output with `amstex.sty` package...

@@ -1,0 +1,47 @@
+anchor-name:inspicspace
+id:0141
+author:P. O.
+date:2016-04-09
+
+----lang:cs--title:Mezera separující parametr makra \inspic
+OPmac předpokládá, že název souboru, tedy parametr makra `\inspic`, bude
+ukončen mezerou. Je to z toho důvodu, že stejně jako primitivní příkaz
+`\input` nevyžaduje kučeravé závorky, rozhodl jsem se i u makra `\inspic` nic
+takového nevyžadovat. Pokud chcete načíst makrem `\inspic` soubor s mezerou,
+pište
+
+```
+\inspic {soubor s mezerou.pdf}
+```
+
+a nezapomeňte za zavírací závorku dát další povinnou mezeru.
+
+Bohužel, makro `\inspic` se chová poněkud jinak než primitivní příkaz `\input`.
+V případě `\inspic` je mezeru vždy nutné psát. Třeba na rozdíl od zápisu
+`\line{\input soubor}` je tedy nutné použít `\line{\inspic soubor.pdf }`.
+Koho to irituje, může pravidlo mezery z makra `\inspic` odstranit a důsledně
+pak psát parametr makra do kučeravých závorek. K tomu slouží tento kód:
+
+```
+\expandafter\def\expandafter\inspic\expandafter#\expandafter1\expandafter{\inspic{#1} }
+```
+
+----lang:en--title:The space as a separator of \inspic parameter
+OPmac supposes that the name of the image file (i.e. the parameter of the
+`\inspic` macro) is separated by space. This is similar (but not exactly the
+same) as behavior of the primitive command `\input`. We needn't to use braces,
+only the space (or the end of line) must be inserted after the end of the
+filename. If you need to read the file with the space inside its name then
+braces can be used but space after right brace must be inserted too:
+
+```
+\inspic {special file with spaces in the name.pdf} % <- mandatory space here
+```
+
+If you hate to use space at the end of filename and you like to use only
+braces then you can deactivate the mandatory space separator from `\inspic`
+macro by this trick:
+
+```
+\expandafter\def\expandafter\inspic\expandafter#\expandafter1\expandafter{\inspic{#1} }
+```

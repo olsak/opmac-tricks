@@ -1,0 +1,57 @@
+anchor-name:stripspace
+id:0164
+author:P. O.
+date:2017-10-29
+
+----lang:cs--title:Odstranění koncové mezery z parametru
+Někdy se stane, že přečteme parametr (například až po `\par`) a ten může a
+nemusí obsahovat koncovou mezeru. Vytvoříme expandující makro `\stripspace`,
+které případnou koncovou mezeru odstraní. Vnitřní mezery v parametru
+zůstávají zachovány. Příklad použití:
+
+```
+\def\neco#1\par{% nevíme, zda #1 obsahuje koncovou mezeru nebo ne
+    \stripspace\necoA{#1}}
+\def\necoA#1{% Nyní #1 určitě koncovou mezeru neobsahuje
+    ... \message{"#1"}}
+```
+
+Makro `\stripspace` vypadá takto:
+
+```
+\def\stripspace#1#2{\stripspaceA#2\end/ \end/!#1{#2}}
+\def\stripspaceA#1 \end/#2!#3#4{%
+   \ifx!#2!\stripspaceB{#3{#4}}\else\stripspaceB{#3{#1}}\fi
+}
+\def\stripspaceB#1#2\fi{\fi#1}
+```
+
+Na konec parametru přidáme `\end/␣\end/` a necháme jej přečíst až po `␣\end/`. Zbyde-li po čtení nějaký zbytek, pak parametr mezeru obsahoval
+a nezbyde-li nic, parametr mezeru neobsahoval.
+
+----lang:en--title:Stripping last space from parameter
+When a parameter (for example separated by `\par`) is read then we cannot be
+sure that there is or isn't a last space in such parameter. We create the
+expandable macro `\stripspace` which removes the last space if exists. Another
+spaces inside the parameter are untouched. Example of usage:
+
+```
+\def\foo#1\par{% maybe #1 ends by an unwanted space
+    \stripspace\fooA{#1}}
+\def\fooA#1{% now, #1 does not include the terminating space.
+    ... \message{"#1"}}
+```
+
+The `\stripspace` macro has the following code:
+
+```
+\def\stripspace#1#2{\stripspaceA#2\end/ \end/!#1{#2}}
+\def\stripspaceA#1 \end/#2!#3#4{%
+   \ifx!#2!\stripspaceB{#3{#4}}\else\stripspaceB{#3{#1}}\fi
+}
+\def\stripspaceB#1#2\fi{\fi#1}
+```
+
+The `\end/␣\end/` is added at the end of parameter `#1` and this parameter
+is scanned again separated by `␣\end/`. If the rest is empty, then `#1` is
+without terminating space else `#1` includes terminating space.

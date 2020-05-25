@@ -1,0 +1,141 @@
+anchor-name:cellcolor
+id:0094
+author:P. O.
+date:2015-04-02
+
+----lang:cs--title:Jednotlivě podbarvené položky v tabulce
+Vytvoříme deklarátory sloupce tabulky C, R, L, které fungují obdobně,
+jako c, r, l, ale navíc umožní každou položku podbarvit zvolenou barvou.
+Je-li první objekt v položce přepínač barvy, tato barva se použije pro
+podklad položky. Například:
+
+```
+   ... & \Blue Text &        ... % modře podbarvený černý text
+   ... & \Green \Red  Text & ... % zeleně podbarený červený text
+   ... & \relax \Blue Text & ... % modrý text, defaultní pozadí
+```
+
+Podbarvení položek vypruží jako obvyklé mezery ve sloupci tabulky, tj.
+při C pruží z obou stran, při L pruží zprava a při R pruží zleva. Rovněž
+mezery `\tabiteml` a `\tabitemr` jsou podbarveny.
+
+Je-li nastaveno `\cellcolor` pomocí `\let` jako barva
+(např. `\let\cellcolor=\Yellow`), pak tato barva se použije jako
+defualtní pozadí. Není-li `\cellcolor` nastaveno, je defaultní pozadí průhledné.
+
+Mezi jednotlivými sloupci můžete vložit bílou mezeru pomocí nenulové
+hodnoty `\tabskip` a mezi jednotlivými řádky vznikne bílá mezera pomocí
+`\noalign{\kern...}`. Příklad:
+
+```
+\def\tabstrut{\lower4pt\vbox to15pt{}}
+\tabskip=2pt \def\cskip{\noalign{\kern2pt}} \let\cellcolor=\Yellow
+\table{CLR}{first item      & second & \Blue \White third item \cr\cskip
+            next long item  & \Red X & \Green       YES }
+```
+
+vytvoří tabulku:
+
+![Ukázka tabulky](img/tab4-ukazka.png)
+
+Implementace:
+
+```
+\def\tabdeclareC{\futurelet\next\setcellcolor##\end\hfil\hfil}
+\def\tabdeclareL{\futurelet\next\setcellcolor##\end\relax\hfil}
+\def\tabdeclareR{\futurelet\next\setcellcolor##\end\hfil\relax}
+\def\setcellcolor{\ifx\next\global \expandafter\setcellcolorC\else \expandafter\setcellcolorD\fi}
+\def\setcellcolorC#1\fi#2\end#3#4{%
+   \setbox0=\hbox{{\tabiteml\localcolor#2\unskip\tabitemr}}%
+   {\localcolor#1\fi\tabstrut\leaders\vrule\hskip\wd0 \ifx#3\hfil plus1fil\fi}%
+   \kern-\wd0 \box0
+   \ifx#4\hfil {\kern-.2pt \localcolor#1\fi\leaders\vrule\hskip.2pt plus1fil}\fi
+}
+\def\setcellcolorD{\ifx\cellcolor\undefined \let\next=\setcellcolorN
+   \else \def\next{\expandafter\expandafter\expandafter\setcellcolorC\cellcolor}%
+   \fi \next
+}
+\def\setcellcolorN#1\end#2#3{#2\tabiteml{\localcolor#1\unskip}\tabitemr#3}
+```
+
+Makro `\setcellcolor` sebere první token z položky. Makro pracuje v
+deklarační části tabulky, takže první položku si sejme až po expanzi na
+úroveň prvního neexpandovatelného tokenu. Tímto tokenem v případě makra pro
+barvu je `\global` (viz makro `\setcmylcolor`). Je-li toto splněno, spustí se
+makro `\setcellcolorC`, které si do `#1` uloží rozexpandované tělo makra
+`\setcmykcolor` (až po poslední `\fi`), do `#2` si uloží zbylý text položky a do
+`#3` a `#4` uloží vzkaz o způsobu centrování položky. Dále toto makro změří
+šířku položky v boxu0 a podbarví box0 pomocí `\leaders`. Není-li první token
+položky `\global`, pak makro `\setcellcolorD` ještě rozhodne, zda je či není
+definováno makro `\cellcolor` a pokud je, podstrčí makru `\setcellcolorC`
+správně rozexpandovaný `\cellcolor`, jinak spustí `\setcellcolorN`, což
+nevytvoří žádný podklad.
+
+----lang:en--title:Colored cells in the table
+We create the column declarators C, R and L with similar behaviour as
+c, r and l, but the background of each cell can be cloered by chosen color.
+If the first item in the cell data is color switcher then this color is used
+for the background of the cell. For example:
+
+```
+   ... & \Blue Text &        ... % blue background and black text
+   ... & \Green \Red  Text & ... % green background and red text
+   ... & \relax \Blue Text & ... % blue text and default background
+```
+
+The color of the background will stretch as spaces in the common cells in
+normal table, i.e. C declarator means that colored space will stretch from
+both sides, L declarator means right stretching and R declarator means left
+stretching. The spaces from `\tabiteml` and `\tabitemr` are colored too.
+
+If `\cellcolor` sequence is set by `\let` to the color
+(example `\let\cellcolor=\Yellow`) then this color will be used as default
+background.
+If the `\cellcolor` is undefined then default background is transparent.
+
+You can insert the white space between columns by nonzero `\tabskip` and
+you can insert the white space between lines by `\noalign{\kern...}`. Example:
+
+```
+\def\tabstrut{\lower4pt\vbox to15pt{}}
+\tabskip=2pt \def\cskip{\noalign{\kern2pt}} \let\cellcolor=\Yellow
+\table{CLR}{first item      & second & \Blue \White third item \cr\cskip
+            next long item  & \Red X & \Green       YES }
+```
+
+creates the table:
+
+![Table example](img/tab4-ukazka.png)
+
+Implementation:
+
+```
+\def\tabdeclareC{\futurelet\next\setcellcolor##\end\hfil\hfil}
+\def\tabdeclareL{\futurelet\next\setcellcolor##\end\relax\hfil}
+\def\tabdeclareR{\futurelet\next\setcellcolor##\end\hfil\relax}
+\def\setcellcolor{\ifx\next\global \expandafter\setcellcolorC\else \expandafter\setcellcolorD\fi}
+\def\setcellcolorC#1\fi#2\end#3#4{%
+   \setbox0=\hbox{{\tabiteml\localcolor#2\unskip\tabitemr}}%
+   {\localcolor#1\fi\tabstrut\leaders\vrule\hskip\wd0 \ifx#3\hfil plus1fil\fi}%
+   \kern-\wd0 \box0
+   \ifx#4\hfil {\kern-.2pt \localcolor#1\fi\leaders\vrule\hskip.2pt plus1fil}\fi
+}
+\def\setcellcolorD{\ifx\cellcolor\undefined \let\next=\setcellcolorN
+   \else \def\next{\expandafter\expandafter\expandafter\setcellcolorC\cellcolor}%
+   \fi \next
+}
+\def\setcellcolorN#1\end#2#3{#2\tabiteml{\localcolor#1\unskip}\tabitemr#3}
+```
+
+The `\setcellcolor` macro scans the first token from the cell data. The
+macro works in declaration part of the `\halign`, so the first token is
+scanned as the first unexpandable token after expansion. This token is
+`\global` when color macro is presented here (see the `\setcmykcolor`
+definition). If this is true then the `\setcellcolorC` macro is executed, `#1`
+is the expanded part of `\setcmykcolor` (to the last `\fi`), `#2` is the rest of
+the cell data, `#3` and `#4` include the message about the align style. This
+macro measures the cell text in the box0 and does the colored backround by
+`\leaders`. If the first token isn't `\global` then the macro `\setcellcolorD`
+decides if the `\cellcolor` is defined. If it is true then `\setcellcolorC` is
+execuded (with patrially expanded `\cellcolor` as parameter). Else the
+`\setcellcolorN` is executed. This macro prints no background.

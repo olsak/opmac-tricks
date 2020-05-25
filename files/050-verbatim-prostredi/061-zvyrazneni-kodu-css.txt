@@ -1,0 +1,16 @@
+anchor-name:hisyntaxcss
+id:0168
+author:Michal Franc
+date:2019-06-21
+
+----lang:cs--title:Zvýraznění kódu C#
+Jako semestrální práce z předmětu BI-TeX bylo odevzdáno makro vycházející
+z předchozích dvou OPmac triků a implementující zvýraznění kódu C#. 
+Výsledek je dostupný na
+[gitlab](https://gitlab.fit.cvut.cz/francmi4/cssyntax).
+
+----lang:en--title:C# syntax highlighting
+There is a term work
+[C# syntax highlighting](https://gitlab.fit.cvut.cz/francmi4/cssyntax)
+given in the course BI-TeX (it has been held at FIT CTU in Prague).
+This result was strongly inspired by previous two OPmac tricks.

@@ -1,0 +1,4 @@
+----lang:cs--name:Rejstřík
+
+----lang:en--name:Index
+

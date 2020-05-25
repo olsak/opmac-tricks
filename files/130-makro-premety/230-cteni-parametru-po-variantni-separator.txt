@@ -1,0 +1,138 @@
+anchor-name:vardelim
+id:0166
+author:P. O.
+date:2018-04-07
+
+----lang:cs--title:Čtení parametru po variantní separátor
+Předchozí OPmac trik 0165 předpokládal, že nejprve skupinu parametrů
+celou načteme a pak je chceme oddělit od sebe podle separátorů. Jiný přístup je
+třeba zvolit, pokud chceme parametr načíst po proměnlivý separátor v textu,
+kde „nevíme co nás čeká“ a čtení chceme okamžitě zastavit, jakmile
+zjistíme přítomnost separátoru.
+
+Napřílad `\memakro` má přečíst text až do konce odstavce nebo do výskytu
+`\enditems` podle toho, co nastane dříve. Pak můžeme použít
+`\vardelim{seznam separátorů}` těsně před `\def\memakro`, které definujeme
+jakoby s jedním neseparovaným parametrem:
+
+```
+\vardelim{\par\enditems}\def\memakro#1{\message{param:"#1"}}
+
+užití: \memakro text text
+       \enditems
+```
+
+V tomto příkladě bude v `#1` `text text ` a čtení je ukončeno výskytem
+`\enditems`. Pozor! Na rozdíl od klasického makra se separovaným parametrem
+ten výskyt separátoru `\enditems` není po provedení makra zničen, ale zůstává
+ve vstupní frontě a je pak znovu načten. Chceme-li jej zničit, můžeme
+definovat `\memakro` se dvěma parametry, tedy
+
+```
+\vardelim{\par\enditems}\def\memakro#1#2{\message{param:"#1", sep: "\noexpand#2"}}
+```
+
+Pak je v `#2` použitý separátor. Proměnlivý separátor v našem řešení musí
+být jediným tokenem. Chcete-li obecnější řešení, kdy proměnlivý separátor
+může sestávat z libovolného počtu tokenů, pak můžete použít mé řešení
+uvedené
+[zde na TeX stackexchange](https://tex.stackexchange.com/questions/200452/)
+
+Implementace makra `\vardelim` vypadá takto:
+
+```
+\long\def\vardelim#1#2#3{%
+   \def#3{\expandafter\vardelimA\csname var\string#3\endcsname{#1}}%
+   \long\expandafter#2\csname var\string#3\endcsname
+}
+\long\def\vardelimA#1#2{\bgroup \let\bgroupT=\bgroup \let\bgroup=\relax \def\tmp{}%
+   \def\vardelimF##1\vardelimN{\fi\expandafter\egroup\expandafter#1\expandafter{\tmp}}%
+   \def\vardelimP{}%
+   \vardelimB#2\vardelimB
+}
+\long\def\vardelimB#1{%
+   \ifx\vardelimB#1\expandafter\vardelimC\else
+      \addto\vardelimP{\vardelimH#1}\expandafter\vardelimB \fi
+}
+\def\vardelimC{\futurelet\next\vardelimD}
+\def\vardelimD{%
+   \ifx\next\bgroupT \vardelimG \fi
+   \expandafter\ifx\space\next \vardelimS \fi
+   \vardelimP
+   \vardelimN
+}
+\long\def\vardelimG#1\vardelimN#2{\fi\addto\tmp{{#2}}\vardelimC}
+\def\vardelimS#1\vardelimN{\fi\addto\tmp{ }\afterassignment\vardelimC\let\next= }
+\long\def\vardelimN#1{\addto\tmp#1\vardelimC}
+\long\def\vardelimH#1{\ifx\next#1\vardelimF\fi}
+```
+
+Makro čte parametr token po tokenu {s výjimkou výskytu skupiny v
+parametru, kterou přečte celou} a parametr kumuluje v `\tmp`. Nakonec spustí
+makro s argumentem `{expandované \tmp}`. Makro pracuje vždy tak, jakoby bylo
+s prefixem `\long`.
+
+----lang:en--title:Parameter delimited by variant separator
+The previous OPmac trick 0165 reads a block of parameters and then the
+parameters are separated in such block. We need another approach when we are
+reading only one parameter separated by variant separator and then the next text
+must be processed normally.
+
+For example, `\mymacro` have to read a text to the end of current paragraph or
+to the `\enditems` token. We can use `\vardelim{list of separators}` as an
+prefix of `\def\mymacro` or `\edef\mymacro` which is defined with one
+nonseparated parameter.
+
+```
+\vardelim{\par\enditems}\def\mymacro#1{\message{param:"#1"}}
+
+usage: \mymacro text text
+       \enditems
+```
+
+The `#1` includes `text text ` in this example and the reading of the
+parameter is finished by `\enditems`. Warning: the delimiter is kept in the
+input queue and it is processed after `\mymacro` is executed. This is
+important difference from usage of `\def\foo#1\separator{...}`. If you need to
+remove the separator, then yo can define `\mymacro` with two parameters:
+
+```
+\vardelim{\par\enditems}\def\memakro#1#2{\message{param:"#1", separator: "\noexpand#2"}}
+```
+
+The variant separator must be sigle token in the solution here. If you need
+more complex macros with multiple-token separators and with more variants then
+you can use my solution presented
+[here at TeX stackexchange](https://tex.stackexchange.com/questions/200452/)
+
+```
+\long\def\vardelim#1#2#3{%
+   \def#3{\expandafter\vardelimA\csname var\string#3\endcsname{#1}}%
+   \long\expandafter#2\csname var\string#3\endcsname
+}
+\long\def\vardelimA#1#2{\bgroup \let\bgroupT=\bgroup \let\bgroup=\relax \def\tmp{}%
+   \def\vardelimF##1\vardelimN{\fi\expandafter\egroup\expandafter#1\expandafter{\tmp}}%
+   \def\vardelimP{}%
+   \vardelimB#2\vardelimB
+}
+\long\def\vardelimB#1{%
+   \ifx\vardelimB#1\expandafter\vardelimC\else
+      \addto\vardelimP{\vardelimH#1}\expandafter\vardelimB \fi
+}
+\def\vardelimC{\futurelet\next\vardelimD}
+\def\vardelimD{%
+   \ifx\next\bgroupT \vardelimG \fi
+   \expandafter\ifx\space\next \vardelimS \fi
+   \vardelimP
+   \vardelimN
+}
+\long\def\vardelimG#1\vardelimN#2{\fi\addto\tmp{{#2}}\vardelimC}
+\def\vardelimS#1\vardelimN{\fi\addto\tmp{ }\afterassignment\vardelimC\let\next= }
+\long\def\vardelimN#1{\addto\tmp#1\vardelimC}
+\long\def\vardelimH#1{\ifx\next#1\vardelimF\fi}
+```
+
+The macro reads the parameter token per token {the exception is the token
+list in the braces} and saves it to `\tmp` macro. Then the defined macro is
+processed with `{expanded \tmp}` as its parameter. The macro works like the
+`\long` prefix was used.

@@ -1,0 +1,88 @@
+anchor-name:rotsimple
+id:0101
+author:P. O.
+date:2015-04-18
+
+----lang:cs--title:Jednoduché otočení boxu
+Velice často potřebujeme sazbu otočit jen o 90 nebo -90 stupňů. V takovém
+případě nemusíme používat složitá makra z předchozího
+[OPmac triku](#transformbox) a vystačíme si s podstatně
+jednodušším makrem
+
+```
+\rotsimple{90}\hbox{obsah otočeného boxu}
+nebo
+\rotsimple{-90}\vbox to\hsize{...}
+```
+
+které může být implementováno takto:
+
+```
+\def\rotsimple#1{\hbox\bgroup\def\tmpb{#1}\afterassignment\rotsimpleA \setbox0=}%
+\def\rotsimpleA{\aftergroup\rotsimpleB}
+\def\rotsimpleB{\setbox0=\hbox{\box0}%
+   \ifnum\tmpb>0 \kern\ht0 \tmpdim=\dp0 \else \kern\dp0 \tmpdim=\ht0 \fi
+   \vbox to\wd0{\ifnum\tmpb>0 \vfill\fi
+                \vfil \wd0=0pt \dp0=0pt \ht0=0pt
+                \pdfsave\pdfrotate{\tmpb}\box0 \pdfrestore
+                \vfil}%
+   \kern\tmpdim
+   \egroup}
+```
+
+Povšimněte si, že toto makro dává celou původní šířku boxu do výšky
+nového boxu bez ohledu na to, zda otáčíme o 90 nebo -90 stupňů. Tím se toto
+makro také liší od `\rotbox` z předchozího [OPmac triku](#transformbox),
+ve kterém při záporném úhlu rotace se obsah boxu stěhuje do hloubky nového boxu.
+
+Chcete rotovat box kolem jeho středu? Pište třeba
+
+```
+\rotsimple{90}\hbox to0pt{\hss obsah otočeného boxu\hss}
+```
+
+Pravda, text výsledného otočeného boxu bude nahoru a dolu přesahovat přes
+nulové rozměry boxu, ale to v konkrétní aplikaci typicky nevadí.
+
+----lang:en--title:Rotated box by 90 degrees
+The need of rotating the typesetting material to 90 or -90 degrees
+is very common and usually we needn't nothing more.
+If we needn't to specify another angle then we needn't to use complicated
+macro `\rotbox` from [previous OPmac trick](#transformbox)
+and a simple macro `\rotsimple` is sufficient. Usage:
+
+```
+\rotsimple{90}\hbox{contents of the rotated box}
+or
+\rotsimple{-90}\vbox to\hsize{...}
+```
+
+The implementation:
+
+```
+\def\rotsimple#1{\hbox\bgroup\def\tmpb{#1}\afterassignment\rotsimpleA \setbox0=}%
+\def\rotsimpleA{\aftergroup\rotsimpleB}
+\def\rotsimpleB{\setbox0=\hbox{\box0}%
+   \ifnum\tmpb>0 \kern\ht0 \tmpdim=\dp0 \else \kern\dp0 \tmpdim=\ht0 \fi
+   \vbox to\wd0{\ifnum\tmpb>0 \vfill\fi
+                \wd0=0pt \dp0=0pt \ht0=0pt
+                \pdfsave\pdfrotate{\tmpb}\box0 \pdfrestore
+                \vfil}%
+   \kern\tmpdim
+   \egroup}
+```
+
+Note that this macro puts the whole width of the rotated box to the
+height of the new box without reference to the parameter 90 or -90 degrees.
+This is a difference with regard to the `\rotbox` macro from
+[previous OPmac trick](#transformbox) where the box contents is
+put to the depth of the new box if rotating is done by negative angle.
+
+If you need to rotate around the center of the box, you can use
+
+```
+\rotsimple{90}\hbox to0pt{\hss contents of the rotated box\hss}
+```
+
+Of course, the rotated text is overlapped upwards and downwards, but this
+doesn't matter in typical applications.

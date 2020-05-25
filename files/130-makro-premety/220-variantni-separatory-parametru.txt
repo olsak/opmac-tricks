@@ -1,0 +1,78 @@
+anchor-name:varsep
+id:0165
+author:P. O.
+date:2017-10-29
+
+----lang:cs--title:Variantní separátory parametrů
+Může se stát, že jednotlivé parametry, které chceme postupně po jednom
+zpracovat, nejsou odděleny jediným separátorem, ale uživatel při psaní
+parametrů užívá více rozličných separátorů. Například kromě čárky ještě
+středník a dvojznak `--`. Napíše-li uživatel:
+
+```
+\makro {AAA,BBB;CCC--DDD,EEE}
+```
+
+pak toto chceme zpracovat jako
+
+```
+\makroX{AAA}{,}\makroX{BBB}{;}\makroX{CCC}{--}\makroX{DDD}{,}\makroX{EEE}{}
+```
+
+`\makroX` se tedy dozví v `#1` jednak oddělený parametr a v `#2` se dozví,
+jakým oddělovačem byl parametr oddělen.
+
+Pro řešení tohoto problému použijeme makro `\replacestrings`, které každému
+oddělovači předsune znak `&`. Pak parametry přečteme po znak `&`, a za
+ním si přečteme případný oddělovač. Definice makra `\makro` z výše uvedeného
+příkladu může vypadat takto:
+
+```
+\def\makro#1{\def\tmpb{#1}%
+   \replacestrings {,}  {&,}%
+   \replacestrings {;}  {&;}%
+   \replacestrings {--} {&{--}}%
+   \expandafter\makroA\tmpb&{}%
+}
+\def\makroA#1&#2{\makroX{#1}{#2}\ifx&#2&\else\expandafter\makroA\fi}
+```
+
+Povšimněte si, že víceznakový separátor musí být zapouzdřen do svorek a
+oddělovač posledního parametru je prázdný.
+
+----lang:en--title:Variant separators of parameters
+We can use more variant separators of a queue of parameters. For example
+comma, semicolon and `--`. We need to process each parameter individually.
+For example:
+
+```
+\macro {AAA,BBB;CCC--DDD,EEE}
+```
+
+must be processed by
+
+```
+\macroX{AAA}{,}\macroX{BBB}{;}\macroX{CCC}{--}\macroX{DDD}{,}\macroX{EEE}{}
+```
+
+The `\macroX` gets the separated parameter in `#1` and used separator in `#2`.
+
+We solve this problem using `\replacestrings` macro. Each separator is
+replaced by the `&` character followed by the separator. Next, we read
+parameters separated by `&` and the original separator follows
+immediately. The definition of the `\macro` from previous example can look
+like:
+
+```
+\def\macro#1{\def\tmpb{#1}%
+   \replacestrings {,}  {&,}%
+   \replacestrings {;}  {&;}%
+   \replacestrings {--} {&{--}}%
+   \expandafter\macroA\tmpb&{}%
+}
+\def\macroA#1&#2{\macroX{#1}{#2}\ifx&#2&\else\expandafter\makroA\fi}
+```
+
+Note that the composed separator (from more than one token) must be
+placed in braces when `\replacestrings` is used. And the final parameter has
+no separator, so `#2` in `\macroX` is empty.

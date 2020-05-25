@@ -1,0 +1,147 @@
+anchor-name:sloupce
+id:0076
+author:P. O.
+date:2014-07-28
+
+----lang:cs--title:Sazba do sloupců jako v novinách
+Sazeč novin může natáhnout jednotlivé články do boxů pomocí:
+
+```
+\setbox\clanekA=\vbox{\hsize=sirka sloupce \penalty0 \input clanekA.tex }
+\setbox\clanekB=\vbox{\hsize=sirka sloupce \penalty0 \input clanekB.tex }
+...
+```
+
+a dále může ulamovat z těchto boxů jednotlivé části a vkládat je do
+struktury stránky, kterou sám navrhne pomocí `\hbox/\vbox/\vtop` aritmetiky.
+Tato myšlenka je rozebrána v TBN na straně 275 a zde jsou některá makra
+doplněna, aby bylo přesně dodrženo řádkování.
+Například třísloupcová sazba, ve které druhému a třetímu sloupci vodorovně
+překáží obrázek ([ukázka je zde](sloupce.pdf)) může být
+naprogramována takto:
+
+```
+\ulamuj\clanekA
+\hbox{\ulom[18]\kern\colsep
+      \vtop{\hbox {\ulom[3]\kern\colsep \ulom[3]}
+      \vynech[13] \placepic[0pt,\twocols,\picw=9cm]{ovce1.jpg}
+      \hbox {\ulom[2]\kern\colsep \ulom[2]}
+      }}
+```
+
+Makra `\ulom` a `\vynech` mají parametr v hranaté závorce udávající počet
+odlomených řádků nebo počet vynechaných řádků. V této ukázce čtenář musí
+nejprve přečíst vše nad obrázkem (druhý i třetí sloupec) a pak pokračuje pod
+obrázkem. Pokud naopak chceme, aby čtenář nejprve přečetl kompletní druhý
+sloupec (bez ohledu na obrázek) a pak třetí, pak program pro strukturu
+stránky může vypadat takto:
+
+```
+\hbox{\ulom[21]\kern\colsep
+      \vtop{\ulom[3]%
+            \vynech[14] \placepic[0pt,\twocols,\picw=10.5cm]{ovce2.jpg}
+            \ulom[4]}\kern\colsep
+      \vtop{\ulom[3]\vynech[14]\ulom[4]}%
+     }
+```
+
+Makro `\ulamuj` připraví článek k odlamování. Makro `\ulom` odlomí řádky
+pomocí `\vsplit` a vypočte hloubku posledního řádku pomocí triku s `\lastbox`
+(viz TBN str.~450) a uloží ji do `\lastdepth`. Je-li `\ulom` v
+horizontálním módu, tj. např. `\hbox{\ulom[9]\ulom[9]\ulom[9]}`, pak další výpočet
+využívající pomocnou proměnnou `\maxhdepth` zajistí, že nakonec je v
+`\lastdepth` největší hloubka ze všech `\ulom`, které byly v `\hbox` použity.
+Makro `\vynech` pak údaj z `\lastdepth` použije.
+
+```
+\tmpdim=\baselineskip  \splittopskip=\tmpdim plus.1pt minus.1pt
+\def\ulom[#1]{\setbox0=\vsplit\celybox to #1\baselineskip
+   \vtop{\kern-.3\baselineskip \unvbox0
+         \nointerlineskip\lastbox \global\lastdepth=\prevdepth}%
+   \ifhmode \ifdim\lastdepth<\maxhdepth \global\lastdepth=\maxhdepth \fi
+            \maxhdepth=\lastdepth \fi
+}
+\def\ulamuj#1{\let\celybox=#1\setbox0=\vsplit\celybox to0pt}
+\def\vynech[#1]{\vskip-.7\baselineskip\vskip#1\baselineskip \prevdepth=\lastdepth}
+```
+
+Kompletně celý kód ukázky včetně deklarace a nastavení rozměrů a včetně definice
+makra
+
+```
+\placepic[vertikální posun, šířka boxu, makra před \inspic] {obrázek.přípona}
+```
+
+které vloží obrázek tak, aby nezbíral v sazbě žádné místo,
+je v [samostatnném souboru](sloupce.tex).
+
+----lang:en--title:Columns like in news paper
+The typesetter can load the articles into boxes by:
+
+```
+\setbox\articleA=\vbox{\hsize=column width \penalty0 \input articleA.tex }
+\setbox\articleB=\vbox{\hsize=column width \penalty0 \input articleB.tex }
+...
+```
+
+He can split these articles to the columns and inserts them to the pages
+by the given page design by `\vsplit` and by `\hbox/\vbox/\vtop` arithmetic.
+This idea is described in TBN, page 275 and it is reinvented here in order
+to keep the line grid. For example three columns typesetting including image
+across more columns ([see the example here](sloupce.pdf)) can be
+programmed by the code:
+
+```
+\ulamuj\articleA
+\hbox{\ulom[18]\kern\colsep
+      \vtop{\hbox {\ulom[3]\kern\colsep \ulom[3]}
+      \vynech[13] \placepic[0pt,\twocols,\picw=9cm]{sheep1.jpg}
+      \hbox {\ulom[2]\kern\colsep \ulom[2]}
+      }}
+```
+
+The macro `\ulom` means “split” and `\vynech` means “skip”. These
+macros read their parameter [the number of lines] in the square
+brackets. The reader read all text above the image (in the second and third
+column) and then he/she continues reading below the image. If we need
+another reading schema (all text in the column regardless of the existence of
+the image) then the programme for the columns structure can look like:
+
+```
+\hbox{\ulom[21]\kern\colsep
+      \vtop{\ulom[3]%
+            \vynech[14] \placepic[0pt,\twocols,\picw=10.5cm]{sheep2.jpg}
+            \ulom[4]}\kern\colsep
+      \vtop{\ulom[3]\vynech[14]\ulom[4]}%
+     }
+```
+
+The macro `\ulamuj` (do splitting) prepares the article for splitting. The
+`\ulom` splits the lines by `\vsplit` primitive and calculates the depth of the
+last line by `\lastbox` trick (see TBN page 450). This depth is saved ti
+`\lastdepth`. If the `\ulom` is used in horizontal mode, for example
+`\hbox{\ulom[9]\ulom[9]\ulom[9]}`, then the `\lastdepth` includes the maximal
+depth of all columns here. The `\vynech` macro (skip) uses the `\lastdepth`
+parameter.
+
+```
+\tmpdim=\baselineskip  \splittopskip=\tmpdim plus.1pt minus.1pt
+\def\ulom[#1]{\setbox0=\vsplit\wholebox to #1\baselineskip
+   \vtop{\kern-.3\baselineskip \unvbox0
+         \nointerlineskip\lastbox \global\lastdepth=\prevdepth}%
+   \ifhmode \ifdim\lastdepth<\maxhdepth \global\lastdepth=\maxhdepth \fi
+            \maxhdepth=\lastdepth \fi
+}
+\def\ulamuj#1{\let\wholebox=#1\setbox0=\vsplit\wholebox to0pt}
+\def\vynech[#1]{\vskip-.7\baselineskip\vskip#1\baselineskip \prevdepth=\lastdepth}
+```
+
+The complete code including the declaration part and including the
+definition of the macro
+
+```
+\placepic[vertical shift, box width, before \inspic] {imagefile.extension}
+```
+
+which inserts the picture without inserting space is available in
+the [separate file](sloupce.tex).

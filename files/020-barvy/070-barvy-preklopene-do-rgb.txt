@@ -1,0 +1,111 @@
+anchor-name:rgb
+id:0090
+author:P. O.
+date:2015-01-25
+
+----lang:cs--title:Barvy překlopené do RGB
+OPmac interně pracuje v barevném prostoru CMYK. Konverzi z RGB do tohoto
+barevného prostoru může obstarat [OPmac trik 0089](#setrgbcolor).
+Někdy se může ale stát, že potřebujeme, aby interně byly barevné povely
+vkládány přímo v RGB. Například proto, že tento barevný prostor nabízí gamut
+s jásavějšími barvami a dokument chceme použít pouze na obrazovce počítače,
+která je RGB zařízením. Nebo proto, že chcete barevně sladit obrázky
+z Inkscape s barvami v dokumentu, přitom Inkscape exportuje obrázky
+bohužel výhradně v RGB.
+
+Barvy pak můžete definovat pomocí `\def\Pink{\setrgbcolor{.835 .118 .396}}`.
+
+V OPmac od verze Jul. 2019 je makro `\setrgbcolor` přímo k dispozici. Pokud
+navíc chcete jednoduchou konverzi z CMYK do RGB, pak lze použít:
+
+```
+\def\setcmykcolor#1{\expandafter\setcmykcolorA#1 }
+\def\setcmykcolorA #1 #2 #3 #4 {\def\tmpb{}%
+   \tmpdim=1pt \advance\tmpdim by-#4pt
+   \edef\tmpa{\expandafter\ignorept\the\tmpdim}%
+   \setcmykcolorB{#1}\addto\tmpb{ }\setcmykcolorB{#2}\addto\tmpb{ }\setcmykcolorB{#3}%
+   \setrgbcolor\tmpb
+}
+\def\setcmykcolorB#1{\tmpdim=1pt \advance\tmpdim by-#1pt
+\tmpdim=\tmpa\tmpdim
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim}%
+}
+\def\setRGBcolor#1{\setRGBcolorA#1 }
+\def\setRGBcolorA#1 #2 #3 {\def\tmpb{}\setRGBcolorB{#1}\setRGBcolorB{#2}\setRGBcolorB{#3}%
+   \setrgbcolor\tmpb
+}
+\def\setRGBcolorB#1{\tmpdim=#1pt \divide\tmpdim by255
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim\space}%
+}
+```
+
+Toto makro interně vkládá barvy v RGB pomocí `setrgbcolor` 
+a také předefinuje `\setcmykcolor` tak, že toto makro se postará 
+o konverzi a zavolá pak `\setrgbcolor`. Používá přitom vzorce:
+
+`R = (1-C)*(1-K),  G = (1-M)*(1-K), B = (1-Y)*(1-K)`.
+
+Dále je zde definováno makro `\setRGBcolor`, které vydělí své tři parametry
+číslem 255 a zavolá `\setrgbcolor`.
+
+Poznámka: máte-li starší verzi OPmac než Jul. 2019, pak musíte nejprve
+`\setrgbcolor` definovat:
+
+```
+\let\setrgbcolor=\setcmykcolor  \addprotect\setrgbcolor
+\def\colorstackpush#1{\pdfcolorstack\colorstackcnt push{#1 rg #1 RG}}
+\def\colorstackset#1{\pdfcolorstack\colorstackcnt set{#1 rg #1 RG}}
+\ifx\XeTeXversion\undefined \else
+   \def\colorstackpush#1{\colorspecialinit \special{color push rgb #1}
+   \def\colorstackset#1{\colorspecialinit \special{color pop}\special{color push rgb #1}}
+\fi
+\def\Black{\setrgbcolor{0 0 0}}
+\def\pdfblackcolor{0 0 0} \xdef\currentcolor{\pdfblackcolor}
+
+```
+
+----lang:en--title:RGB as internal color space
+OPmac works internally in CMYK color space. The conversion from RGB to
+CMYK can be done by the previous [OPmac trick 0089](#setrgbcolor).
+But sometimes arises the need to use RGB directly. For example because
+the document is intended only for computer monitors (i.e. RGB device) and
+this color space provides better gamut with dense colors. Another reason can
+be the fact that Inkscape exports the images in RGB only (unfortunately)
+and we need to harmonize the colors of these images with the colors of the
+text.
+
+The colors can be defined by `\def\Pink{\setrgbcolor{.835 .118 .396}}`.
+
+OPmac version Jul. 2019 defines `\setrgbcolor` already. The following code
+redefines `\setcmykcolor` in order to it converts CMYK to RGB internally
+used:
+
+```
+\def\setcmykcolor#1{\expandafter\setcmykcolorA#1 }
+\def\setcmykcolorA #1 #2 #3 #4 {\def\tmpb{}%
+   \tmpdim=1pt \advance\tmpdim by-#4pt
+   \edef\tmpa{\expandafter\ignorept\the\tmpdim}%
+   \setcmykcolorB{#1}\addto\tmpb{ }\setcmykcolorB{#2}\addto\tmpb{ }\setcmykcolorB{#3}%
+   \setrgbcolor\tmpb
+}
+\def\setcmykcolorB#1{\tmpdim=1pt \advance\tmpdim by-#1pt
+\tmpdim=\tmpa\tmpdim
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim}%
+}
+\def\setRGBcolor#1{\setRGBcolorA#1 }
+\def\setRGBcolorA#1 #2 #3 {\def\tmpb{}\setRGBcolorB{#1}\setRGBcolorB{#2}\setRGBcolorB{#3}%
+   \setrgbcolor\tmpb
+}
+\def\setRGBcolorB#1{\tmpdim=#1pt \divide\tmpdim by255
+   \edef\tmpb{\tmpb\expandafter\ignorept\the\tmpdim\space}%
+}
+```
+
+The original `\setcmykcolor`
+macro is redefined in order to convert its arguments into RGB and to use the
+`\setrgbcolor`. The following equations are used:
+
+`R = (1-C)*(1-K),  G = (1-M)*(1-K), B = (1-Y)*(1-K)`.
+
+Finally, the macro `\setRGBcolor` is defined. It divides its arguments by
+255 and uses `\setrgbcolor`.

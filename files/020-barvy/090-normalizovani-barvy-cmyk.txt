@@ -1,0 +1,111 @@
+anchor-name:normalcmyk
+id:0106
+author:P. O.
+date:2015-04-24
+
+----lang:cs--title:Normalizování barvy CMYK
+Základní barvy CMYK by měly fungovat tak, že smíchání `a*C+a*M+a*Y` dá
+výsledek stejný jako `a*K`, tj. při plném smíchání `C+M+Y` bychom měli dostat
+černou. (To platí jen pro ideální tonery, ve skutečnosti dostaneme hodně
+tmavě hnědou.) Je tedy vidět, že pokud `min(C,M,Y)` není nula, dá se zhruba
+řečeno odečíst toto minimum od všech tří složek a nahradit složkou černou.
+Normalizovaná barva popsaná v CMYK tedy má toto minimum nulové, takže
+obsahuje nejvýše dvě ze tří barevných složek CMY nenulové. Normalizovaná
+barva CMYK tedy šetří barevnými tonery.
+
+Míchání barev pomocí `\cmixdef` z [předchozího OPmac triku](#cmixdef) může
+často způsobit, že výsledná barva není normalizovaná. Můžeme ji pak
+normalizovat makrem `\normalcmyk\Barva`, tedy třeba takto:
+
+```
+\cmixdef\myColor{lineární kombinace barev} \normalcmyk\myColor
+```
+
+Makro `\normalcmyk` odstraní z každé složky `C,M,Y` jejich společné minimum
+a přidá to k černé. Toto odstranění a přidání není přímočaré, ale do hry
+jsou zapojeny vzorečky na konverzi CMYK do RGB ([OPmac trik 0090](#rgb))
+a zpětně z RGB do CMYK ([OPmac trik 0089](#setrgbcolor)), tentokrát
+v normalizovaném tvaru. Implementace je následující:
+
+```
+\def\normalcmyk#1{\bgroup \let\setcmykcolor=\relax
+   \edef\tmp{#1}\def\tmpa{#1}\expandafter\normalcmykA\tmp
+}
+\def\normalcmykA#1#2{\normalcmykB #2 }
+\def\normalcmykB#1 #2 #3 #4 {\tmpdim=#1pt
+   \ifdim#2pt<\tmpdim \tmpdim=#2pt \fi  \ifdim#3pt<\tmpdim \tmpdim=#3pt \fi
+   \ifdim\tmpdim=0pt \else
+      \ifdim\tmpdim<1pt
+         \dimen2=\tmpdim % \dimen2=min(C,M,Y)
+         \tmpdim=-\tmpdim \advance\tmpdim by1pt \dimen1=\tmpdim % \dimen1 = 1-min
+         \tmpnum=1073741824 \divide\tmpnum by\tmpdim \multiply\tmpnum by4 \tmpdim=\tmpnum sp
+         \edef\tmp{\expandafter\ignorept\the\tmpdim}% \tmp = 1 / (1-min)
+         \normalcmykC\C{#1}\normalcmykC\M{#2}\normalcmykC\Y{#3}%
+         \dimen0=-#4\dimen2 \advance\dimen0 by\dimen2 \advance\dimen0 by#4pt
+         \edef\K{\expandafter\ignorept\the\dimen0}% K_new = 1 - (1-min)*(1-K_old)
+         \expandafter\xdef\tmpa{\setcmykcolor{\C\space\M\space\Y\space\K}}%
+      \else \expandafter\xdef\tmpa{0 0 0 1}%
+   \fi\fi \egroup
+}
+\def\normalcmykC#1#2{\ifdim\dimen2=#2pt \def#1{0}\else
+      \dimen0=\dimen1 % C_new = ((1-min) - (1-C_old)) / (1-min)
+      \advance\dimen0 by#2pt \advance\dimen0 by-1pt
+      \dimen0=\tmp\dimen0 \ifdim\dimen0>1pt \dimen0=1pt \fi
+      \edef#1{\expandafter\ignorept\the\dimen0}%
+   \fi
+}
+```
+
+----lang:en--title:CMYK normalization
+The basic colors of CMYK should realize grey result if the same
+coefficent is used for `C`, `M` and `Y`. Especially full `C+M+Y` should be Black.
+(Of course we suppose ideal tonners, the reality is very dark
+brown.) The concequence is that if the `min(C,M,Y)` isn't zero then we can
+subtract this minimum from `C`, `M`, and `Y` and replace this by appropriate
+amount of K. The normalized CMYK includes coordinates where the above
+activity is done, so there is at least one `C, M, Y` component equal zero.
+The normalized CMYK saves the expensive color tonners and uses black tonner
+if this is possible.
+
+The color mixing by `\cmixdef` from [previous OPmac trick](#cmixdef) gives
+the un-normalized CMYK very often. We can normalize it by macro
+`\normalcmyk\Color`. For example:
+
+```
+\cmixdef\myColor{linear combination of colors} \normalcmyk\myColor
+```
+
+The macro `\normalcmyk` replaces the `min(C,M,Y)` by `K`. This is done via the
+formulas for conversion to RGB ([OPmac trick 0090](#rgb)) and back using
+formulas for conversion from RGB to new normalized CMYK
+([OPmac trick 0089](#setrgbcolor)).
+The implementation follows:
+
+```
+\def\normalcmyk#1{\bgroup \let\setcmykcolor=\relax
+   \edef\tmp{#1}\def\tmpa{#1}\expandafter\normalcmykA\tmp
+}
+\def\normalcmykA#1#2{\normalcmykB #2 }
+\def\normalcmykB#1 #2 #3 #4 {\tmpdim=#1pt
+   \ifdim#2pt<\tmpdim \tmpdim=#2pt \fi  \ifdim#3pt<\tmpdim \tmpdim=#3pt \fi
+   \ifdim\tmpdim=0pt \else
+      \ifdim\tmpdim<1pt
+         \dimen2=\tmpdim % \dimen2=min(C,M,Y)
+         \tmpdim=-\tmpdim \advance\tmpdim by1pt \dimen1=\tmpdim % \dimen1 = 1-min
+         \tmpnum=1073741824 \divide\tmpnum by\tmpdim \multiply\tmpnum by4 \tmpdim=\tmpnum sp
+         \edef\tmp{\expandafter\ignorept\the\tmpdim}% \tmp = 1 / (1-min)
+         \normalcmykC\C{#1}\normalcmykC\M{#2}\normalcmykC\Y{#3}%
+         \dimen0=-#4\dimen2 \advance\dimen0 by\dimen2 \advance\dimen0 by#4pt
+         \edef\K{\expandafter\ignorept\the\dimen0}% K_new = 1 - (1-min)*(1-K_old)
+         \expandafter\xdef\tmpa{\setcmykcolor{\C\space\M\space\Y\space\K}}%
+      \else \expandafter\xdef\tmpa{0 0 0 1}%
+   \fi\fi \egroup
+}
+\def\normalcmykC#1#2{\ifdim\dimen2=#2pt \def#1{0}\else
+      \dimen0=\dimen1 % C_new = ((1-min) - (1-C_old)) / (1-min)
+      \advance\dimen0 by#2pt \advance\dimen0 by-1pt
+      \dimen0=\tmp\dimen0 \ifdim\dimen0>1pt \dimen0=1pt \fi
+      \edef#1{\expandafter\ignorept\the\dimen0}%
+   \fi
+}
+```

@@ -1,0 +1,4 @@
+----lang:cs--name:Poznámky
+
+----lang:en--name:Notes
+

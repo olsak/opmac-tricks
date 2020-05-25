@@ -1,0 +1,91 @@
+anchor-name:loctt
+id:0002
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Lokální tthook
+Napíšeme-li `\def\tthook{kód}`, ovlivní tato definice všechna následující
+prostředí `\begtt...\endtt`. My bychom chtěli ale před `\begtt` psát kódy, které
+ovlivní jen jedno následující prostředí. Navíc je problém se zdvojováním křížů při
+zápisu kódu, který způsobuje, že nelze jednoduše použít například `\addto\tthook{kód}`.
+
+Řešením jsou dva registry typu toks: `\gtthook` (obsahuje globální kód
+ovlivňující všechny následující `\begtt...\endtt` prostředí) a `\ltthook`
+(obsahuje kód, který se použije jen v následujícím verbatim prostředí).
+Uživatel může psát například:
+
+```
+\gtthook {\typosize[9/11]}    % všechna prostředí budou v 9pt
+\ltthook {\adef!#1.{{\it#1}}} % aktivní ! jen pro jedno následující prostředí
+\begtt
+... !aha. ...
+\endtt
+```
+
+Kód makra:
+
+```
+\newtoks\gtthook  \newtoks\ltthook
+\def\tthook{\the\gtthook \the\ltthook \global\ltthook{}}
+```
+
+Pokud navíc definujeme
+
+```
+\def\addtoks#1#2{#1\expandafter{\the#1#2}}
+```
+
+je možné použít například:
+
+```
+\bgroup \addtoks\gtthook{kód} ... \egroup
+```
+
+a příslušný kód ovlivní všechna verbatim prostředí v rozmezí `\bgroup ... \egroup`.
+Kódy nevyžadují zdvojování křížů.
+
+Analogická myšlenka se dá použít pro ostatní `\cosihook` z OPmac.
+
+----lang:en--title:Local tthook
+When we type `\def\tthook{code}` then such definition is global and changes
+all following `\begtt...\endtt` environments. But we need to type the codes
+which affects only the following `\begtt...\endtt`.
+
+The solution uses two registers of toks type: `\gtthook` (includes global
+code) and \ltthook (code only for the following verbatim environment).
+The user can type, for example:
+
+```
+\gtthook {\typosize[9/11]}    % all verbatim in 9pt size
+\ltthook {\adef!#1.{{\it#1}}} % active ! only for the following environment
+\begtt
+... !aha. ...
+\endtt
+```
+
+The macro code:
+
+```
+\newtoks\gtthook  \newtoks\ltthook
+\def\tthook{\the\gtthook \the\ltthook \global\ltthook{}}
+```
+
+We can define the `\addtoks` macro
+
+```
+\def\addtoks#1#2{#1\expandafter{\the#1#2}}
+```
+
+and use it, for example:
+
+```
+\bgroup \addtoks\gtthook{code} ... \egroup
+```
+
+the code affect to all verbatim environments in the `\bgroup...\egroup`
+scope.
+
+We needn't to double the hash marks in the `\gtthook` and `\ltthook`
+declaration.
+
+Analogically we can use other `\foohook` macros from OPmac.

@@ -1,0 +1,73 @@
+anchor-name:shbox
+id:0104
+author:P. O.
+date:2015-04-23
+
+----lang:cs--title:Jednoduché zvětšení/zmenšení boxu
+Vytvoříme makra
+
+```
+\shbox to rozměr{text}
+\svbox to rozměr{text}
+```
+
+která se chovají jako `\hbox` to `rozměr{text}` a `\vbox` to `rozměr{text}`, ale
+s tím rozdílem, že materiál uvnitř boxu nepruží a sestaví se se základní
+velikostí. Následně pomocí lineární transformace se celý box zvětší nebo
+změnší, aby se dosáhla požadovaná šířka (pro `\hbox`) nebo výška (pro `\vbox`).
+
+Implementace může být následující:
+
+```
+\def\shbox to#1#{\sboxA\hbox\wd{#1}}
+\def\svbox to#1#{\sboxA\vbox\ht{#1}}
+\def\sboxA#1#2#3#4{#1to#3{%
+   \setbox0=#1{#4}\tmpdim=#3\relax \tmpnum=#20
+   \divide\tmpnum by256 \divide\tmpdim by\tmpnum \multiply\tmpdim by256
+   \edef\tmp{\expandafter\ignorept\the\tmpdim}%
+   \ifx#1\hbox \vrule height\tmp\ht0 depth\tmp\dp0 width0pt
+   \else \hrule width\tmp\wd0 height0pt \tmpdim=\dp0 \fi
+   \ht0=0pt \dp0=0pt \wd0=0pt \pdfsave\pdfscale{\tmp}{\tmp}\box0\pdfrestore
+   \ifx#1\hbox\hfil
+   \else \vfil \hrule height0pt width0pt depth\tmp\tmpdim \fi}%
+}
+```
+
+Nejprve je setaven box0, pak je vypočítán poměr požadované velikosti ku
+skutečné velikosti a je uložen do `\tmp`. Pak je pomocí `\pdfscale` tento box
+umístěn do vnějšího boxu s rozměry nastavenými pomocí neviditelných `\hrule`,
+`\vrule`.
+
+----lang:en--title:Scaling box to desired size
+We create macros
+
+```
+\shbox to dimen{text}
+\svbox to dimen{text}
+```
+
+which behaves similar as `\hbox` to `dimen{text}` and `\vbox` to `dimen{text}`, but
+there is a difference: the box is composed without stretching or shrinking
+inside with only base size. Finally the linear scaling of whole box to the
+desired size (to the with for `\hbox` or to the height for `\vbox`) is processed.
+
+The implementation can be:
+
+```
+\def\shbox to#1#{\sboxA\hbox\wd{#1}}
+\def\svbox to#1#{\sboxA\vbox\ht{#1}}
+\def\sboxA#1#2#3#4{#1to#3{%
+   \setbox0=#1{#4}\tmpdim=#3\relax \tmpnum=#20
+   \divide\tmpnum by256 \divide\tmpdim by\tmpnum \multiply\tmpdim by256
+   \edef\tmp{\expandafter\ignorept\the\tmpdim}%
+   \ifx#1\hbox \vrule height\tmp\ht0 depth\tmp\dp0 width0pt
+   \else \hrule width\tmp\wd0 height0pt \tmpdim=\dp0 \fi
+   \ht0=0pt \dp0=0pt \wd0=0pt \pdfsave\pdfscale{\tmp}{\tmp}\box0\pdfrestore
+   \ifx#1\hbox\hfil
+   \else \vfil \hrule height0pt width0pt depth\tmp\tmpdim \fi}%
+}
+```
+
+First, the box0 is created and the ratio desired:real size is calculated
+and saved to the `\tmp`. Then the `\pdfscale` is used and the box is put to the
+outer box with dimensions created by invisible `\hrule`, `\vrule`.

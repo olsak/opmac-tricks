@@ -1,0 +1,130 @@
+anchor-name:readtoks
+id:0088
+author:P. O.
+date:2015-01-20
+
+----lang:cs--title:Čtení parametru token po tokenu
+Vytvoříme makro `\readtoks{parametr}`, který čte jednotlivé tokeny
+parametru, může je na základě jejich typu třeba nějak modifikovat, a
+výsledek čtení a modifikace uloží do `\readtoksO`, což je implicitně
+definováno jako `\toks1`. Užití tohoto makra najdete v
+[následujícím OPmac triku 0079](appendto), kde makro `\readtoks`
+prochází seznam tokenů a jakmile narazí na kříž (kategorii 6), promění ho ve
+dva kříže. Jakmile narazí na sekvenci `\internalXpram`, promění ji v jeden
+kříž. Takže třeba po
+
+```
+\readtoks{aha # uff {\internalXparam1 {a}} \line}
+budeme mít:
+\toks1={aha ## uff {#1 {a}} \line}
+```
+
+Makro jsem též v mírných obměnách použil v odpovědích na
+[otázku o proměnlivých separátorech](http://tex.stackexchange.com/questions/200452/macro-parameter-delimited-by-more-than-one-delimiter)
+nebo na
+[otázku o alternaitvních svorkách](http://tex.stackexchange.com/questions/196776/arguments-possibly-delimited-by-bgroup-and-egroup)
+na tex.stackexchange.com
+
+Základní problém makra `\readtoks` je, že nemůže bezhlavě nabírat
+jednotlivé tokeny do neseparovaného parametru, protože to zničí mezery a
+svorkaté závorky. Je tedy třeba tyto situace ošetřit zvlášť.
+
+```
+\newtoks\readtoksT \newif\ifreadtoksG
+\def\readtoks{\begingroup \let\bgroup=\relax \let\egroup=\relax
+   \readtoksT={}\readtoksGfalse \afterassignment\readtoksA \let\next= }
+\def\readtoksA{\futurelet\tmpc\readtoksB}
+\def\readtoksB{\let\next=\readtoksD \csname readtoksX\endcsname
+   \ifcat\space\noexpand\tmpc \let\next=\readtoksC \def\nexxt{\readtoksD{ }}\fi
+   \ifcat{\noexpand\tmpc      \let\next=\readtoksC \let\nexxt=\readtoksE \fi
+   \ifcat}\noexpand\tmpc      \let\next=\readtoksC \let\nexxt=\readtoksF \fi
+   \next
+}
+\def\readtoksC{\afterassignment\nexxt \let\next= }
+\def\readtoksD#1{\readtoksT=\expandafter{\the\readtoksT#1}\readtoksA}
+\def\readtoksE{\begingroup \readtoksGtrue \readtoksT={}\readtoksA}
+\def\readtoksF{\ifreadtoksG
+      \expandafter\endgroup\expandafter\readtoksT\expandafter\expandafter\expandafter
+         {\expandafter\the\expandafter\readtoksT\expandafter{\the\readtoksT}}%
+      \expandafter\readtoksA
+   \else
+      \expandafter\endgroup\expandafter\readtoksO\expandafter{\the\readtoksT}%
+   \fi
+}
+\def\readtoksO{\toks1}
+```
+
+Makro postupně sbírá tokeny a spouští uživatelsky definované makro
+`\readtoksX`, ve kterém může uživatel tokeny pozměňovat. Pokud toto makro
+není definováno, pak se pouze postupným sbíráním tokenů naplní výsledný registr
+`\readtoksO` stejně, jako při přímém čtení `\readtoksO={parametr}`.
+Všimněte se, že nejvíce práce dají svorky. Narazíme-li na vstupní svorku,
+vnoříme se do nové skupiny, kde začínáme plnit `\readtoksT` od začátku, tedy
+naplníme ho vnitřním obsahem párujících svorek. Narazíme-li pak na
+ukončovací svorku, využijeme přečtený `\readtoksT`, který obalíme do svorek a
+před něj dáme původní `\readtoksT`, který obsahuje text načtený před
+zahajovací svorkou. A v rámci toho ukončíme skupinu.
+
+----lang:en--title:Reading parameter text token per token
+We create a macro `\readtoks{parameter}` which read its parameter token per
+token and does arbitrary processing for each token. The default version of
+the macro simply reads tokens and saves them to the `\readtoksO` token list.
+The usage of slight modification of this principle can be found in
+the next [OPmac trick 0079](appendto), where `\readtoks` scans the
+list of the tokens and doubles the hash token (category 6) and converts the
+control sequence `\internalXpram` to one hash token. For example:
+
+```
+\readtoks{aha # uff {\internalXparam1 {a}} \line}
+is converted to:
+\toks1={aha ## uff {#1 {a}} \line}
+```
+
+A slight modification of this macro is used
+[here](http://tex.stackexchange.com/questions/200452/macro-parameter-delimited-by-more-than-one-delimiter)
+or
+[here](http://tex.stackexchange.com/questions/196776/arguments-possibly-delimited-by-bgroup-and-egroup)
+at tex.stackexchange.com
+
+The main problem of the `\readtoks` macro if the fact, that we cannot
+simply read token per token by the macro with one unseparated parameter
+because this processing consumes spaces and behaves bad when braces are
+occurred in the parameter. These situations need to be managed by
+futurelet.
+
+```
+\newtoks\readtoksT \newif\ifreadtoksG
+\def\readtoks{\begingroup \let\bgroup=\relax \let\egroup=\relax
+   \readtoksT={}\readtoksGfalse \afterassignment\readtoksA \let\next= }
+\def\readtoksA{\futurelet\tmpc\readtoksB}
+\def\readtoksB{\let\next=\readtoksD \csname readtoksX\endcsname
+   \ifcat\space\noexpand\tmpc \let\next=\readtoksC \def\nexxt{\readtoksD{ }}\fi
+   \ifcat{\noexpand\tmpc      \let\next=\readtoksC \let\nexxt=\readtoksE \fi
+   \ifcat}\noexpand\tmpc      \let\next=\readtoksC \let\nexxt=\readtoksF \fi
+   \next
+}
+\def\readtoksC{\afterassignment\nexxt \let\next= }
+\def\readtoksD#1{\readtoksT=\expandafter{\the\readtoksT#1}\readtoksA}
+\def\readtoksE{\begingroup \readtoksGtrue \readtoksT={}\readtoksA}
+\def\readtoksF{\ifreadtoksG
+   \expandafter\endgroup\expandafter\readtoksT\expandafter\expandafter\expandafter
+      {\expandafter\the\expandafter\readtoksT\expandafter{\the\readtoksT}}%
+      \expandafter\readtoksA
+   \else
+      \expandafter\endgroup\expandafter\readtoksO\expandafter{\the\readtoksT}%
+   \fi
+}
+\def\readtoksO{\toks1}
+```
+
+The macro scans single tokens and runs the user defined macro `\readtoksX`
+where the processing for each token can be programmed. If this macro isn't
+defined then the `\readtoks` only saves the tokens to the output register
+`\readtoksO` (which is defined as `\toks1`) and the result is the same as simple
+setting `\toks1={parameter}`. Note how the braces are processed. If there is
+an open brace then we open new group by `\begingroup` and start the filling
+of `\readtoksT` from empty begin. The tokens between braces are saved to the
+`\readtoksT` in such case. When the closing brace is encountered then the
+actual `\readtoksT` is expanded and surrounded by braces and put after the
+contents of `\readtoksT` from previous processing at previous level of group.
+And the group is finished, of course.

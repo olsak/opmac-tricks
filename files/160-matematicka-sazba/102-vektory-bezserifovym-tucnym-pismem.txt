@@ -1,0 +1,81 @@
+anchor-name:vecmath
+id:0170
+author:P. O.
+date:2019-10-20
+
+----lang:cs--title:Vektory včetně řeckých znaků tučně bez serifů
+
+Jak bylo řečeno v předchozím OPmac triku, OPmac používá pro `\bf` a `\bi`
+v matematické sazbě tučný bezserifový font, protože je to v české sazbě
+vektorů a matic obvyklejší. Někdy bychom chtěli matice mít stojatě a vektory
+skloněné, přitom obojí označovat např. pomocí `\_A\_x = \_b`. Dále bychom
+chtěli po napsání `\_\gamma` dostat tučný bezseriový znak gamma, což
+implicitně `\bf` ani `\bi` neumějí. Postará se o to následující makro:
+
+```
+\addto\normalmath{\loadmathfamily 12 cmbrmb10 \loadmathfamily 13 cmssbx10 }
+\addto\boldmath{\loadmathfamily 12 cmbrmb10 \loadmathfamily 13 cmssbx10 }
+\normalmath
+
+\def\_#1{{\expandafter\vecboldify\string#1\end}}
+\def\vecboldify#1#2\end{%
+   \ifx\relax#2\relax
+      \ifnum\lccode`#1=`#1\bi#1\else\bf#1\fi % skolněná malá, stojatá velká 
+   \else
+      \expandafter\expandafter\expandafter\vecboldifyG % tučný sans pro řečtinu
+      \expandafter\meaning \csname #2\endcsname\end
+   \fi
+}
+\def\vecboldifyG #1"#2#3\end{\ifx7#2\fam13\mathchar"7#3 \else \mathchar"C#3 \fi}
+```
+
+Nejprve je zaveden font cmbrmb10 do matematické rodiny 12. Ten obsahuje
+bezserifovou tučnou řečtinu, bohužel i velká písmena této řečtiny jsou
+skolněná. Takže je zaveden ještě font cmssbx10 do rodiny 13 obsahující 
+bezserifové tučné verzálky řeckých písmen (ale zase bohužel nebsahuje
+řecké mínusky).
+
+Makro pomocí `\string` ověří, zda následuje písmeno nebo řídicí sekvence. V
+prvém případě pak pomocí `\lccode` rozhodne, zda použije `\bf` nebo `\bi`.
+Ve druhém případě pomocí `\meaning` zjistí mathcode daného znaku. Začíná-li
+sedmičkou, jedná se o velká řecká písmena a použije se rodina 13. Jinak se
+použije rodina C=12.
+
+
+----lang:en--title:Vecors in sansserif bold including greek letters
+
+The OPmac trick above mentions the bahavior of `\bf` and `\bi` in math as
+sansserif bold because this is more common in Czech traditional typesetting
+of math. Sometimes we need to use upright sansserif bold letters for matrices and
+slanted for vectors, but both will be marked by the same way: 
+`\_A\_x = \_b`. Moreover, default `\bf` nor `\bi` does not work with greek
+letters, but we need to use `\_\gamma` for bold sansserif gamma, for
+instance. This should be done by the following code:
+ 
+```
+\addto\normalmath{\loadmathfamily 12 cmbrmb10 \loadmathfamily 13 cmssbx10 }
+\normalmath
+
+\def\_#1{{\expandafter\vecboldify\string#1\end}}
+\addto\boldmath{\loadmathfamily 12 cmbrmb10 \loadmathfamily 13 cmssbx10 }
+\def\vecboldify#1#2\end{%
+   \ifx\relax#2\relax
+      \ifnum\lccode`#1=`#1\bi#1\else\bf#1\fi % skolněná malá, stojatá velká 
+   \else
+      \expandafter\expandafter\expandafter\vecboldifyG % tučný sans pro řečtinu
+      \expandafter\meaning \csname #2\endcsname\end
+   \fi
+}
+\def\vecboldifyG #1"#2#3\end{\ifx7#2\fam13\mathchar"7#3 \else \mathchar"C#3 \fi}
+```
+
+First, the font cmbrmb10 with greek sansserif bold is included as math
+family 12. It does not include upright uppercase greek letters,
+unfortunately. So, the font cmssbx10 with such letters is loaded too.
+
+The `\_` macro checks if given parameter is letter or control sequence using
+`\string`. If it is letter then `\bi` or `\bf` is used. Else we need to know
+the mathcode of given control sequence: the \meaning is used. If such code
+begins by 7 then it is uppercase greek (family 13 is used} else it is 
+lowercase greek (family 12=C is used).
+

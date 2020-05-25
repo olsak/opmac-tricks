@@ -1,0 +1,98 @@
+anchor-name:overtilde
+id:0070
+author:P. O.
+date:2014-06-17
+
+----lang:cs--title:Natahovací tilde nad vzorcem jakékoli velikosti
+PlainTeX používá makro `\widetilde`, které odkazuje do fontu se třemi
+postupně se zvětšujícími velikostmi vlnky a dál není nic. To naprosto
+neuspokojí pokrývače, kteří chtějí pokrýt vzorec libovolné šířky vlnkou.
+Navrhneme tedy makro `\overtilde`, které změří pokrývaný vzorec a pomoci
+`\pdfscale` zvětší či zmenší největší element ve fontu pro `\widetilde` tak,
+že výsledek je vždy celý pokrytý. Například:
+
+```
+$$\displaylines{
+  \overtilde{b} + \overtilde{ab} + \overtilde{a+bc}+{}\cr
+  {}+\overtilde{b+c+d}+ \overtilde{a+b+c+df}
+}$$
+```
+
+dá tento výsledek:
+
+![Ukázka overtilde](img/overtilde.png)
+
+Makro `\overtilde` je definováno takto:
+
+```
+\mathchardef\widetildemax="0367
+
+\def\widetildeto #1{\bgroup\tmpdim=#1\setbox0=\hbox{$\widetildemax$}%
+   \tmpdim=16\tmpdim \tmpnum=\tmpdim \tmpdim=\wd0 \divide\tmpdim by16
+   \divide\tmpnum by\tmpdim
+   \hbox to#1{\pdfsave\rlap{\pdfscale{\the\tmpnum}{\ifnum\tmpnum<588 1\else\the\tmpnum\fi}%
+                            \pdfscale{.00390625}{\ifnum\tmpnum<588 1\else.0017\fi}%
+                            \vbox to0pt{\hbox{$\widetildemax$}\vss}}\pdfrestore\hss}%
+   \egroup
+}
+\def\overtilde#1{\setbox1=\hbox{$#1$}%
+  \vbox{\offinterlineskip \halign{\hfil##\hfil\cr
+        \widetildeto{\wd1}\cr\noalign{\kern.5ex\kern.02\wd1}\box1\cr}}%
+}
+```
+
+Makro `\widetildeto` zvětší `\widetildemax` na požadovanou velikost `#1`.
+Čitatel pro výpočet poměru velikostí vynásobí `16`, jmenovatel vydělí `16`,
+takže výsledený poměr uložený v `\tmpnum` je `256` krát skutečný poměr.
+Proto jej do `\pdfscale` vložíme a následně vložíme `\pdfscale .00390625`, což
+je `1/256`. Výšku znaku necháme nezměněnu až do poměru `588/256`. Je-li poměr
+větší, je mírně zvětšena i výška znaku poměrem `0.4352` krát původní výška.
+Makro `\overtilde` změří pokrývaný vzorec v `\boxu1`, zavolá `\widetildeto` a
+sestaví vlnku a vzorec pod sebe pomocí `\halign`.
+
+----lang:en--title:Expandable tilde over math formula of arbitrary size
+The plain TeX's macro `\widetilde` provides three sizes of the tilde used
+by font pointers. No more. This isn't sufficient when we need to set the
+tilde above a large formula. The macro `\overtilde` is suggested here. It
+measures the formula width and set the appropriate tilde scaled by
+`\pdfscale`. For example:
+
+```
+$$\displaylines{
+  \overtilde{b} + \overtilde{ab} + \overtilde{a+bc}+{}\cr
+  {}+\overtilde{b+c+d}+ \overtilde{a+b+c+df}
+}$$
+```
+
+gives the result:
+
+![overtilde example](img/overtilde.png)
+
+The macro `\overtilde` is defined by:
+
+```
+\mathchardef\widetildemax="0367
+
+\def\widetildeto #1{\bgroup\tmpdim=#1\setbox0=\hbox{$\widetildemax$}%
+   \tmpdim=16\tmpdim \tmpnum=\tmpdim \tmpdim=\wd0 \divide\tmpdim by16
+   \divide\tmpnum by\tmpdim
+   \hbox to#1{\pdfsave\rlap{\pdfscale{\the\tmpnum}{\ifnum\tmpnum<588 1\else\the\tmpnum\fi}%
+                            \pdfscale{.00390625}{\ifnum\tmpnum<588 1\else.0017\fi}%
+                            \vbox to0pt{\hbox{$\widetildemax$}\vss}}\pdfrestore\hss}%
+   \egroup
+}
+\def\overtilde#1{\setbox1=\hbox{$#1$}%
+  \vbox{\offinterlineskip \halign{\hfil##\hfil\cr
+        \widetildeto{\wd1}\cr\noalign{\kern.5ex\kern.02\wd1}\box1\cr}}%
+}
+```
+
+The macro `\widetildeto` does resizing of `\widetildemax` to the desired size
+`#1`. The numerator for the ratio calculation is scaled by `16` and the
+denominator is scaled by `1/16`. So, the result is scale by `256` than the real
+ratio. This is the reason why the `\pdfscale{ratio}` id followed by
+`\pdfscale{.00390625}` which is `1/256`. The height of the tilde is unscaled up
+to the ration `588/256`. If the ratio is greater then the height is scaled by
+0.4352 times original height. The macro `\overtilde` measures the formula in
+`\box1` and calls the `\widetildeto`. The tilde is typeset above the formula by
+`\halign`.

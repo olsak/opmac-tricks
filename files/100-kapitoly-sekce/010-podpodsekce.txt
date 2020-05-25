@@ -1,0 +1,60 @@
+anchor-name:seccc
+id:0055
+author:P. O.
+date:2014-05-11
+
+----lang:cs--title:Podpodsekce
+Opmac nabízí jen třístupňovou hiearchii nadpisů: kapitoly, sekce a
+podsekce. Často se sektávám s požadavkem zařadit i možnost tisku
+podpodsekcí. Osobně to nepovažuji za příliš účelné a zbytečně to mate
+čtenáře. Ale je-li k tomu pádný důvod, můžete si vytvořit makro `\seccc`
+takto:
+
+```
+\newcount\secccnum
+
+\eoldef\seccc#1{%
+   \ifx\prevseccnum\theseccnum \global\advance\secccnum by1
+   \else \global\let\prevseccnum=\theseccnum \global\secccnum=1
+   \fi
+   \edef\thesecccnum{\theseccnum.\the\secccnum}%
+   \printseccc{#1}%
+}
+\def\printseccc#1{\norempenalty-100 \medskip
+   {\bf \noindent \thesecccnum\quad #1\nbpar}%
+   \nobreak \smallskip \firstnoindent
+}
+```
+
+Makro řeší uvedený požadavek co nejjednodušším způsobem: zavádí
+číslování v registru `\secccnum` a tiskne ve fontu `\bf` (nezvětšená velikost).
+Neřeší dopravení informací do obsahu (tam je to stejně nevhodné) ani do
+záhlaví. Byl-li by takový požadavek, je potřeba využít makro `\wcontents` pro
+obsah a primitiv `\mark` pro záhlaví.
+
+----lang:en--title:Subsubsection
+There are only three levels of the titles: `\chap`, `\sec` and `\secc` in
+OPmac. Maybe users want to deal with sub-sub-sections, i.e. `\seccc`.
+
+```
+\newcount\secccnum
+
+\eoldef\seccc#1{%
+   \ifx\prevseccnum\theseccnum \global\advance\secccnum by1
+   \else \global\let\prevseccnum=\theseccnum \global\secccnum=1
+   \fi
+   \edef\thesecccnum{\theseccnum.\the\secccnum}%
+   \printseccc{#1\unskip}%
+}
+\def\printseccc#1{\norempenalty-100 \medskip
+   {\bf \noindent \thesecccnum\quad #1\nbpar}%
+   \nobreak \smallskip \firstnoindent
+}
+```
+
+The macro solves the task most simply: the new counter `\secccnum` is
+introduced and the title is printed simply in `\bf` font (without scaling).
+The macro above doesn't solve printing the information about such
+sub-sub-sections in table of contents nor in running heads. If you need this
+then you can use the macro `\wcontents` for TOC line printing and the
+primitive `\mark` for running heads.

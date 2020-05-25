@@ -1,0 +1,140 @@
+anchor-name:dekadic2
+id:0171
+author:P. O.
+date:2019-12-07
+
+----lang:cs--title:Desetinná čísla v tabulkách podruhé
+[OPmac trik 0016](#dekadic) pro desetiná čísla v tabulách zakládá „dvojsloupec“, což
+působí komplikace např. při použití `\tskip`. Zde je tedy jiné řešení, které
+navíc umožňuje mít ve sloupci i nenumerické texty, např. pro záhlaví
+tabulky. Řešení zakládá jediný sloupec, tj. nemělo by způsobovat
+potíže.
+
+Je vytvořen nový deklarátor `N<číslo>`, např. `N3`, který udává, že ve sloupci
+budou čísla (numbers) s desetinnou tečkou, přitom nejvíce cifer za tečkou se
+očekává `<číslo>`. Každé číslo se pak doplní o vhodný počet neviditelných
+desetinných cifer na stanovený počet a takto jsou čísla zarovnána vpravo.
+Tím je dosaženo lícování pod sebou desetinné tečky (která na výstupu může být
+čárkou, předefinujete-li `\decimalpoint`). 
+
+Čísla jsou vysázena v matematickém módu, tj. znak „mínus“ vypadá, jak má.
+
+Je-li v položce text bez tečky, je vysázen v textovém módu a je centrován 
+(když je menší než celková šířka čísel ve sloupci) nebo je zarovnán vpravo 
+(když je větší než celková šířka čísel). 
+Je možné přidat další neexistující cifry, tj. `<číslo>` může být
+větší než skutečný počet cifer, pokud se tím vizuálně zlepší např. umístění
+širšího nenumerického textu. Příklad:
+
+```
+\table{c|N3}{
+  Ingredients      & w/w (\%) \crl \tskip.2em
+  Water            & -97.5    \cr
+  Agar powder      &  2.0     \cr
+  Solidum chloride &  0.43 
+}
+```
+Je-li cifer za tečkou více než devět, musíte použít složené závorky:
+`N{12}`. Také můžete stanovit necelý počet cifer, např. `N{2.5}`, je-li to k
+něčemu dobré. Implementace deklarátoru `N` je následující:
+
+```
+\def\decimalpoint{.}
+
+\def\paramtabdeclareN#1{\tabiteml\hfil\aligndecdigit#1##.\relax\tabitemr}
+\def\aligndecdigit#1#2.#3{%
+   \ifx\relax#3\hfil#2\unsskip\hfil \else
+   \dimen0=.5em \dimen0=#1\dimen0 $#2$\decimalpoint
+   \expandafter\aligndecdigitA\expandafter#3\fi
+}
+\def\aligndecdigitA#1.\relax{\hbox to\dimen0{$#1$\hss}}
+
+\def\tableA#1#2{\offinterlineskip \colnum=0 \def\tmpa{}\tabdata={}\scantabdata#1\relax
+   \def\tmpb{#2}\replacestrings{\crl}{\crcr\crl}%
+      \replacestrings{\crli}{\crcr\crli}\replacestrings{\crll}{\crcr\crll}%
+      \replacestrings{\crlli}{\crcr\crlli}\replacestrings{\crlp}{\crcr\crlp}%
+   \halign\expandafter{\the\tabdata\cr\tmpb\crcr}\egroup}
+
+```
+
+Deklarátor je definován jako `\paramtabdeclareN`. Pomocí `\aligndecdigit` se
+přečte text až po tečku a vysází se v matematickém módu a pomocí
+`\aligndecdigitA` se vysází zbytek.
+
+Položky s užitím deklarátoru `N` musejí bezpodmínečně končit znakem `&` nebo
+`\cr`, nikoli makrem, které symbol konce položky obsahuje. Protože v manuálu
+OPmac jsou zmíněna marka `\crl` (apod.), která obsahují `\cr`, je
+předefinována přípravná čast tabulky, kde se pomocí `\replacestrings`
+nahradí `\crl` za `\crcr\crl`, což udělá nakonec v tabulce stejnou práci. Druhá
+možnost je nepoužívat předefinování `\tableA` a ukáznit uživatele, ať před
+každé `\crl` (a jim podobné) předřadí `\cr`, pokud má sloupec `N` v tabule
+jako poslední.
+
+
+----lang:en--title:The decimal point aligned, another solution
+The [Opmac trick 0016](#dekadic) solves the aligning of decimal
+digits in tables with respect to decimal points using two internal columns.
+But this solution is incompatible with using of `\tskip`, for example. This
+is a reason of this new one-column solution. 
+
+The new declarator of table column `N<number>` is created (for example
+`N3`). The `<number>` denotes the maximal number of digits after decimal
+point used in printed numbers of declared column. Each printed number si completed to this
+maximal `<number>` using invisible digits and such modified numbers are aligned 
+to right. So, the decimal points are aligned. The output can be decimal comma
+instead decimal point (usable in other languages than English) if you re-define the
+`\decimalpoint` macro.
+
+The numbers are printed in math mode, so the minus character is printed as
+real minus.
+
+If the printed item does not include any dot then such text is printed in
+text mode and it is aligned to center with respect to all decimal numbers in
+the column. But if such non-dot text is wider than decimal numbers then it is
+right-aligned. You can declare more decimal digits than they are in real, for
+example if you need to print wider non-dot text visually better than
+simply right-aligned. Example:
+
+```
+\table{c|N3}{
+  Ingredients      & w/w (\%) \crl \tskip.2em
+  Water            & -97.5    \cr
+  Agar powder      &  2.0     \cr
+  Solidum chloride &  0.43 
+}
+```
+If the number of digits after decimal points are more than 9 then you must
+use brackets: `N{12}`. Finally, you can use non-integer number of decimal
+digits (`N{2.5}` for example), if you need to do fine tuning of aligning.
+The implementation follows:
+
+```
+\def\decimalpoint{.}
+
+\def\paramtabdeclareN#1{\tabiteml\hfil\aligndecdigit#1##.\relax\tabitemr}
+\def\aligndecdigit#1#2.#3{%
+   \ifx\relax#3\hfil#2\unsskip\hfil \else
+   \dimen0=.5em \dimen0=#1\dimen0 $#2$\decimalpoint
+   \expandafter\aligndecdigitA\expandafter#3\fi
+}
+\def\aligndecdigitA#1.\relax{\hbox to\dimen0{$#1$\hss}}
+
+\def\tableA#1#2{\offinterlineskip \colnum=0 \def\tmpa{}\tabdata={}\scantabdata#1\relax
+   \def\tmpb{#2}\replacestrings{\crl}{\crcr\crl}%
+      \replacestrings{\crli}{\crcr\crli}\replacestrings{\crll}{\crcr\crll}%
+      \replacestrings{\crlli}{\crcr\crlli}\replacestrings{\crlp}{\crcr\crlp}%
+   \halign\expandafter{\the\tabdata\cr\tmpb\crcr}\egroup}
+
+```
+The `N` declarator is defined by `\paramtabdeclareN` macro, it means
+a declarator with parameter. The `\aligndecdigit` macro prints first part of
+decimal number and `\aligndecdigitA` does the rest.
+
+The items must be terminated by `&` or by `\cr` when `N` column is created. 
+Using a macro which includes such terminators is unsufficient.
+But OPmac manual menitons macros `\crl`, `\crli` etc., they include `\cr`
+terminator. So, we re-define the `\Atable` preprocessor in order to each
+occurrence of such `\crl` (and others) is replaced by `\crcr\crl` which
+does the same work in the table. There is another way: you need not to
+redefine `\tableA` macro but you must to type `\cr\crl` instead `\crl`
+itself when the `N` column is the last column of the table.

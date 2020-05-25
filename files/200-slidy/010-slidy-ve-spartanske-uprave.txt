@@ -1,0 +1,86 @@
+anchor-name:sparta
+id:0017
+author:P. O.
+date:2013-08-18
+
+----lang:cs--title:Slídy ve spartánské úpravě
+Pokud chceme připravit text pro projekci, je potřeba především
+mít landscape formát a
+dostatečně velké písmo. Hodí se použít písmo bezserifové. Pokud
+nepotřebujete další specialitky, je
+možné si vystačit s málem:
+
+```
+\input opmac
+
+\margins/1 a5l (1,1,1,1.2)cm        % landscape formát
+\input chelvet  \typosize[17/22]    % dostatečně velké písmo
+
+\def\sec#1\par{\centerline
+     {\secfont#1}\bigskip}          % sekce uprostřed a nebudou číslovány
+\def\pg{\vfil\break}                % makro pro odstránkování
+\begitems                           % celý dokument bude jako výčet
+```
+
+Vlastní text členíme pomocí hvězdiček na jednotlivé výkřiky, dále můžeme
+použít `\sec` pro vyznačení nadpisů a makro `\pg` na odstránkování.
+
+```
+\sec Nějaká nosná myšlenka
+
+* výkřik první
+* výkřik druhý
+* výkřik třetí
+
+\pg
+\sec Další myšlenka
+
+* výkřik čtvrtý
+* výkřik pátý
+
+\enditems\end
+```
+
+Pokud potřebujete mít firemní loga, zajímavou grafiku atd, je potřeba si
+s tím samozřejmě více pohrát a vytvořit si speciální styl. Doporučuji též
+použít [trik o podkladovém obrázku](#podklad).
+
+----lang:en--title:Simple slides
+If we need to use data projector for displaying our text then we need
+landscape format and sufficiently big size of the font. The sans-serif font
+is recommended. If you needn't more specials then you can simply do this:
+
+```
+\input opmac
+
+\margins/1 a5l (1,1,1,1.2)cm        % landscape format
+\input chelvet  \typosize[17/22]    % big sansserif font
+
+\def\sec#1\par{\centerline
+     {\secfont#1\unskip}\bigskip}   % sections centered without numbers
+\def\pg{\vfil\break}                % the new-page macro
+\begitems                           % whole document is an item list
+```
+
+The text is structured by stars to the individual shouts. The `\sec` can be
+used for titles and `\pg` creates new slide.
+
+```
+\sec Some good idea
+
+* first shout
+* second shout
+* third shout
+
+\pg
+\sec Next amazing idea
+
+* fourth shout
+* fifth shout
+
+\enditems\end
+```
+
+If you need logos at every slide, interesting graphics etc then you have
+to tune this and create a special template. I recommend to use
+[the OPmac trick about background image](#podklad).

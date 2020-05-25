@@ -1,0 +1,36 @@
+anchor-name:mathbox
+id:0078
+author:P. O.
+date:2014-09-04
+
+----lang:cs--title:Box s textem ve velikosti podle kontextu (index, indexindex)
+V LaTeXu je k dispozici makro `\text{cosi}`, které v matematickém módu
+vysází `cosi` stejně jako `\hbox{cosi}`, ale velikost textu je přizpůsobena
+tomu, zda se příkaz vyskytuje v základu, indexu nebo indexindexu. Navíc si
+příkaz pamatuje vnější matematický kontext a když uvnitř textu napíšeme
+`$...$`, bude sazba ve stejném kontextu (displaystyle, textstyle).
+
+Vytvoříme analogické makro `\mathbox{text}`, které se chová výše popsaným
+způsobem. Při použití OPmac k tomu potřebujeme tři řádky kódu:
+
+```
+\def\mathbox#1{{\mathchoice{\mathboxA\displaystyle[]{#1}}{\mathboxA\textstyle[]{#1}}
+    {\mathboxA\textstyle[700]{#1}}{\mathboxA\textstyle[500]{#1}}}}
+\def\mathboxA#1[#2]#3{\hbox{\everymath={#1}\if^#2^\else\typoscale[#2/]\relax\fi #3}}
+```
+
+----lang:en--title:Math text (in box) depending on mathstyle
+LaTeX provides the `\text{foo}` macro which prints foo in math mode
+similarly as `\hbox{foo}` but the size of the text depends on the math style
+(text/script/scriptscript). The outer math context is saved, so the `$...$`
+inside the `\text` parameter opens the math typesetting in the same context
+(displaystyle, textstyle, etc.).
+
+We create the similar macro `\mathbox{text}` which behaves as described
+above. Only three lines of code is needed when OPmac is used:
+
+```
+\def\mathbox#1{{\mathchoice{\mathboxA\displaystyle[]{#1}}{\mathboxA\textstyle[]{#1}}
+    {\mathboxA\textstyle[700]{#1}}{\mathboxA\textstyle[500]{#1}}}}
+\def\mathboxA#1[#2]#3{\hbox{\everymath={#1}\if^#2^\else\typoscale[#2/]\relax\fi #3}}
+```

@@ -1,0 +1,4 @@
+----lang:cs--name:Matematická sazba
+
+----lang:en--name:Math
+

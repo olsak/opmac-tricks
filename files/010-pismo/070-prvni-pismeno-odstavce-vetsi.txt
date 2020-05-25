@@ -1,0 +1,130 @@
+anchor-name:capinsert
+id:0075
+author:P. O.
+date:2014-06-27
+
+----lang:cs--title:První písmeno odstavce větší
+Navrhneme makro `\Capinsert`, které zvětší první písmeno v odstavci:
+
+```
+\Capinsert První písmeno bude větší, tj. P v tomto případě...
+nebo
+\Capinsert {co vytisknout vlevo} První písmeno bude větší...
+```
+
+Je třeba deklarovat, jak moc chceme písmeno zvětšit a jak jej zabudovat
+do řádků odstavce. Deklarační část bude vypadat takto:
+
+```
+\newdimen\ptem     \ptem=.1em        % jednotka závislá na em
+\newdimen\Capsize  \Capsize=44\ptem  % požadovaná velikost
+\newdimen\Capabove \Capabove=8\ptem  % horní přesah přes účaří
+\newdimen\Capafter \Capafter=1\ptem  % mezera za písmenem
+\def\Capprefix{\localcolor\Red}      % makro provedené před písmenem
+
+%% Deklarace k jednotlivým písmenům ve tvaru:
+% \declCap písmeno {přesah doleva; korekce prvního řádku, druhého, atd.}
+\declCap {default} {0;0,0,0}  % výchozí hodnota pro nedeklarovaná písmena
+\declCap W {3;0,4,6}
+\declCap A {1;6,2,-2}
+\declCap L {0;9,0,0}
+...
+```
+
+Makro, které řeší požadovaný úkol (podobnou věc řeší LaTeXový balíček
+`lettrine`) může vypadat takto:
+
+```
+\def\declCap #1#2{\sxdef{cap:=#1}{#2}}
+\def\Capinsert{\def\leftCapmaterial{}\futurelet\next\CapinsertA}
+\def\CapinsertA{\ifx\next\bgroup \expandafter\CapinsertB \else
+\expandafter\CapinsertC \fi}
+\def\CapinsertB #1{\def\leftCapmaterial{#1}\CapinsertC}
+\def\CapinsertC #1{\par
+  \isdefined{cap:=#1}\iftrue \edef\tmp{\csname cap:=#1\endcsname}%
+                     \else   \edef\tmp{\csname cap:=default\endcsname}\fi
+  \setbox0=\hbox{{\thefontsize[\expandafter\ignorept\the\Capsize]\Capprefix#1}\kern\Capafter}%
+  \expandafter \CapinsertD \tmp,,%
+  \noindent\kern-\firstlineindent \rlap{\kern-\protrudeCap\ptem\llap{\leftCapmaterial}%
+                                        \vbox to0pt{\kern-\Capabove\box0\vss}}%
+  \kern\firstlineindent
+}
+\def\CapinsertD #1;{\tmpnum=1 \let\firstlineindent=\undefined
+   \def\parshapeparams{}\def\protrudeCap{#1}\CapinsertE}
+\def\CapinsertE #1,{\ifx,#1,\parshape =\tmpnum \parshapeparams 0pt \hsize
+  \else
+     \advance\tmpnum by1
+     \tmpdim=\wd0 \advance\tmpdim by-#1\ptem \advance\tmpdim by-\protrudeCap\ptem
+     \edef\parshapeparams{\parshapeparams\the\tmpdim}%
+     \ifx\firstlineindent\undefined \let\firstlineindent\parshapeparams \fi
+     \advance\tmpdim by-\hsize \tmpdim=-\tmpdim
+     \edef\parshapeparams{\parshapeparams\the\tmpdim}%
+     \expandafter \CapinsertE \fi
+}
+```
+
+Podrobný popis fungování makra je na
+[tex.stackexchange](http://tex.stackexchange.com/questions/186701/thoughts-on-turning-this-dropcap-lettrine-code-into-a-macro).
+
+----lang:en--title:Resize first letter in the paragraph
+We implement the macro `\Capinsert`, which resizes the first letter in the
+paragraph:
+
+```
+\Capinsert First letter will be resized, i.e. the F in this case...
+or
+\Capinsert {left typesetting} First letter will be resized...
+```
+
+We need to declare the size of resized letter and how to include it into
+the lines of the paragraph. The declaration part can look like:
+
+```
+\newdimen\ptem     \ptem=.1em        % unit dependent on "em"
+\newdimen\Capsize  \Capsize=44\ptem  % desired size
+\newdimen\Capabove \Capabove=8\ptem  % top enjambment over baseline
+\newdimen\Capafter \Capafter=1\ptem  % the space amount after the letter
+\def\Capprefix{\localcolor\Red}      % the macro executed before the letter
+
+%% The shape declaration for each letter
+% \declCap letter {left shift; 1. line correction, 2. line corr., etc.}
+\declCap {default} {0;0,0,0}  % default values for undeclared letters
+\declCap W {3;0,4,6}
+\declCap A {1;6,2,-2}
+\declCap L {0;9,0,0}
+...
+```
+
+The implementation follows. Note, that the similar feature solves the LaTeX package `lettrine`.
+
+```
+\def\declCap #1#2{\sxdef{cap:=#1}{#2}}
+\def\Capinsert{\def\leftCapmaterial{}\futurelet\next\CapinsertA}
+\def\CapinsertA{\ifx\next\bgroup \expandafter\CapinsertB \else
+\expandafter\CapinsertC \fi}
+\def\CapinsertB #1{\def\leftCapmaterial{#1}\CapinsertC}
+\def\CapinsertC #1{\par
+  \isdefined{cap:=#1}\iftrue \edef\tmp{\csname cap:=#1\endcsname}%
+                     \else   \edef\tmp{\csname cap:=default\endcsname}\fi
+  \setbox0=\hbox{{\thefontsize[\expandafter\ignorept\the\Capsize]\Capprefix#1}\kern\Capafter}%
+  \expandafter \CapinsertD \tmp,,%
+  \noindent\kern-\firstlineindent \rlap{\kern-\protrudeCap\ptem\llap{\leftCapmaterial}%
+                                        \vbox to0pt{\kern-\Capabove\box0\vss}}%
+  \kern\firstlineindent
+}
+\def\CapinsertD #1;{\tmpnum=1 \let\firstlineindent=\undefined
+   \def\parshapeparams{}\def\protrudeCap{#1}\CapinsertE}
+\def\CapinsertE #1,{\ifx,#1,\parshape =\tmpnum \parshapeparams 0pt \hsize
+  \else
+     \advance\tmpnum by1
+     \tmpdim=\wd0 \advance\tmpdim by-#1\ptem \advance\tmpdim by-\protrudeCap\ptem
+     \edef\parshapeparams{\parshapeparams\the\tmpdim}%
+     \ifx\firstlineindent\undefined \let\firstlineindent\parshapeparams \fi
+     \advance\tmpdim by-\hsize \tmpdim=-\tmpdim
+     \edef\parshapeparams{\parshapeparams\the\tmpdim}%
+     \expandafter \CapinsertE \fi
+}
+```
+
+The detail description of this macro can be found at
+[tex.stackexchange](http://tex.stackexchange.com/questions/186701/thoughts-on-turning-this-dropcap-lettrine-code-into-a-macro).

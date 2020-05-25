@@ -1,0 +1,105 @@
+anchor-name:mrepeat
+id:0148
+author:P. O.
+date:2016-05-18
+
+----lang:cs--title:Opakování symbolu na zlomu řádku
+V tradiční české sazbě (i jinde) se vyskytuje požadavek na opakování
+znaménka pro operaci či realaci, pokud je v tomto místě zlomen řádek.
+Připravíme makro `\mrepeatchar` znak, který předeklaruje znak tak, aby byl
+(pouze) v matematické sazbě aktivní a způsobil své opakování na zlomu řádku.
+Také připravíme makro `\mrepeatcs \sekvenceA \sekvenceB \sekvenceC ... \relax`,
+které předeklaruje význam uvedených sekvencí tak, že jako operace či relace
+se opakují na zlomu řádku. Například:
+
+```
+\mrepeatchar+ \mrepeatchar- \mrepeatchar= \mrepeatchar< \mrepeatchar>
+\mrepeatcs \approx \asymp \bot \cap \cdot \circ \cup \diamond
+   \div \equiv \geq \gg \in \leq \ll \odot \oplus \oslash \otimes \paralell
+   \perp \pm \prec \peceq \sim \simeq \subset \subseteq \supset \supseteq
+   \top \triangle \triangleleft \triangleright \uplus \vdash \vee \wedge \relax
+
+\hsize=5cm
+Test $a\sim b\sim c\sim d\sim e\sim f\sim g\sim i\sim k\sim l\sim m$.
+
+A taky $a+b+c+d+e+f+g+h+y+f<e<w<e$.
+```
+
+Po deklarování znaku (např. `\mrepeatchar+`) je možné použít `\NR+`, což se
+chová v matematické sazbě jako původní `+`. V textové sazbě se znak `+` nemění.
+Po deklarování sekvence (např. `\mrepeatcs \sim \relax`) je k dispozici
+sekvence `\NRsim`, která nese původní význam sekvence `\sim`.
+
+Implementace může vypadat takto:
+
+```
+\def\NR#1{\csname NR:\string#1\endcsname}
+\def\mrepset#1{\begingroup \lccode`\~=`#1\lowercase{\endgroup\edef~}}
+\def\mrepeatchar#1{%
+   \isNRno\NR#1{\mathchardef\NR#1=\mathcode`#1 }%
+   \mrepset#1{\NR#1\nobreak \discretionary{}{\hbox{$\NR#1$}}{}}
+   \mathcode`#1="8000
+}
+\def\NRs#1{\csname NR\expandafter\NRx\string#1\endcsname} \def\NRx#1{}
+\def\mrepeatcs#1{\ifx#1\relax \else
+   \isNRno\NRs#1{\let\NRs#1=#1}%
+   \edef#1{\NRs#1\noexpand\nobreak \discretionary{}{\hbox{$\NRs#1$}}{}}%
+   \expandafter\mrepeatcs\fi
+}
+\def\isNRno#1#2#3{\expandafter\expandafter\expandafter\ifx#1#2\relax
+   \expandafter\expandafter\expandafter#3\else
+   \message{\string#2\space declared already}\fi}
+```
+
+Řešení je robustní, chytré znaky můžete bez obav použít v nadpisech
+kapitol a sekcí.
+
+----lang:en--title:Repeating math symbols at break points
+There is a rule about repeating math binary operators and relations at
+break points in traditional Czech typesetting (maybe elsewhere too).
+We prepare a macro `\mrepeatchar` char, it re-declares the char as math-active and
+the character repeats itself at break points in paragraph. Also, we prepare
+a macro `\mrepeatcs \seqA \seqB \seqC ... \relax`, it re-declares given control
+sequences in similar manner. For example:
+
+```
+\mrepeatchar+ \mrepeatchar- \mrepeatchar= \mrepeatchar< \mrepeatchar>
+\mrepeatcs \approx \asymp \bot \cap \cdot \circ \cup \diamond
+   \div \equiv \geq \gg \in \leq \ll \odot \oplus \oslash \otimes \paralell
+   \perp \pm \prec \peceq \sim \simeq \subset \subseteq \supset \supseteq
+   \top \triangle \triangleleft \triangleright \uplus \vdash \vee \wedge \relax
+
+\hsize=5cm
+Test $a\sim b\sim c\sim d\sim e\sim f\sim g\sim i\sim k\sim l\sim m$.
+
+Also test $a+b+c+d+e+f+g+h+y+f<e<w<e$.
+```
+
+When a character is re-declared (for example `\mrepeatchar+`) then you can
+use `\NR+`. This behaves as normal `+` in math typesetting. When a sequence is
+re-declared (for example `\mrepeatcs \sim \relax`) then the `\NRsim` control
+sequence is available with the original meaning of `\sim`.
+
+The implementation follows:
+
+```
+\def\NR#1{\csname NR:\string#1\endcsname}
+\def\mrepset#1{\begingroup \lccode`\~=`#1\lowercase{\endgroup\edef~}}
+\def\mrepeatchar#1{%
+   \isNRno\NR#1{\mathchardef\NR#1=\mathcode`#1 }%
+   \mrepset#1{\NR#1\nobreak \discretionary{}{\hbox{$\NR#1$}}{}}
+   \mathcode`#1="8000
+}
+\def\NRs#1{\csname NR\expandafter\NRx\string#1\endcsname} \def\NRx#1{}
+\def\mrepeatcs#1{\ifx#1\relax \else
+   \isNRno\NRs#1{\let\NRs#1=#1}%
+   \edef#1{\NRs#1\noexpand\nobreak \discretionary{}{\hbox{$\NRs#1$}}{}}%
+   \expandafter\mrepeatcs\fi
+}
+\def\isNRno#1#2#3{\expandafter\expandafter\expandafter\ifx#1#2\relax
+   \expandafter\expandafter\expandafter#3\else
+   \message{\string#2\space declared already}\fi}
+```
+
+The solution is robust. You can use smart characters in titles of
+chapters or sections without problems.

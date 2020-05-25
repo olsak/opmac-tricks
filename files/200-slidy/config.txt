@@ -1,0 +1,4 @@
+----lang:cs--name:Slídy
+
+----lang:en--name:Slides
+

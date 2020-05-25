@@ -1,0 +1,18 @@
+anchor-name:hisyntaxpy
+id:0152
+author:Petr Krajník
+date:2016-06-03
+
+----lang:cs--title:Zvýraznění kódu Pythonu
+Jako semestrální práce z předmětu BI-TeX bylo odevzdáno makro vycházející
+z předchozích dvou OPmac triků a implementující zvýraznění kódu Pythonu. Úkol to
+byl ještě obtížnější než v případě jazyků C a HTML. Pan Krajník se toho
+zhostil velice pečlivě a dobře a výsledek je dostupný na
+[gitlab](https://gitlab.fit.cvut.cz/krajnpet/PySyntax).
+
+----lang:en--title:Python syntax highlighting
+There is a term work
+[Python syntax highlighting](https://gitlab.fit.cvut.cz/krajnpet/PySyntax)
+given in the course BI-TeX (it has been held at FIT CTU in Prague).
+This result was strongly inspired by previous two OPmac tricks but it is
+more complicated task. Student Petr Krajnik made good job.

@@ -1,0 +1,54 @@
+anchor-name:fakebold
+id:0095
+author:P. O.
+date:2015-04-08
+
+----lang:cs--title:Nepravý bold
+Někdy není k dizpozici tučný řez fontu, a přitom (zvláště v matematických
+vzorcích) potřebujeme nějaké písmeno nebo znak zdůraznit tučně. Například
+nejsou k dispozici matematické symboly ze sady AMS-A a AMS-B v tučné
+variantě, případně skript. V takovém případě může pomoci podvržený bold,
+který použijeme například takto:
+
+```
+Vzorec: $a+b\fakebold{+}c = \fakebold{\script D}$.
+```
+
+Makro `\fakebold` se opírá o PDF kód vložený pomocí `\pdfliteral`:
+
+```
+\def\fakebold#1{\pdfliteral{2 Tr .3 w}#1\pdfliteral{0 Tr 0 w}}
+```
+
+Kód `2 Tr .3 w` dává PDF rasterizéru pokyn, aby písmo definované okrajem
+jednotlivých písmen nejen vyplnil barvou, ale také okraj obtáhl čarou
+tloušťky `.3 bp`. Tím každé písmeno dostane výraznější duktus.
+
+Pro další výtvarné efekty můžete experimentovat i s tím, že písmena vůbec
+nebudou vyplněna, jen budou obtažena. To zajistí příkaz `1 Tr` a samozřejmě
+musíte nastavit nenulovou tloušťku obtahu například pomocí `.2 w`.
+
+----lang:en--title:Faked bold
+Sometimes, the real bod isn't available. But we need to point out some
+letter or character by bold shape (especially in math). For example, the
+symbols from AMS-A or AMS-B collections are not available in bold shape.
+The faked bod can help you in such cases. The usage is simple:
+
+```
+Formula: $a+b\fakebold{+}c = \fakebold{\script D}$.
+```
+
+The `\fakebold` macro is based on PDF code inserted using `\pdfliteral`
+
+```
+\def\fakebold#1{\pdfliteral{2 Tr .3 w}#1\pdfliteral{0 Tr 0 w}}
+```
+
+The code `2 Tr .3 w` gives the message to PDF RIP: the characters defined
+by their outlines will be not only filled but they will be stroked around
+outline too. The width of the stroke line is declared as `.3 bp` (see the `w`
+parameter). The result seems like bold shape.
+
+You can experiment with another effects. For example the characters will
+be only stroked but not filled: `1 Tr`. The stroke width have to be set, of
+course `.2 w`.

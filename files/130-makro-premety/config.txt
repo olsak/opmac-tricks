@@ -1,0 +1,4 @@
+----lang:cs--name:Makro přemety
+
+----lang:en--name:Macro tricks
+

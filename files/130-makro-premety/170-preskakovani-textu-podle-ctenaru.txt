@@ -1,0 +1,93 @@
+anchor-name:showif
+id:0117
+author:P. O.
+date:2015-07-22
+
+----lang:cs--title:Přeskakování textu podle čtenářů
+Chceme tisknout text podle toho, zda je určen pro konkrétní užití.
+Pomocí `\showallow{kdo}` umožníme čtenáři `kdo` tisknout text.
+Opakovaným `\showallow` umožníme tisknout text případně dalším čtenářům.
+Poté příkaz
+
+```
+\showif {admin,students} {text}
+```
+
+vytiskne `text` pouze tehdy, pokud aspoň jeden z vyjmenovaných čtenářů (v
+čárkami odděleném seznamu) byl deklarován pomocí `\showallow`.
+Makro `\showif` pracuje na úrovni expand procesoru: za dané podmínky
+expanduje na `{text}` jinak expanduje na prázdný výstup.
+
+Druhá možnost je psát
+
+```
+\showifbegin {admins,students}
+text
+\showifend
+```
+
+To expanduje na text tentokrát bez uzavření do skupiny a také pouze tehdy, je-li
+aspoň jeden z vyjmenovaných čtenářů povolen. Přechody typu verbatim uvnitř
+textu jsou možné.
+
+Implementace této vlastnosti mě napadla při poslechu příspěvku Borise
+Veytsmana „TeX and controlled access to information“ na
+[TUG 2015](https://tug.org/tug2015/program.html) a vypadá takto:
+
+```
+\def\showif#1{\showifA#1,s:!,}
+\def\showifbegin#1{\showifA#1,l:!,}
+\def\showifA#1#2,{\expandafter\ifx\csname s:#1#2\endcsname\relax
+   \expandafter\showifA \else \csname s:#1#2\expandafter\endcsname \fi}
+\long\def\showifT#1:!,{\romannumeral-`\.}
+\long\expandafter\def\csname s:s:!\endcsname#1{}
+\long\expandafter\def\csname s:l:!\endcsname#1\showifend{}
+\def\showifend{}
+
+\def\showallow#1{\expandafter\let\csname s:#1\endcsname=\showifT}
+\def\showdeny#1{\expandafter\let\csname s:#1\endcsname=\relax}
+```
+
+----lang:en--title:Hidden text from unprivileged readers
+We need to print some text only if the mentioned reader is allowed to print it.
+We can select a reader `who` as allowed reader by the macro `\showallow{who}`.
+We can select another allowed readers (if needed) by more `\showallow` commands.
+Then the command
+
+```
+\showif {admin,students} {text}
+```
+
+prints the `text` only if at least one of the mentioned readers (in the
+comma separated list) is allowed by previous `\showallow`. The macro works at
+expansion level only. It means that it expands to `{text}` if the condition
+above is passed else it expands to nothing.
+
+```
+\showifbegin {admin,students,others}
+text
+\showifend
+```
+
+This construction expands to the pure text (not `{text}`) under the same
+circumstances: only if at least one mentioned reader is allowed. The verbatim
+constructions in the text parameter are possible.
+
+I did do this implementation during the talk by Boris
+Veytsman “TeX and controlled access to information” at
+[TUG 2015](https://tug.org/tug2015/program.html) because I was
+inspired by his idea.
+
+```
+\def\showif#1{\showifA#1,s:!,}
+\def\showifbegin#1{\showifA#1,l:!,}
+\def\showifA#1#2,{\expandafter\ifx\csname s:#1#2\endcsname\relax
+   \expandafter\showifA \else \csname s:#1#2\expandafter\endcsname \fi}
+\long\def\showifT#1:!,{\romannumeral-`\.}
+\long\expandafter\def\csname s:s:!\endcsname#1{}
+\long\expandafter\def\csname s:l:!\endcsname#1\showifend{}
+\def\showifend{}
+
+\def\showallow#1{\expandafter\let\csname s:#1\endcsname=\showifT}
+\def\showdeny#1{\expandafter\let\csname s:#1\endcsname=\relax}
+```

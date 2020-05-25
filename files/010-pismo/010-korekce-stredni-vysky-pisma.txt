@@ -1,0 +1,37 @@
+anchor-name:svyska
+id:0001
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Korekce střední výšky písma
+Pro některá písma se může stát, že například strojopis `\tt` neladí se
+základním písmem. Nastává to tehdy, když není stejná střední výška písma, třebaže
+obě písma jsou zavedana ve stejné velikosti (například `at11pt`). Korekci lze
+v OPmac udělat jednoduše využitím `\thefontscale`, který škáluje vzhledem k
+aktuální velikosti písma (nikoli vzhledem k fixní designované velikosti).
+Takže stačí třeba psát:
+
+```
+\def\tt{\tentt\thefontscale[1120]}
+```
+
+Uvedená definice zvětší `\tt` font 1,12 krát vzhledem k velikosti okolního
+fontu. Přepínač `\tt` toto udělá kdekoli při jakékoli aktuální velikosti
+okolního fontu. Uvedený poměr se hodí například pro kombinaci Bookman s
+Courier.
+
+----lang:en--title:The ex height correction
+The visual incompatibility of font height can sometimes occur. For
+example typewriter font `\tt` has different ex height than normal text font
+even though both fonts are loaded at the same size. The correction can be
+done simply by `\thefontscale` macro from OPmac. The scale factor is based on
+the current size of the font (no on the fixed design size).
+The following macro can be used, for example:
+
+```
+\def\tt{\tentt\thefontscale[1120]}
+```
+
+This definition scales the `\tt` font 1.12 times with respect to surrounded
+font. The current font size can be arbitrary. The example above with the
+ratio 1.12 is suitable for Bookman + Courier fonts.

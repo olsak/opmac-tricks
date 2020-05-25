@@ -1,0 +1,88 @@
+anchor-name:colmath
+id:0066
+author:P. O.
+date:2014-06-12
+
+----lang:cs--title:Obarvení pouze jádra bez indexu a exponentu
+Úkolem je obarvit jinou barvou jen základ vzorečku bez indexu a exponentu.
+Tedy, když napíšu `$\colormath\Red Y_i^2$`, pak bude červené jen písmeno Y a
+index i exponent bude stejnou barvou, jako je vnější okolí. Jednoduché
+`${\localcolor\Red Y}_i^j$` nefunguje správně, protože za konec skupiny se
+vloží návrat k původní barvě a to znemožní umístit index těsně k písmenu.
+Byla totiž před tímto návratem k původní barvě už vložena italická korekce.
+Řešením je neukončovat barvu na konci jádra (základu vzorečku), ale případně
+obarvit index nebo exponent zapamatovanou vnější barvou a teprve po sazbě
+indexu a exponentu ukončit skupinu a vrátit se k původní bravě.
+
+```
+\def\colormath#1#2{% #1=color #2=colored text
+   \bgroup \let\tmpc=\currentcolor % saving current color
+   \localcolor#1#2%
+   \isnextchar_{\colormathA}{%
+      \ifcat\next.\insertmukern{#2}\next\fi
+      \ifcat\next x\insertmukern{#2}\next\fi
+      \egroup}%
+}
+\def\colormathA_#1{_{\setcmykcolor\tmpc#1}\isnextchar^{\colormathB}{\egroup}}
+\def\colormathB^#1{^{\setcmykcolor\tmpc#1}\egroup}
+
+\def\ignorefracpart#1.#2\relax{#1}
+\newmuskip\tmpmudim
+\def\insertmukern #1#2{\setbox0=\hbox{$#1#2$}\setbox1=\hbox{$#1\null#2$}%
+   \tmpdim=\wd0 \advance\tmpdim by-\wd1
+   \tmpmudim=\expandafter\ignorept\the\tmpdim mu \tmpmudim=288\tmpmudim
+   \tmpdim=16em \divide\tmpmudim by\expandafter\ignorefracpart\the\tmpdim\relax
+   \mkern\tmpmudim
+}
+```
+
+Makro řeší ještě jeden problém. Mezi znaky „Y“ a čárkou v `cmmi10` je záporný
+kern, který by nebyl uplatněn, pokud bychom mezi těmi znaky jen ukončili
+skupinu a vrátli se k původní barvě. Je tedy potřeba kern manuálně spočítat
+a vložit pomocí `\insertmukern`. Makro `\insertmukern` zjistí hodnotu kernu
+porovnámím šířky dvou boxů v `\textstyle`. Tím získá hodnotu v `pt`. Protože
+se ale sazba může odehrávat v `\scriptstyle` nebo `\scriptscriptstyle`, je v
+makru hodnota v `pt` přepočítána na hodnotu v mu jednotkách pomocí vzorce
+`mu = (288 / 16em) pt = 18/\quad pt`. Pronásobení `em` šestnácti sníží
+zaokrouhlovací chyby při dělení celým číslem.
+
+----lang:en--title:Math nucleus colorization without subscript or superscript
+The task is to colorize only nucleus of the formula without subscript
+and superscript. When we write `$\colormath\Red Y_i^2$` then the letter `Y` will be
+red, but subscript and superscript is colorized by the outside color. The
+simple solution `${\localcolor\Red Y}_i^j$` doesn't work right because the
+command for returning back to the outside color is inserted after nucleus and this
+breaks the right kerning between nucleus and subscript. The solution saves
+the outside color to the `\tmpc` and uses it in the subscript and superscript.
+
+```
+\def\colormath#1#2{% #1=color #2=colored text
+   \bgroup \let\tmpc=\currentcolor % saving current color
+   \localcolor#1#2%
+   \isnextchar_{\colormathA}{%
+      \ifcat\next.\insertmukern{#2}\next\fi
+      \ifcat\next x\insertmukern{#2}\next\fi
+      \egroup}%
+}
+\def\colormathA_#1{_{\setcmykcolor\tmpc#1}\isnextchar^{\colormathB}{\egroup}}
+\def\colormathB^#1{^{\setcmykcolor\tmpc#1}\egroup}
+
+\def\ignorefracpart#1.#2\relax{#1}
+\newmuskip\tmpmudim
+\def\insertmukern #1#2{\setbox0=\hbox{$#1#2$}\setbox1=\hbox{$#1\null#2$}%
+   \tmpdim=\wd0 \advance\tmpdim by-\wd1
+   \tmpmudim=\expandafter\ignorept\the\tmpdim mu \tmpmudim=288\tmpmudim
+   \tmpdim=16em \divide\tmpmudim by\expandafter\ignorefracpart\the\tmpdim\relax
+   \mkern\tmpmudim
+}
+```
+
+The macro solves additional problem: between the “Y” letter and the comma
+is negative kern in CM font but this kern cannot be used if the single “Y” is
+colorized and followed by comma. We calculate such kern and insert it by
+the `\insertmukern` macro. The macro measures the kern by comparing the width
+of two boxes in `\textstyle`. The result is in `pt` units, but the macro
+recalculate this to mu units in order to the result depends on the
+`\textstyle/\scriptsyle/\scripscriptstyle` context. The formula for
+recalculation is: `mu = (288 / 16em) pt = 18/\quad pt`. The `16em` is
+used because of minimization the rounding errors when dividing integer by integer.

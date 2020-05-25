@@ -1,0 +1,110 @@
+anchor-name:ccite
+id:0039
+author:P. O.
+date:2014-04-01
+
+----lang:cs--title:Komprimované odkazy typu [jméno, rok]
+Při `\nonumcitations` a při značkách typu `[jméno, rok]` se hodí neopakovat
+stejné jméno v jednom balíku citací. Například při:
+
+```
+Česky se píše o \TeX{}u například v~\cite[tst,tbn,tpp,lpp].
+```
+
+dostaneme [Olšák, 1995, Olšák, 1997, Olšák, 2013, Satrapa, 2011], ale chtěli
+bychom spíše odkaz tvaru [Olšák, 1995, 1997, 2013, Satrapa, 2011].
+Toto můžeme řešit pomocí `\ecite`, např.
+
+```
+[\rcite[tst], \ecite[tbn]{1997}, \ecite[tpp]{2013}, \rcite[lpp]]
+```
+
+ale lepší by bylo, kdyby zkracování probíhalo automaticky. K tomu může
+posloužit následující kód.
+
+```
+\nonumcitations
+\def\printcite#1{\citesep
+   \prepcitelink{#1}\citelink{#1}{\the\bibmark}\def\citesep{,\hskip.2em\relax}%
+}
+\def\prepcitelink#1{%
+   \isdefined{bim:#1}\iftrue
+      \expandafter\expandafter\expandafter \ppclink \csname bim:#1\endcsname!\relax
+   \else \opwarning{comprimed cites: empty bibmark}\bibmark={#1}%
+   \fi
+}
+\def\ppclink #1, #2!\relax{\def\tmpa{#1}%
+   \ifx \lastcitedname\tmpa \bibmark={#2}%
+   \else \let\lastcitedname=\tmpa \if^#2^\bibmark={#1}\else\bibmark={#1, #2}\fi
+   \fi
+}
+```
+
+Makro předefinovává makro z OPmac `\printcite` tak, že volá `\citelink` s
+prarametrem `\the\bibmark`. Přitom `\bibmark` je nejprve připraven pomocí
+`\prepcitelink`. Makro `\prepcitelink` rozloží značku ve spolupráci s
+`\ppclink` na část před čárkou s mezerou a zbytek (na jméno a rok).
+Makro `\lastcitedname` je na začátku implicitně nedefinované a přijímá
+naposledy citované jméno. Je-li v zápětí toto jméno stejné, je do `\bibmark`
+vložen jen rok. Jinak je tam vloženo jméno i rok. Protože je celý `\cite`
+proveden uvnitř skupiny, na konci `\cite` se `\lastcitedname` vrátí do
+nedefinovaného stavu, takže první údaj nového `\cite` bude vždy jméno
+obsahovat.
+
+Upozorňuji, že kód funguje jen tehdy, když jsou
+všechny značky připraveny ve tvaru `jméno, rok`, kde uvedené dva údaje jsou
+odděleny čárkou následovanou mezerou. Chybí-li údaj `rok`, je třeba, aby
+značka byla ukončena čárkou a mezerou. BibTeXový styl `apalike`
+tomuto požadavku vyhovuje.
+
+----lang:en--title:The [name year] condensed cites
+When `\nonumcitations` is declared and the marks are in the form `[name, year]` then it is convenient to avoid the repetition of the same name in one
+bundle of citations. For example:
+
+```
+TeX is mentioned in Czech books \cite[tst,tbn,tpp,lpp].
+```
+
+we get [Olšák, 1995, Olšák, 1997, Olšák, 2013, Satrapa, 2011] but we want
+something like [Olšák, 1995, 1997, 2013, Satrapa, 2011]. This is possible to
+solve it by `\ecite`, for example:
+
+```
+[\rcite[tst], \ecite[tbn]{1997}, \ecite[tpp]{2013}, \rcite[lpp]]
+```
+
+but more comfortable is to leave this work to TeX. The following code
+solve it.
+
+```
+\nonumcitations
+\def\printcite#1{\citesep
+   \prepcitelink{#1}\citelink{#1}{\the\bibmark}\def\citesep{,\hskip.2em\relax}%
+}
+\def\prepcitelink#1{%
+   \isdefined{bim:#1}\iftrue
+      \expandafter\expandafter\expandafter \ppclink \csname bim:#1\endcsname!\relax
+   \else \opwarning{condensed cites: empty bibmark}\bibmark={#1}%
+   \fi
+}
+\def\ppclink #1, #2!\relax{\def\tmpa{#1}%
+   \ifx \lastcitedname\tmpa \bibmark={#2}%
+   \else \let\lastcitedname=\tmpa \if^#2^\bibmark={#1}\else\bibmark={#1, #2}\fi
+   \fi
+}
+```
+
+This code redefines the `\printcite` macro (from OPmac) in order to the
+`\citelink` is called with the parameter `\the\bibmark`. The `\bibmark` contents
+is prepared by `\prepcitelink`. The `\prepcitelink` macro decomposes the mark
+(using `\ppclink`) to the prat before comma-space and the rest. The macro
+`\lastcitedmane` is undefined at the start and it is set to the last cited
+name. If the next name is the same then only the year is saved to `\bibmark`.
+Else name plus year is saved. Because `\cite` is processed inside the group,
+the `\lastcitedname` is returned back to undefined meaning so the first item
+in the next `\cite` bundle will have name plus year always.
+
+The code above works only if all marks are prepared in the form `name,
+year` (comma+space between them). When the `year` is empty then the name must
+be terminated by comma+space. The BibTeX style `apalike` is
+compatible with this.

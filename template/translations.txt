@@ -1,0 +1,42 @@
+
+cs.langName:Čeština
+cs.pageTitle:OPmac - tipy, triky, návody
+cs.pageTitleThisPage:(tato stránka)
+cs.backToTop:Zpět na obsah
+cs.author:Autor
+cs.published:Publikováno
+cs.pdfVersionInfo:Můžete si také stáhnout PDF verzi tohoto dokumentu
+
+cs.toc:Obsah
+
+cs.introPar1:Tato stránka obsahuje návody na řešení rozličných úkolů při využití
+cs.introPar2:Popis jednoho návodu by neměl překročit rozsah výšky prohlížeče. Schéma každého návodu je stejné: uživatelký popis následovaný krátkým makrem, které si uživatel může seškrábout myší do svého dokumentu, následované případným vysvětlením, jak makro funguje.
+cs.introPar3:Mají-li další uživatelé OPmac také nějaký takový tip, prosím o jeho zaslání na můj email. Uvítám jej a zařadím na tuto stránku (pochopitelně s uvedením autora).
+
+cs.mostRecent:Nejnovější články
+
+cs.footer1:Design webu a generování html a PDF souborů vytvořili studenti Jan Jirman a Ondřej Šodek v rámci své semestrální práce z předmětu
+cs.footer2:Typografie a TeX
+cs.footer3:v roce 2018.
+
+
+
+en.langName:English
+en.pageTitle:OPmac - tips, tricks, tutorials
+en.pageTitleThisPage:(this page)
+en.backToTop:Back to top
+en.author:Author
+en.published:Published
+en.pdfVersionInfo:You can also download PDF version of this document
+
+en.toc:Table of contents
+
+en.introPar1:This page includes solutions of various tasks when using
+en.introPar2:Each solution would be “small” it means you can see whole solution at once in your www browser. The constellation of each solution is similar: user description followed by macro code followed by explanation of the macro code. User can copy and paste the macro code to his/her document simply by the mouse.
+en.introPar3:If there exists any tip from you, OPmac user, please don't hesitate and send it to me. I'll welcome it and save it here (with the author of the solution mentioned).
+
+en.mostRecent:Most recent articles
+
+en.footer1:Web design and automated generation of html and PDF was created by students Jan Jirman and Ondřej Šodek as
+en.footer2:Typography and TeX
+en.footer3:course semestral work in year 2018.

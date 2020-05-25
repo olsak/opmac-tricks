@@ -1,0 +1,78 @@
+anchor-name:draftlabels
+id:0005
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Tisk lejblíků při \draft
+V případě, že je aktivní `\draft` (tj. dokument je určen ke korekturám),
+se mi osvědčilo tisknout do dokumentu lejblíky v místě cílů odkazů `\ref` a
+`\cite`. Autor nemusí vzpomínat, jaký použil lejblík, vidí to totiž přímo před očima.
+
+```
+\addto\draft{\let\destbox=\draftdestbox}
+\def\draftdestbox[#1#2:#3]{\vbox to0pt{\kern-\destheight
+   \ifx\pdfdest\undefined\special{pdf:dest (#1#2:#3) [@thispage /XYZ @xpos @ypos null]}%
+   \else\pdfdest name{#1#2:#3} xyz\relax\fi
+   \if#1r\llap{\localcolor\Red\tt\thefontsize[10][\detokenize\expandafter{#3}]}\vss
+   \else \if#1c\vss\llap{\localcolor\Red\tt[\detokenize\expandafter{\tmpb}] }\kern-\prevdepth
+   \else \vss \fi\fi}}
+```
+
+Toto makro předefinovává `\destbox` z OPmac. Hlavním účelem `\destbox` je
+umístit do výšky `\destheight` cíl odkazu. Navíc v makru přidáváme při
+odkazech typu `ref` (`#1=r`) `\llap` následovaný `\vss` (tj. `\llap` je taky ve výšce
+odkazu) a při odkazech typu `cite` (`#1=c`) je přidáno `\vss \llap`, tedy `\llap` je
+na účaří a vyskytne se v seznamu literatury. Lejblík je tištěn zelenou
+barvou a v sazbě nepřekáží, tj. sazba bez něj dopadne zcela stejně.
+
+Příkaz `\detokenize` (z eTeXu) je v kódu použit proto, aby bylo možné
+tisknout lejblíky, ve kterých se vyskytuje podtržítko. Bez použití eTeXu by
+bylo potřeba tisk provést pomocí kombinace `\string` a `\csname...\endcsname`.
+Další možnost je vyhnout se použití lejblíků s podtržítkem.
+
+Kromě toho je praktické při `\draft` přidat třeba do patičky datum
+zpracování:
+
+```
+\addto\draft{\def\drafttext{\llap{\the\day. \the\month. \the\year\Black}}}
+\def\drafttext{}
+\footline={\hss\rm\thefontsize[10]\the\pageno\hss\drafttext}
+```
+
+----lang:en--title:Printing labels in draft mode
+When `\draft` is active (i.e. proofreading text is prepared), then it is
+usable to print the internal labels used in the document source in the place
+of the destination of the references of `\ref` and `\cite`. The author needn't to
+remember the label names when they are used in new parts of the document
+because they are visible in proofreading text.
+
+```
+\addto\draft{\let\destbox=\draftdestbox}
+\def\draftdestbox[#1#2:#3]{\vbox to0pt{\kern-\destheight
+   \ifx\pdfdest\undefined\special{pdf:dest (#1#2:#3) [@thispage /XYZ @xpos @ypos null]}%
+   \else\pdfdest name{#1#2:#3} xyz\relax\fi
+   \if#1r\llap{\localcolor\Red\tt\thefontsize[10][\detokenize\expandafter{#3}]}\vss
+   \else \if#1c\vss\llap{\localcolor\Red\tt[\detokenize\expandafter{\tmpb}] }\kern-\prevdepth
+   \else \vss \fi\fi}}
+```
+
+This macro redefines `\destbox` form OPmac. The main reason of the `\destbox`
+is to place the destination of the link in the height `\destheight` above
+baseline. If the type of the link is `ref` (`#1=r`) then `\llap` followed by
+`\vss` is added. If the type is `cite` (`#1=c`) then the added `\llap` is on the
+baselineskip and it is printed in list of bibliography. The label is printed
+in green color. If `\draft` mode is deactivated, the labels disappear
+without any changes of the typesetting.
+
+The `\detokenize` command (from e-TeX) is used in the code in order to
+enable printing the labels where the characters `_` is used. If the eTeX isn't available
+then `\expandafter\string\csname...\endcsname` can be used for printing such labels.
+
+When `\draftmode` is on then we can print the date of document processing
+in the footline, for example:
+
+```
+\addto\draft{\def\drafttext{\llap{\the\day. \the\month. \the\year\Black}}}
+\def\drafttext{}
+\footline={\hss\rm\thefontsize[10]\the\pageno\hss\drafttext}
+```

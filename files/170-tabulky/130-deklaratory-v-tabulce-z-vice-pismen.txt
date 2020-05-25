@@ -1,0 +1,50 @@
+anchor-name:decltab
+id:0015
+author:P. O.
+date:2013-08-17
+
+----lang:cs--title:Deklarátory v tabulce z více písmen
+Ačkoli se to v dokumentaci OPmac explicitně netvrdí, můžete vytvořit
+deklarátory z více než jednoho písmene. Takový deklarátor musí být v
+deklaraci obehnán svorkami, což udržuje názornost a přehlednost deklarace.
+Jako příklad vytvoříme sadu deklarátorů `ic`,`ir`,`il`, které se chovají jako
+`c`,`r`,`l`, ale provedou sazbu v kurzívě.
+
+```
+\def\tabdeclareic{\tabiteml\it\hfil##\unsskip\hfil\tabitemr}
+\def\tabdeclareil{\tabiteml\it##\unsskip\hfil\tabitemr}
+\def\tabdeclareir{\tabiteml\it\hfil##\unsskip\tabitemr}
+```
+
+Příklad použití:
+
+```
+\table{cc{ic}c}{první & druhý & třetí & čtvrtý \cr
+                    a &     b &     c &      d }
+```
+
+Třetí sloupec je v kurzívě, zatímco ostatní sloupce jsou v aktuálním
+fontu nastaveném před použitím `\table`.
+
+----lang:en--title:The extended multiletter column declarations
+You can define the column declaration which consist from more than one
+letter. If such declaration is used then it have to be surrounded by {braces}
+in the declaration. This keeps the clarity of the declaration. For example
+we define the set of `ic`,`ir`,`il` declarations which behave as `c`,`r`,`l`, but the
+italics font is used.
+
+```
+\def\tabdeclareic{\tabiteml\it\hfil##\unsskip\hfil\tabitemr}
+\def\tabdeclareil{\tabiteml\it##\unsskip\hfil\tabitemr}
+\def\tabdeclareir{\tabiteml\it\hfil##\unsskip\tabitemr}
+```
+
+The example of the usage:
+
+```
+\table{cc{ic}c}{first & second & third & fourth \cr
+                    a &     b &     c &      d }
+```
+
+The third column will be in the italics but other columns use the current
+font.

@@ -1,0 +1,45 @@
+anchor-name:showfonts
+id:0029
+author:P. O.
+date:2013-09-24
+
+----lang:cs--title:Výpis načtených fontů
+Po načtení fontů (např. pomocí `\input lmfonts`) a po jejich zvětšení (např.
+pomocí `\typosize[11/13]`) je někdy užitečné si připravené fonty
+vypsat do logu a na terminál, aby si v tom člověk udělal jasno.
+Stačí napsat `\showfonts`, pokud je tento příkaz definován například takto:
+
+```
+\def\showfonts{\bgroup
+   \def\wterm##1{\immediate\write16{##1}}
+   \def\resizefont##1{\wterm{##1= \fontname##1}}\resizeall
+   \tmpnum=0 \loop
+      \wterm{\the\tmpnum: \fontname\textfont\tmpnum\space/
+                          \fontname\scriptfont\tmpnum\space/
+                          \fontname\scriptscriptfont\tmpnum}
+      \advance\tmpnum by1 \ifnum\tmpnum<16 \repeat
+   \egroup}
+```
+
+Příkaz vypíše názvy všech textových fontů registrovaných pomocí `\regfont`
+a dále názvy všech matematických fontů rodin 0 až 15 ve všech velikostech.
+
+----lang:en--title:Listing of all fonts loaded by OPmac
+Sometimes, it is usable to list loaded fonts. For example user needs to
+know used fonts after `\input lmfonts` and `\typosize[11/13]`.
+User can type `\showfonts`, if this macro is defined like:
+
+```
+\def\showfonts{\bgroup
+   \def\wterm##1{\immediate\write16{##1}}
+   \def\resizefont##1{\wterm{##1= \fontname##1}}\resizeall
+   \tmpnum=0 \loop
+      \wterm{\the\tmpnum: \fontname\textfont\tmpnum\space/
+                          \fontname\scriptfont\tmpnum\space/
+                          \fontname\scriptscriptfont\tmpnum}
+      \advance\tmpnum by1 \ifnum\tmpnum<16 \repeat
+   \egroup}
+```
+
+The `\showfonts` prints the names of all textual fonts registered by
+`\regfont`. Moreover, it prints names of all math fonts of families 0 to 15.

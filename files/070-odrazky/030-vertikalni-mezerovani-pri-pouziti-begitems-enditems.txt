@@ -1,0 +1,93 @@
+anchor-name:vertii
+id:0004
+author:P. O.
+date:2013-08-13
+
+----lang:cs--title:Vertikální mezerování při použití \begitems...\enditems
+Nad a pod každé prostředí `\begitems...\enditems` je přidána vertikální
+mezera z makra `\iiskip`, kterou OPmac nastavuje na `\medskip` (poloviční
+řádek). Tyto mezery se při vnořených prostředích pro výčty mohou sčítat a to
+nevypadá dobře. Zrušit zcela tuto mezeru lze pomocí:
+
+```
+\def\iiskip{}
+```
+
+Chcete-li mezeru zrušit jen ve vnořených výčtech, pište
+
+```
+\addto\begitems{\def\iiskip{}}
+```
+
+Chcete-li naopak mít mezeru mezi každou položkou ve výčtu a stejnou kolem
+prostředí výčtu, je možné to udělat takto:
+
+```
+\newdimen\iiskipamount  \iiskipamount=3pt
+\def\iiskip{\vskip\iiskipamount}
+\addto\begitems{\removelastskip\parskip=\iiskipamount \def\iiskip{}}
+```
+
+Toto makro ruší vertikální mezery kolem vnořených výčtů a přidává mezery
+mezi každým odstavcem ve výčtech pomocí `\parskip`. U výčtu na vnější úrovni
+potřebujeme odstranit pomocí `\removelastskip` mezeru před první položkou
+z `\iiskip`. Na konci
+výčtu na vnější úrovni ale `\iiskip` potřebujeme, za ním už totiž nebudou mezery z
+parskip.
+
+Pokud nechcete mezery mezi odstavci uvnitř položek (obsahujících více
+odstavců) ale chcete mezery mezi položkami, je potřeba předefinovat makro
+`\startitem`, které OPmac používá při startu každé položky:
+
+```
+\newdimen\iiskipamount  \iiskipamount=3pt
+\def\addbefore#1#2{\toks1=\expandafter{#1}\toks2={#2}\edef#1{\the\toks2 \the\toks1}}
+
+\def\iiskip{\vskip\iiskipamount}
+\addto\begitems{\removelastskip \def\iiskip{}}
+\addbefore\startitem{\vskip\iiskipamount\relax}
+```
+
+----lang:en--title:Vertical spacing in \begitems...\enditems
+The vertical space from `\iiskip` macro is added above and below each item
+list. OPmac sets `\iiskik` to `\medskip` (one half of baselineskip). These
+spaces can be added for nested lists and this doesn't look well.
+You can cancel this space by:
+
+```
+\def\iiskip{}
+```
+
+If you need to cancel this space only in nested lists, you can write:
+
+```
+\addto\begitems{\def\iiskip{}}
+```
+
+If you need the vertical space between each item record in the list
+and the same space around the item list, you can do:
+
+```
+\newdimen\iiskipamount  \iiskipamount=3pt
+\def\iiskip{\vskip\iiskipamount}
+\addto\begitems{\removelastskip\parskip=\iiskipamount \def\iiskip{}}
+```
+
+This code cancels the vertical spaces around nested lists and adds the
+space between each paragraph by `\parskip`. We need to remove the space by
+`\removelastskip` before first item in the first level of the list.
+But we need this space from `\iiskip` at the end of the list because the space
+from `\parskip` isn't here.
+
+If we needn't the spaces between paragraphs inside one multi paragraph
+item record but we need the spaces between item records then we can redefine
+the macro `\startitem` which is used by OPmac at the start of each item:
+
+```
+\newdimen\iiskipamount  \iiskipamount=3pt
+\def\addbefore#1#2{\toks1=\expandafter{#1}\toks2={#2}\edef#1{\the\toks2 \the\toks1}}
+
+\def\iiskip{\vskip\iiskipamount}
+\addto\begitems{\removelastskip \def\iiskip{}}
+\addbefore\startitem{\vskip\iiskipamount\relax}
+```

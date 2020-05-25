@@ -1,0 +1,116 @@
+anchor-name:acronym
+id:0113
+author:P. O.
+date:2015-06-25
+
+----lang:cs--title:Akronymy
+Pohrajeme si s makrem `\ac[lejblík]`, které při prvním výskytu v dokumentu
+vytiskne `dlouhý název (zkratka)` a při každém dalším výskytu
+vytiskne jen `zkratka`.
+K tomu účelu je potřeba nejprve akronym na začátku dokumentu definovat pomocí
+
+```
+\acrodef [lejblík] {zkratka} {dlouhý název}
+```
+
+Explicitně zkratku vytiskneme pomocí `\acs[lejblík]` a dlouhý název pomocí
+`\acl[lejblík]`. Seznam všech zkratek (ve stejném pořadí, jak byly definovány
+na začátku dokumentu) vytiskneme pomocí `\acrolist`, což můžeme umístit kamkoli
+do dokumentu, ovšem až za sadu definic `\acrodef`. Na stránku, kde je poprvé
+akronym použit, je možné se odkazovat pomocí `\pgref[acro:lejblík]`.
+
+Chceme-li vytisknout akronym s velkým písmenem na začátku, je možné
+použít `\Ac[lejblík]`. Chceme-li akronym s nějakou koncovkou, musíme kromě
+`\acrodef[lejblík]` definovat obdobně `\acrodefx[lejblík-koncovka]` a v textu
+použít `\ac[lejblík-koncovka]`. Příklad:
+
+```
+\acrodef  [CVUT]    {ČVUT} {České vysoké učení technické v Praze}
+\acrodefx [CVUT-em] {ČVUT} {Českým vysokým učením technickým v Praze}
+\acrodef  [UK]      {UK}   {Univerzita Karlova}
+\acrodef  [voda]    {$\rm H_2O$} {voda}
+
+Tady se seznámíme s \ac[CVUT-em], vedle kterého je \ac[UK]. Ještě jednou \ac[CVUT] a taky \ac[UK].
+\Ac[voda] je základ života. Takže \ac[voda] se dá použit opakovaně.
+
+\acrolist
+```
+
+Sada maker na akronymy může vypadat třeba takto:
+
+```
+\def\acrolist{}
+\def\acrodef[#1]#2#3{\sdef{as:#1}{#2}\sdef{al:#1}{#3}\addto\acrolist{\acroitem{#1}}}
+\def\acrodefx[#1-#2]#3#4{\sdef{as:#1-#2}{#3}\sdef{al:#1-#2}{#4}}
+\def\acs[#1]{\isdefined{as:#1}\iftrue \acroprint{as:#1}\else\acno{#1}\fi}
+\def\acl[#1]{\isdefined{al:#1}\iftrue \acroprint{al:#1}\else\acno{#1}\fi}
+\def\acno#1{\opwarning{acro [#1] undefined}ac?#1}
+\def\ac[#1]{\acX#1-\end
+   \isdefined{ad:\acA}\iftrue \acs[\acA\acB]\else
+   \label[acro:\acA]\openref\wlabel{}\global\sdef{ad:\acA}{}%
+   \acl[\acA\acB] \let\acrocap=\undefined(\acs[\acA\acB])\fi}
+\def\acX#1-#2\end{\def\acA{#1}\ifx\end#2\end \def\acB{}\else\acY#2\fi}
+\def\acY#1-{\def\acB{-#1}}
+\def\acroprint#1{{\expandafter\expandafter\expandafter\acroprintA\csname#1\endcsname\end}}
+\def\acroprintA#1#2\end{\ifx\acrocap\undefined\expandafter\acroprintB\else\uppercase\fi{#1}#2}
+\def\acroprintB#1{#1}
+\def\Ac[#1]{{\let\acrocap=\active\ac[#1]}}
+\def\acroitem#1{\par\noindent{\bf\boldmath\acs[#1]} -- \acl[#1] \dotfill \pgref[acro:#1]\par}
+\addprotect\acs \addprotect\acl
+```
+
+----lang:en--title:Acronyms
+We'll play with the macro `\ac[label]` which prints `long name (short)`
+at the first place in the document and prints `short` at next places.
+We need to declare the acronym first by
+
+```
+\acrodef [label] {short} {long name}
+```
+
+The direct printing of `short` is done by `\acs[label]` and `long name` by
+`\acl[label]`. The list of all acronys (in the same order as they were
+declared) can be printed by `\acrolist` macro. You can put this macro
+somewhere in the document but after a set of all declarations.
+You can refer the page with the first occurrence of the acronym
+by `\pgref[acro:label]`.
+
+If you need to print the acronym with the first letter capitalized then
+you can use `\Ac[label]`. If you need to print the acronym by special suffix,
+then you must to declare `\acrodefx[label-suffix]` similar as `\acrodef[label]`
+but with appropriate suffixes. Example
+
+```
+\acrodef  [CTU]    {CTU}   {Czech Technical University in Prague}
+\acrodefx [CTU-s]  {CTU's} {Czech Technical Iniversities in Prague}
+\acrodef  [UK]     {UK}    {Charles University}
+\acrodef  [water]  {$\rm H_2O$} {water}
+
+Here is \ac[CTU] and beside it is \ac[UK]. Second occurrence \ac[CTU] and \ac[UK].
+\Ac[water] is basic of the life. So, \ac[water] can be used repeatedly.
+
+\acrolist
+```
+
+The macro set for `\ac` can look like:
+
+```
+\def\acrolist{}
+\def\acrodef[#1]#2#3{\sdef{as:#1}{#2}\sdef{al:#1}{#3}\addto\acrolist{\acroitem{#1}}}
+\def\acrodefx[#1-#2]#3#4{\sdef{as:#1-#2}{#3}\sdef{al:#1-#2}{#4}}
+\def\acs[#1]{\isdefined{as:#1}\iftrue \acroprint{as:#1}\else\acno{#1}\fi}
+\def\acl[#1]{\isdefined{al:#1}\iftrue \acroprint{al:#1}\else\acno{#1}\fi}
+\def\acno#1{\opwarning{acro [#1] undefined}ac?#1}
+\def\ac[#1]{\acX#1-\end
+   \isdefined{ad:\acA}\iftrue \acs[\acA\acB]\else
+   \label[acro:\acA]\openref\wlabel{}\global\sdef{ad:\acA}{}%
+   \acl[\acA\acB] \let\acrocap=\undefined(\acs[\acA\acB])\fi}
+\def\acX#1-#2\end{\def\acA{#1}\ifx\end#2\end \def\acB{}\else\acY#2\fi}
+\def\acY#1-{\def\acB{-#1}}
+\def\acroprint#1{\expandafter\expandafter\expandafter\acroprintA\csname#1\endcsname\end}
+\def\acroprintA#1#2\end{\ifx\acrocap\undefined\expandafter\acroprintB\else\uppercase\fi{#1}#
+\def\acroprintB#1{#1}
+\def\Ac[#1]{{\let\acrocap=\active\ac[#1]}}
+\def\acroitem#1{\par\noindent{\bf\boldmath\acs[#1]} -- \acl[#1] \dotfill \pgref[acro:#1]\par}
+\addprotect\acs \addprotect\acl
+```

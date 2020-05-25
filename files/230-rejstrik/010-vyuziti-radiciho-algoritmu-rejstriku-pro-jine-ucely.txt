@@ -1,0 +1,87 @@
+anchor-name:sort
+id:0080
+author:P. O.
+date:2014-12-10
+
+----lang:cs--title:Využití řadicího algoritmu rejstříku pro jiné účely
+OPmac má řadicí algoritmus zabudován do maker pro setavení rejsříku a
+není zcela snadné jej od rejstříku oddělit. V tomto triku to uděláme.
+Vytvoříme makro `\sort`, které přečte své agumenty, abecedně je zatřídí a
+výsledek uloží do pomocného makra `\tmpb`. Tedy:
+
+```
+\sort{uu}{tt}{zz}{aa}\relax
+nyní makro \tmpb obsahuje: {aa}{tt}{uu}{zz}
+```
+
+Sadu parametrů makra `\sort` je nutné ukončit příkazem `\relax`. V
+parametrech nesmí být obsažen příkaz, který je neexpandovatelný (analogicky
+jako v parametru makra `\iindex`). Implementace může vypadat takto:
+
+```
+\def\sort{\begingroup\setprimarysorting\def\iilist{}\sortA}
+\def\sortA#1{\ifx\relax#1\sortB\else
+  \expandafter\addto\expandafter\iilist\csname,#1\endcsname
+  \expandafter\preparesorting\csname,#1\endcsname
+  \expandafter\edef\csname,#1\endcsname{{\tmpb}{}}%
+  \expandafter\sortA\fi
+}
+\def\sortB{\def\message##1{}\dosorting
+  \def\act##1{\ifx##1\relax\else \expandafter\sortC\string##1\relax \expandafter\act\fi}%
+  \gdef\tmpb{}\expandafter\act\iilist\relax
+  \endgroup
+}
+\def\sortC#1#2#3\relax{\global\addto\tmpb{{#3}}}
+```
+
+Makro `\sort` pracuje ve skupině `\begingroup...\endgroup`, aby neovlivnilo
+data, která se používají v rámci rejsříku. Parametry připraví lokálně
+do `\iilist` a spustí třídicí algoritmus `\dosorting`. Výsledek řazení ukládá
+globálně do `\tmpb`.
+
+Povšimněte si, že makro definuje druhé datové pole sekvencí `\,slovo` jako
+prázdné (na předposledním řádku `\sortA`). Toto pole můžete využít pro ukládání
+vlastních dat, která je pak možné zpětně vytěžit po zatřídění pomocí
+makra `\seconddata` z OPmac.
+
+----lang:en--title:Using sort from indexes for another purposes
+OPmac includes the sorting algorithm connected to creating the Index. It
+is not so simple to separate this algorithm from Index printing. We do it in
+this trick. We create the `\sort` macro which reads its arguments, sorts them
+alphabetically and saves the result into the auxiliary macro `\tmpb`. For
+example:
+
+```
+\sort{uu}{tt}{zz}{aa}\relax
+now, the \tmpb macro includes: {aa}{tt}{uu}{zz}
+```
+
+The list of parameters have to be terminated by `\relax`. The unexpanded
+parts of the parameters cannot be used (this is analogical to the normal
+`\iindex` behavior). The implementation would be:
+
+```
+\def\sort{\begingroup\setprimarysorting\def\iilist{}\sortA}
+\def\sortA#1{\ifx\relax#1\sortB\else
+  \expandafter\addto\expandafter\iilist\csname,#1\endcsname
+  \expandafter\preparesorting\csname,#1\endcsname
+  \expandafter\edef\csname,#1\endcsname{{\tmpb}{}}%
+  \expandafter\sortA\fi
+}
+\def\sortB{\def\message##1{}\dosorting
+  \def\act##1{\ifx##1\relax\else \expandafter\sortC\string##1\relax \expandafter\act\fi}%
+  \gdef\tmpb{}\expandafter\act\iilist\relax
+  \endgroup
+}
+\def\sortC#1#2#3\relax{\global\addto\tmpb{{#3}}}
+```
+
+The macro `\sort` works in the group `\begingroup...\endgroup` in order to
+the outside data (for Index) keep intact. The parameters are prepared and
+saved locally to `\iilist`, then the `\dosorting` macro is executed. The
+result is saved to `\tmpb` globally.
+
+Note that the macro defines the `{second data}` for `\,foo` sequences as
+empty (see last but one line of the `\sortA` macro). This data field can be
+used for your data and you can use them after sorting by `\seconddata` macro
+from OPmac.

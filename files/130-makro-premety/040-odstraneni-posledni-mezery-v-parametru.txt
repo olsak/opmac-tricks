@@ -1,0 +1,37 @@
+anchor-name:noendspace
+id:0068
+author:P. O.
+date:2014-06-13
+
+----lang:cs--title:Odstranění poslední mezery v parametru
+Například parametry příkazů `\chap`, `\sec` a `\secc` obvykle obsahují
+na svém konci mezeru, ale někdy taky ne. Například při
+`\sec Prokletý \LaTeX <prázný řádek>` na konci parametru mezera není.
+OPmac řeší odstranění závěrečné mezery v těchto případech přidáním `\unskip`.
+Ovšem my bychom chtěli odstranit tuto závěrečnou případnou mezeru na úrovni
+maker. Přitom v parametru může být mezer více, nás zajímá jen ta na úplném
+konci.
+
+Stačí si parametr uložit do `\tmpb` například pomocí `\def\tmpb{#1}`
+a dále provést:
+
+```
+\addto\tmpb\end \replacestrings{ \end}{}\replacestrings{\end}{}
+```
+
+A nyní už `\tmpb` obsahuje parametr bez případné závěrečné mezery.
+
+----lang:en--title:Removing the last space in the parameter
+For example the parameters of `\chap`, `\sec` and `\secc` includes the unwanted
+space at the end. But not every time. For example
+`\sec Damned \LaTeX <empty line>` doesn't generate the space at the end.
+OPmac solves the removing of this space by `\unskip` when the parameter is
+used. This example removes the last space at macro level.
+It is sufficient to save the parameter to the `\tmpb` macro by `\def\tmpb{#1}`
+and to do:
+
+```
+\addto\tmpb\end \replacestrings{ \end}{}\replacestrings{\end}{}
+```
+
+Now, the `\tmpb` includes the parameter without the last possible space.

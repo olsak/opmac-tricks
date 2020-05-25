@@ -1,0 +1,91 @@
+anchor-name:scaleto
+id:0027
+author:P. O.
+date:2013-09-05,2013-11-22
+
+----lang:cs--title:Font dle požadované šířky
+Připravíme makro `\scaleto rozměr {text}`, které vytiskne text aktuálním
+fontem zvětšeným/zmenšeným tak, že šířka textu zaujme specifikovaný rozměr.
+Takže třeba `\scaleto5cm{ahoj}` vytvoří box s textem „ahoj“ zvětšeným tak, že
+šířka textu je `5cm`. Tuto vlastnost asi při běžné sazbě nevyužijeme, ale může
+se hodit při sazbě plakátů nebo pro umístění nadpisu přesně do `\hsize` atd.
+
+```
+\def\scaleto#1#{\bgroup\def\bw{#1}\scaletoA}
+\def\scaletoA #1{\expandafter\let \expandafter\thefont \the\font
+   \calculatefontdim{#1}\edef\dgsize{\the\fontdim}\letfont\thefont=\thefont at\fontdim
+   \calculatefontdim{#1}\letfont\thefont=\thefont at\fontdim
+   \hbox to\bw{\thefont#1}%
+   \egroup
+}
+\def\calculatefontdim#1{%
+   \setbox0=\hbox{\thefont #1}\tmpdim=\bw \tmpnum=\wd0
+   \divide\tmpnum by256 \divide\tmpdim by\tmpnum \multiply\tmpdim by256
+   \fontdim=\expandafter\ignorept\the\tmpdim\fontdim
+}
+```
+
+Makro vypočítává správné zvětšení tak, že spočítá poměr požadované šířky
+boxu ku skutečné šířce textu a tímto poměrem násobí `\fontdim`. Výpočet dělá
+nadvakrát. Při prvním výpočtu `\fontdim` nastaví podle něj také `\dgsize`, tj.
+vyzvedne se také font odpovídající optické velikosti. To ale může změnit
+skutečnou šířku textu. Takže přepočet je proveden podruhé, a po něm už
+proběhne jen geometrické zvětšení fontu z předchozího kroku.
+
+Je-li aktivován eTeX, je možné vypočítat poměr dvou velikostí přesněji a
+pohodlněji. Stačí definovat `\dividedimen` a využít toho, že toto makro
+pracuje na úrovni expandprocesoru.
+
+```
+\def\dividedimen (#1/#2){\expandafter\ignorept\the
+   \dimexpr\numexpr\number\dimexpr#1\relax*65536/\number\dimexpr#2\relax\relax sp\relax
+}
+\def\calculatefontdim#1{%
+   \setbox0=\hbox{\thefont #1}%
+   \fontdim=\dividedimen(\bw/\wd0)\fontdim
+}
+```
+
+----lang:en--title:Font size changed by given width of the text
+We prepare the macro `\scaleto size {text}` which prints “text” by actual
+font resized, that the “text” width is the given size. For example
+`\scaleto5cm{hello}` creates a box with the text “hello” resized that the
+width of the text “hello” is `5cm`. This can be usable for creating titles
+of posters, for resizing the title to the `\hsize` etc.
+
+```
+\def\scaleto#1#{\bgroup\def\bw{#1}\scaletoA}
+\def\scaletoA #1{\expandafter\let \expandafter\thefont \the\font
+   \calculatefontdim{#1}\edef\dgsize{\the\fontdim}\letfont\thefont=\thefont at\fontdim
+   \calculatefontdim{#1}\letfont\thefont=\thefont at\fontdim
+   \hbox to\bw{\thefont#1}%
+   \egroup
+}
+\def\calculatefontdim#1{%
+   \setbox0=\hbox{\thefont #1}\tmpdim=\bw \tmpnum=\wd0
+   \divide\tmpnum by256 \divide\tmpdim by\tmpnum \multiply\tmpdim by256
+   \fontdim=\expandafter\ignorept\the\tmpdim\fontdim
+}
+```
+
+The macro calculates the right aspect ratio by dividing the desires size
+by the real size of the text. The `\fontdim` is multiplied by this ratio.
+The calculating is done twice. After first attempt the `\fontdim` and `\dgsize`
+are changed. This means that the suitable optical size of the font is used.
+But this can change the real size of the text. So, the second calculation
+does correction of this and only geometrical resizing is done during second
+attempt.
+
+If eTeX is activated then the ratio of two dimensions can be calculated
+more comfortable by `\dividedimen` macro, which works at expand processor
+level.
+
+```
+\def\dividedimen (#1/#2){\expandafter\ignorept\the
+   \dimexpr\numexpr\number\dimexpr#1\relax*65536/\number\dimexpr#2\relax\relax sp\relax
+}
+\def\calculatefontdim#1{%
+   \setbox0=\hbox{\thefont #1}%
+   \fontdim=\dividedimen(\bw/\wd0)\fontdim
+}
+```

@@ -1,0 +1,82 @@
+anchor-name:etable
+id:0158
+author:P. O.
+date:2017-06-17
+
+----lang:cs--title:Ukázka tabulky s přesahy položek do více řádků a sloupců
+OPmac verze Jun 2017 přidává některé nové vlastnosti pro makro `\table`:
+možnost opakování v deklaraci, deklarátor p, makro `\crlp` na částečné
+vodorovné čáry a konečně makro `\mspan` na položky přesahující více sloupců.
+
+Ukážeme, jak sestavit tabulku
+
+![Příklad tabulky](img/etable-ukazka.png)
+
+pomocí makra `\table`. Tabulka je inspirovaná dotazem na
+[StackExchange](https://tex.stackexchange.com/questions/132445/).
+Můžete porovnat přehlednost či nepřehlednost LaTeXového kódu diskutovaného na
+StackExchange s tímto příkladem, kde jsme vytvořili tutéž tabulku,
+ale pomocí maker z OPmac.
+
+```
+\def\low#1{\vbox to 0pt{\kern1.5ex\hbox{#1}\vss}}
+\def\tabstrut{\vrule height 20pt depth10pt width0pt}
+
+\table{|8{c|}}{\crlp{3-8}
+   \mspan2[c|]{} &\mspan3[c|]{Singular} &\mspan3[c|]{Plural} \crlp{3-8}
+   \mspan2[c|]{} & Neuter & Masculine & Feminine & Masculine & Feminine & Neuter \crl
+   \low I    & Inclusive &\mspan3[c|]{\low O} &\mspan3[c|] X \crlp{2,6-8}
+             & Exclusive &\mspan3[c|]{} &\mspan3[c|] X \crl
+   \low{II}  & Informal  &\mspan3[c|] X &\mspan3[c|] X \crlp{2-8}
+             & Formal    &\mspan6[c|] X \crl
+   \low{III} & Informal  & \low O & X & X &\mspan2[c|] X & \low O \crlp{2,4-7}
+             & Formal    & &\mspan4[c|] X & \crl
+}
+```
+
+Předefinovali jsme `\tabstrut`, aby tabulka byla vzdušnější. Na
+[StackExchange](https://tex.stackexchange.com/questions/132445/)
+je totiž typografický paskvil. Definovali jsme makro `\low` na snížení textu mírně
+pod řádek, což je použito v položkách, které vypadají jako dvouřádkové
+(obecnější řešení najdete v následujícím triku 0159).
+Konečně jsme použili `\mspan` na přesah přes více sloupců a `\crlp` na
+vodorovné čáry jen někde. Čáry v deklaraci `\mspan` jsou v souladu
+s dokumentací výhradně vpravo deklarátoru `c`.
+
+----lang:en--title:Table which spans to more columns and rows
+New features of the `\table` macro are introduced in OPmac version Jun. 2017:
+repeating of declaration parts, the p declarator for paragraphs, the
+`\crlp` macro for end rows with partial horizontal line after it and the
+`\mspan` macro for table cells over more columns.
+
+We show how to prepare the table
+
+![Table example](img/etable-ukazka.png)
+
+using `\table` macro. The example is inspired by the
+[StackExchange question](https://tex.stackexchange.com/questions/132445/).
+You can compare the complexity of the LaTeX code mentioned at
+the StackExchange with the code shown here.
+
+```
+\def\low#1{\vbox to 0pt{\kern1.5ex\hbox{#1}\vss}}
+\def\tabstrut{\vrule height 20pt depth10pt width0pt}
+
+\table{|8{c|}}{\crlp{3-8}
+   \mspan2[c|]{} &\mspan3[c|]{Singular} &\mspan3[c|]{Plural} \crlp{3-8}
+   \mspan2[c|]{} & Neuter & Masculine & Feminine & Masculine & Feminine & Neuter \crl
+   \low I    & Inclusive &\mspan3[c|]{\low O} &\mspan3[c|] X \crlp{2,6-8}
+             & Exclusive &\mspan3[c|]{} &\mspan3[c|] X \crl
+   \low{II}  & Informal  &\mspan3[c|] X &\mspan3[c|] X \crlp{2-8}
+             & Formal    &\mspan6[c|] X \crl
+   \low{III} & Informal  & \low O & X & X &\mspan2[c|] X & \low O \crlp{2,4-7}
+             & Formal    & &\mspan4[c|] X & \crl
+}
+```
+
+The `\tabstrut` is redefined here in order to make better table. The `\mspan`
+macro is used for spanning cells to more columns and the \crlp macro is used
+for partial horizontal lines. The `\low` macro is used for lowering the text
+to achieve the visual illusion that the text is verticaly aligned over two
+rows. More general macro for such cases is described in the following OPmac
+trick 0159.

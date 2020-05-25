@@ -1,0 +1,52 @@
+anchor-name:currchar
+id:0140
+author:P. O.
+date:2016-06-08
+
+----lang:cs--title:Rozdělení rejstříku do oddílů nadepsaných písmeny
+Slova v restříku chceme mít oddělena podle jejich prvního písmene do
+oddílů, každý oddíl má být uvozen „nadpisem“, který obsahuje zvětšené
+písmeno, kterým všechna slova daného oddílu začínají.
+
+Řešení se opírá o makro `\everyii`, které je implicitně prázdné a OPmac ho
+vkládá před tisk každého hesla v rejstříku.
+
+```
+\def\lastchar{}
+\def\everyii{\expandafter\makecurrchar\currii\end
+   \ifx\currchar\lastchar \else
+      \bigskip{\typosize[20/24]\bf\currchar}\par\nobreak\medskip\noindent
+      \let\lastchar=\currchar
+   \fi
+}
+\def\makecurrchar#1#2\end{\uppercase{\def\currchar{#1}}}
+```
+
+Na začátku je `\lastchar` prázdné. Před vytištěním každého slova se zjistí
+`\currchar` jako první písmeno slova zvětšené pomocí `\uppercase`. Je-li
+`\currchar` různé od `\lastchar`, vytiskneme záhlaví dalšího oddlílu a nastavíme
+nově `\lastchar` podle `\currchar`.
+
+----lang:en--title:Sections inside the index by first letter
+We need to divide the items in the index to sections by their first
+letter. Each section must be titled by the large and boldface letter
+significant for this section.
+
+The solution is based on the `\everyii` macro which is empty by default and
+OPmac inserts this macro before printing of each index item.
+
+```
+\def\lastchar{}
+\def\everyii{\expandafter\makecurrchar\currii\end
+   \ifx\currchar\lastchar \else
+      \bigskip{\typosize[20/24]\bf\currchar}\par\nobreak\medskip\noindent
+      \let\lastchar=\currchar
+   \fi
+}
+\def\makecurrchar#1#2\end{\uppercase{\def\currchar{#1}}}
+```
+
+First, the `\lastchar` is empty. The `\currchar` (first letter of processed
+item) is scanned before the item is printed. The `\currchar` is modified by
+`\uppercase` primitive. If `\currchar` differs from `\lastchar`, the heading of
+new “section” is printed and the `\latchar` is set to `\currchar`.

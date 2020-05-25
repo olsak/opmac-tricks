@@ -1,0 +1,89 @@
+anchor-name:putshape
+id:0155
+author:P. O.
+date:2016-06-08
+
+----lang:cs--title:Obrázek v obdélníkovém výřezu odstavce
+![Ukázka kachny](img/ukazka-kachna.png)
+
+Vytvoříme makro `\putshape strana číslo{objekt}`, které vloží `objekt` do
+následujícího odstavce (nebo více odstavců) s obdélníkovým vykrojením textu
+pro `objekt` vlevo (`strana` je `\left`)
+nebo vpravo (`strana` je `\right`) tak,
+že prvních `číslo` řádků odstavce je beze změny, pak následuje vykrojení
+textu s `objektem`. Velikost odsazení a počet odsazených řádků si makro
+spočítá samo na základě informace o tom, jak velký je `objekt`. Typické
+užití vypadá třeba takto:
+
+```
+\putshape\right 4 {\picw=3cm \inspic obrazek.png }
+```
+
+Makro z ukázky vloží obrázek vpravo pod čtvrtý řádek následuhícího odstavce
+s obdélníkovým vykrojením závislým na velikosti obrázku. Mezi textem a
+objektem (obrázkem) je vložena vertikální mezera `\putvmargin` (nad a pod) a
+`\puthmargin` (vedle mezi obrázkem a textem). Tyto registry jsou implicitně
+nastaveny na `5pt`.
+
+Implementace se opírá o makro `\setparshape` z předchozího
+[OPmac triku 0154](#setparshape):
+
+```
+\newdimen\putvmargin \newdimen\puthmargin
+\putvmargin=5pt \puthmargin=5pt
+
+\def\putshape#1#2#{\let\tmpa=#1\def\tmpb{#2}\putshapeA}
+\def\putshapeA#1{\vskip\parskip
+   \setbox0=\vbox{\kern\putvmargin\hbox{#1}\kern\putvmargin}\tmpnum=\ht0
+   \advance\tmpnum by-10 \divide\tmpnum by\baselineskip \advance\tmpnum by1
+   \dimen0=\wd0 \advance\dimen0 by\puthmargin
+   \hbox to\hsize{\ifx\tmpa\right \hfill\fi
+      \vbox to0pt{\kern\tmpb\baselineskip\kern-.8\baselineskip
+         \vbox to\the\tmpnum\baselineskip{\vss\box0\vss}\vss}\hss}
+   \nobreak\vskip-\parskip\vskip-\baselineskip
+   \edef\tmpb{\tmpa(\tmpb*0pt,\the\tmpnum*\the\dimen0)}
+   \globalshape\expandafter\setparshape\tmpb{}
+}
+```
+
+----lang:en--title:Rectangular text-cropping with an image
+![Sample duck](img/ukazka-kachna.png)
+
+We create the macro `\putshape side number {object}`. It inserts an
+`object` into the next paragraph with rectangular copping for the `object`
+after `number` lines at left side (`side` is \left)
+or right side (`side` is `\right`).
+The number of indented lines and the indentation size are computed
+from the dimensions of the `object` automatically. The typical usage looks
+like:
+
+```
+\putshape\right 4 {\picw=3cm \inspic duck.png }
+```
+
+The macro from this example inserts the image at right side after four
+normal lines of the paragraph. There are margins above and below the
+`object` given by `\putvargin` register and the space alongside the `object`
+and the the text is given by `\puthmarhin`. Both registers are set to `5pt` by
+default.
+
+The implementation is based on `\setparshape` macro from previous
+[OPmac trick 0154](#setparshape):
+
+```
+\newdimen\putvmargin \newdimen\puthmargin
+\putvmargin=5pt \puthmargin=5pt
+
+\def\putshape#1#2#{\let\tmpa=#1\def\tmpb{#2}\putshapeA}
+\def\putshapeA#1{\vskip\parskip
+   \setbox0=\vbox{\kern\putvmargin\hbox{#1}\kern\putvmargin}\tmpnum=\ht0
+   \advance\tmpnum by-10 \divide\tmpnum by\baselineskip \advance\tmpnum by1
+   \dimen0=\wd0 \advance\dimen0 by\puthmargin
+   \hbox to\hsize{\ifx\tmpa\right \hfill\fi
+      \vbox to0pt{\kern\tmpb\baselineskip\kern-.8\baselineskip
+         \vbox to\the\tmpnum\baselineskip{\vss\box0\vss}\vss}\hss}
+   \nobreak\vskip-\parskip\vskip-\baselineskip
+   \edef\tmpb{\tmpa(\tmpb*0pt,\the\tmpnum*\the\dimen0)}
+   \globalshape\expandafter\setparshape\tmpb{}
+}
+```

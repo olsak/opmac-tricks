@@ -1,0 +1,151 @@
+anchor-name:setparshape
+id:0154
+author:P. O.
+date:2016-06-07
+
+----lang:cs--title:Pohodlné zadávání \parshape
+Obecný tvar odstavce lze specifikovat pomocí primitivu `\parshape`, ale
+příprava parametrů tohoto primitivu není pro uživatele příliš komfortní. V
+TBN strana 236 je ukázka marka `\oblom`, které se specializuje na obdélníkové
+výřezy odstavce. Zde navrhneme makro `\setparshape`, které umožní
+specifikovat levý nebo pravý okraj odstavce obecněji a poměrně pohodlně.
+Příklady:
+
+```
+\setparshape\left (3*0, 7*35)mm  % po třech řádcích obdélníkový výřez v sedmi řádcích
+% nebo
+\setparshape\right (4*0, 5,10,15,20,25,20,15,10,5)mm % trojúhelníkový výřez vpravo
+```
+
+Makro `\setparshape` nejprve přečte `\left` nebo `\right`, což specifikuje okraj,
+který bude ovlivněn. Pak v kulaté závorce je čárkami oddělený seznam údajů
+ve tvaru `počet*rozměr`, kde `počet` odpovídá počtu řádků, které budou zkráceny
+o `rozměr`.  Není-li v údaji hvězdička, je tam `rozměr` týkající se jediného
+řádku. Za uzavírací kulatou závorkou následuje jednotka pro `rozměry`
+ukončená mezerou. Pokud chcete rozměry přímo specifikovat v datech, použijte
+`(...){}` tedy například:
+
+```
+\setparshape\left (3*0pt, 7*.4\hsize){}
+```
+
+což vytvoří obdélníkový výřez v sedmi řádcích vlevo a dá to stejný výsledek jako:
+
+```
+\setparshape\left (3*0, 7*.4){\hsize}
+```
+
+Nastavení `\setparshape` se implicitně týká jediného odstavce, který
+bezprostředně následuje. Pokud chcete ovlivnit několik odstavců pod sebou,
+je třeba předřadit `\globalshape`, tedy například psát:
+
+```
+\globalshape\setparshape\left (3*0, 12*55)mm
+```
+
+Implementace je následující:
+
+```
+\newcount\parshapenum \newcount\globpar
+
+\def\setparshape#1(#2)#3 {\def\parshapedata{}\parshapenum=1
+   \let\parshapeside=#1\def\parshapeunit{#3}\setparshapeA#2,,%
+}
+\def\setparshapeA#1,{\ifx,#1,\parshape=\parshapenum\parshapedata0pt\hsize
+   \else\fihere\setparshapeB#1\empty*\empty\end\fi
+}
+\def\setparshapeB#1*#2\empty#3\end{%
+   \ifx,#3,\tmpnum=1 \tmpdim=#1\parshapeunit \relax
+   \else \tmpnum=#1\tmpdim=#2\parshapeunit \relax \fi
+   \loop \ifnum\tmpnum>0
+      \advance\tmpnum by-1 \advance\parshapenum by1
+      \dimen0=\hsize \advance\dimen0 by-\tmpdim
+      \ifx\parshapeside\left
+          \edef\parshapedata{\parshapedata\the\tmpdim\space\the\dimen0}%
+      \else\edef\parshapedata{\parshapedata0pt\the\dimen0}\fi
+   \repeat
+   \setparshapeA
+}
+\def\fihere#1\fi{\fi#1}
+\def\globalshape{% TBN page 237
+   \global\globpar=0 \gdef\par{\ifhmode\shapepar\fi}%
+}
+\def\shapepar{\prevgraf=\globpar \parshape=\parshapenum\parshapedata0pt\hsize
+   \endgraf \global\globpar=\prevgraf
+   \ifnum\prevgraf<\parshapenum \else \global\let\par=\endgraf\fi
+}
+```
+
+----lang:en--title:Comfortable \parshape setting
+The common shape of a paragraph can be declared by `\parshape` primitive, but
+the parameters for this primitive has non-comfortable syntax. Thus, TBN page
+236 mentions the macro `\oblom` which can be used for rectangular croppings.
+The macro `\setparshape` presented here is able to set more general
+croppings. Examples:
+
+```
+\setparshape\left (3*0, 7*35)mm  % three normal lines, then 7 shorten lines
+% or
+\setparshape\right (4*0, 5,10,15,20,25,20,15,10,5)mm % triangular cropping right
+```
+
+The macro `\setparshape` reads `\left` or `\right` first in order to decide the
+side where margins will be modified. The parentheses include the comma
+separated list of items in the form `number*dimen`, where `number` denotes the
+number of lines which are shorten by `dimen` value. If there isn't the `*`
+operator then only one line is shorten by `dimen` specified. The unit
+associated for all `dimens` is included after the closing parenthesis and it is
+separated by space. If you want to specify the unit explicitly in the data,
+you can use `(...){}` syntax, it means:
+
+```
+\setparshape\left (3*0pt, 7*.4\hsize){}
+```
+
+This creates rectangular cropping over seven lines after three untouched
+lines and the same result can be achieved by
+
+```
+\setparshape\left (3*0, 7*.4){\hsize}
+```
+
+The `\setparshape` setting is local in only one following paragraph (like
+`\parshape` does). If you need to influence more than one paragraph then you
+must to write `\globalshape` before, for example:
+
+```
+\globalshape\setparshape\left (3*0, 12*55)mm
+```
+
+The implementation follows:
+
+```
+\newcount\parshapenum \newcount\globpar
+
+\def\setparshape#1(#2)#3 {\def\parshapedata{}\parshapenum=1
+   \let\parshapeside=#1\def\parshapeunit{#3}\setparshapeA#2,,%
+}
+\def\setparshapeA#1,{\ifx,#1,\parshape=\parshapenum\parshapedata0pt\hsize
+   \else\fihere\setparshapeB#1\empty*\empty\end\fi
+}
+\def\setparshapeB#1*#2\empty#3\end{%
+   \ifx,#3,\tmpnum=1 \tmpdim=#1\parshapeunit \relax
+   \else \tmpnum=#1\tmpdim=#2\parshapeunit \relax \fi
+   \loop \ifnum\tmpnum>0
+      \advance\tmpnum by-1 \advance\parshapenum by1
+      \dimen0=\hsize \advance\dimen0 by-\tmpdim
+      \ifx\parshapeside\left
+          \edef\parshapedata{\parshapedata\the\tmpdim\space\the\dimen0}%
+      \else\edef\parshapedata{\parshapedata0pt\the\dimen0}\fi
+   \repeat
+   \setparshapeA
+}
+\def\fihere#1\fi{\fi#1}
+\def\globalshape{% TBN page 237
+   \global\globpar=0 \gdef\par{\ifhmode\shapepar\fi}%
+}
+\def\shapepar{\prevgraf=\globpar \parshape=\parshapenum\parshapedata0pt\hsize
+   \endgraf \global\globpar=\prevgraf
+   \ifnum\prevgraf<\parshapenum \else \global\let\par=\endgraf\fi
+}
+```

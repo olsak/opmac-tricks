@@ -1,0 +1,80 @@
+anchor-name:newcommand
+id:0086
+author:P. O.
+date:2015-01-09
+
+----lang:cs--title:LaTeXové newcommand
+Výjimečně se může stát, že potřebujeme číst LaTeXově napsaný kus kódu, ve
+kterém je použito `\newcommand`. Toto makro má poměrně obskurní syntaxi: za
+`\newcommand` následuje definovaná kontrolní sekvence. Pak může v hranaté
+závorce být uveden počet parametrů (není-li závorka uvedena, je tento počet
+roven nule). Pak může následovat druhá hranatá závorka, která obsahuje
+výchozí hodnotu prvního parametru, který se tímto stává nepovinným.
+Pak teprve následuje obvyklé tělo makra uvnitř svorek. Při deklaraci
+nepovinného parametru je pak možné definované makro volat dvěma způsoby, buď
+jako `\makro parametry` nebo jako `\makro [parametr]parametry`. V prvém případě
+má `#1` defaultní hodnotu a ve druhém hodnotu parametr. Ostatní (povinné)
+parametry se v tomto případě čtou do `#2`, `#3` atd. Uff.
+
+Pokud se obejdeme bez kontroly, zda je makro už definováno, a bez
+hvězdičkové verze, je možno `\newcommand` definovat takto:
+
+```
+\def\newcommand#1{\isnextchar[{\newcommandA#1}{\newcommandA#1[0]}}
+\def\newcommandA#1[#2]{\edef\tmpp{\ifcase#2%
+   \or1\or12\or123\or1234\or12345\or123456\or1234567\or12345678\or123456789\fi}%
+   \edef\tmpp{\expandafter\addhashs\tmpp.}%
+   \isnextchar[{\newcommandB#1}{\long\expandafter\def\expandafter#1\tmpp}%
+}
+\def\newcommandB#1[#2]{%
+   \def#1{\isnextchar[{\runcommand#1}{\runcommand#1[#2]}}%
+   \long\expandafter\def\csname\string#1X\expandafter\endcsname\tmpp
+}
+\def\addhashs#1{\ifx.#1\else #####1\expandafter\addhashs\fi}
+\long\def\runcommand#1[#2]{\csname\string#1X\endcsname{#2}}
+```
+
+Předpokládejme `\newcommand\makro[4]{cosi}`.
+Makro `\newcommandA` má v `#2` počet parametrů a tento počet pomocí `\ifcase`
+a následného `\addhashs` převede v `\tmpp` na sekvenci např. `#1#2#3#4`
+(pro případ čtyř parametrů). Když není deklarován
+nepovinný parametr, je definována přímo sekvence `\makro`. Je-li deklarován
+nepoviný parametr, je definována sekvence `\\makroX`. Kromě toho je definována
+sekvence `\makro` jako test, zda následuje hranatá závorka.
+
+----lang:en--title:\newcommand like in LaTeX
+Maybe we need to read the LaTeX-like code where `\newcommand` is used.
+This macro has somewhat obscure syntax: the square bracket can follow after
+`\newcommand\macro` where the number of unseparated parameters are given. If
+second square brackets follows than the first parameter is set as optional
+with default value given in this second pair of square brackets. After this,
+the normal macro body in the braces follows. If the optional parameter is
+declared, then usage of the `\macro` is `\macro parameters` or
+`\macro[first-param] parameters`. The `#1` is given as default or by the
+contents in the square brackets. The normal unseparated parameters are `#2`,
+`#3` etc in such case. Uff.
+
+When we needn't the checking if the macro is defined already and without
+starred version of the `\newcommand` then we can define:
+
+```
+\def\newcommand#1{\isnextchar[{\newcommandA#1}{\newcommandA#1[0]}}
+\def\newcommandA#1[#2]{\edef\tmpp{\ifcase#2%
+   \or1\or12\or123\or1234\or12345\or123456\or1234567\or12345678\or123456789\fi}%
+   \edef\tmpp{\expandafter\addhashs\tmpp.}%
+   \isnextchar[{\newcommandB#1}{\long\expandafter\def\expandafter#1\tmpp}%
+}
+\def\newcommandB#1[#2]{%
+   \def#1{\isnextchar[{\runcommand#1}{\runcommand#1[#2]}}%
+   \long\expandafter\def\csname\string#1X\expandafter\endcsname\tmpp
+}
+\def\addhashs#1{\ifx.#1\else #####1\expandafter\addhashs\fi}
+\long\def\runcommand#1[#2]{\csname\string#1X\endcsname{#2}}
+```
+
+For illustration, suppose `\newcommand\macro[4]{foo}`.
+The macro `\newcommandA` reads the number of the parameters in `#2` and this
+number is converted to `#1#2#3#4` into `\tmpp` macro. Because the optional
+parameter isn't declared the `\macro` (i.e `#1`) is defined directly.
+If the optional parameter is declared then the control sequence `\\macroX` is
+defined as the real macro. And the `\macro` is defined as `\isnextchar[...`

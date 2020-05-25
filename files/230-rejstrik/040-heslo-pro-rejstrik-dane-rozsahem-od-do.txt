@@ -1,0 +1,102 @@
+anchor-name:iibe
+id:0073
+author:P. O.
+date:2014-06-24
+
+----lang:cs--title:Heslo pro rejstřík dané rozsahem od--do
+Někdy je účelné říci, že dané heslo se vyskytuje na všech stránkách
+určité kapitoly nebo na všech stránkách od tohoto výskytu po tento výskyt.
+Nemusí to být vždy úplně pravda, ale to nebudeme řešit. Podstatné je, že
+uvnitř tohoto rozsahu nemusíme jednotlivě označovat výskyty hesla pro
+rejstřík.
+Navrhneme tedy dvojici maker `\iindexbeg{heslo} ... \iindexend{heslo}`,
+která vyznačují výchozí a konečnou stránku výskytu hesla,
+přitom se předpokládá, že se heslo vyskytuje na všech stránkách mezi nimi.
+V seznamu stránek s výskytem hesla bude tento interval stránek zahrnut a
+sloučen s ostatními stránkami vyznačujícími jednotlivé další výskyty hesla.
+
+```
+\def\Xindexgend#1#2#3{\bgroup \def~{ }% #1=prefix, #2=index-item, #3=pageno
+   \expandafter\firstdata \csname#1#2\endcsname \XindexA
+   \expandafter\seconddata \csname#1#2\endcsname \XindexB
+   \ifnum#3=\tmpa \else
+      \if\tmpb+%
+         \sxdef{#1#2}{{#3/-}{\tmp\iiendash}}
+      \else
+         \sxdef{#1#2}{{#3/-}{\tmp}}
+   \fi\fi \egroup
+}
+\input opmac
+
+\def\iindexbeg#1{\iindex{#1}\expandafter\iimute\csname,#1\endcsname}
+\def\iindexend#1{\expandafter\isinlist\expandafter\iimutelist\csname,#1\endcsname\iftrue
+   \wref\Xindexgend{,{#1}{\the\pageno}}\expandafter\iiunmute\csname,#1\endcsname \fi
+}
+\def\iindex#1{\expandafter\isinlist\expandafter\iimutelist\csname,#1\endcsname\iftrue
+   \else \openref\wref\Xindex{{#1}{\the\pageno}}\fi
+}
+\def\iimute#1{\global\addto\iimutelist#1}
+\def\iiunmute#1{\def\tmp##1#1##2\end{\gdef\iimutelist{##1##2}}\expandafter\tmp\iimutelist\end}
+\def\iimutelist{}
+```
+
+Pomocné makro `\Xindexgend` budeme zapisovat do REF souboru, a proto je
+potřebujeme definovat před `\input opmac`. Makro `\iindexbeg` pouze zapíše
+výskyt hesla pomocí `\iindex` a dále umlčí makrem `\iimute` všechny pokusy
+typu `\iindex{heslo}` vyskytující se uvnitř rozsahu `\iindexbeg{heslo}` až
+`\iindexend{heslo}`. Tyto pokusy by nám totiž mohly rozbít souvislý sled
+stránek. Makro `\iindexend{heslo}` vloží do REF souboru
+`\Xindexgend,{heslo}{strana}` a toto makro při zpracování REF souboru otevře
+uzavřený seznam stránek od výchozí strany po aktuální nebo protáhne
+otevřený seznam stránek až po aktuální stranu.
+
+Makro `\iindex` je předefinováno tak, aby do REF souboru zapisovalo jen
+hesla, která nejsou na seznamu `\iimutelist`. A konečně makra `\iimute` a
+`\iiunmute` přidávají a odebírají heslo ze seznamu `\iimutelist`.
+
+----lang:en--title:Index entry valid in page range
+It is usable to say that the word (for Index) occurs at all pages of
+given chapter or at all pages between this occurrence and following
+occurrence. This cannot be always exactly true but this is not out problem
+now. The singular occurrences cannot be set (by `\iindex{}`) inside the declared
+page range. We create the macro pair `\iindexbeg{word} ... \iindexend{word}`,
+which declares the page range. This page range will be added to the page
+list and merged wit another pages.
+
+```
+\def\Xindexgend#1#2#3{\bgroup \def~{ }% #1=prefix, #2=index-item, #3=pageno
+   \expandafter\firstdata \csname#1#2\endcsname \XindexA
+   \expandafter\seconddata \csname#1#2\endcsname \XindexB
+   \ifnum#3=\tmpa \else
+      \if\tmpb+%
+         \sxdef{#1#2}{{#3/-}{\tmp\iiendash}}
+      \else
+         \sxdef{#1#2}{{#3/-}{\tmp}}
+   \fi\fi \egroup
+}
+\input opmac
+
+\def\iindexbeg#1{\iindex{#1}\expandafter\iimute\csname,#1\endcsname}
+\def\iindexend#1{\expandafter\isinlist\expandafter\iimutelist\csname,#1\endcsname\iftrue
+   \wref\Xindexgend{,{#1}{\the\pageno}}\expandafter\iiunmute\csname,#1\endcsname \fi
+}
+\def\iindex#1{\expandafter\isinlist\expandafter\iimutelist\csname,#1\endcsname\iftrue
+   \else \openref\wref\Xindex{{#1}{\the\pageno}}\fi
+}
+\def\iimute#1{\global\addto\iimutelist#1}
+\def\iiunmute#1{\def\tmp##1#1##2\end{\gdef\iimutelist{##1##2}}\expandafter\tmp\iimutelist\end}
+\def\iimutelist{}
+```
+
+The auxiliary macro `\Xindexgend` is used in REF file. This is a reason why
+we need to define it before `\input opmac`. The `\iindexbeg` macro only saves the
+occurrence of the word by `\iindex` and it deactivates the `\iindex{word}` by
+`\iimute`. The `\iindex{word}` will be “mute” in the page range because the
+continuous page range can would be broken by it. The macro `\iindexend{word}`
+inserts the `\Xindexgend,{word}{page}` into REF file. During REF processing,
+this macro opens the actual page list from previous page number to actual
+page or prolongs the opened page list to the current page.
+
+The `\iindex` is redefined so that only the words not included in
+`\iimutelist` are saved to the REF file. The macros `\iimute` and `\iiunmute`
+save and remove the word to/from the `\iimutelist`

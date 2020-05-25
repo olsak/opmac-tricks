@@ -1,0 +1,101 @@
+anchor-name:hisyntaxhtml
+id:0125
+author:P. O.
+date:2015-10-03
+
+----lang:cs--title:Zvýraznění HTML kódu
+![Ukázka HTML](img/html-ukazka.png)
+
+Předvedeme příklad modifikace předchozího OPmac triku na zvýrazňování
+jazyka C, tentokrát zvýrazníme HTML nebo XML kód. Po:
+
+```
+\hisyntax{HTML}
+\begtt
+<div class="navis">
+<nav id="site">
+...
+</nav>
+</div>
+\endtt
+```
+
+dostaneme výstup, jak je znázorněno vpravo. Implementace:
+
+```
+\def\hisyntax#1{\bgroup\def\ptthook{\csname hisyntax#1\endcsname}}
+\def\ghisyntax#1{\def\ptthook{\bgroup\csname hisyntax#1\endcsname}}
+
+\def\hisyntaxHTML#1\egroup{\let\n=\relax \let\NLh=\relax \let\U=\relax
+   \let\TABchar=\relax % pro OPmac trik 0151
+   \adef{ }{\n\ }\adef\^^M{\n\NLh}\edef\tmpb{#1\egroup}%
+   \replacestrings{<!--}{\tmp}\def\tmp##1-->{\U{commentH}{##1}}\edef\tmpb{\tmpb}%
+   \replacestrings{<}{\tmp}\def\tmp##1>{\U{tagH}{##1}}\edef\tpb{\tmpb}%
+   \expandafter\replacestrings\expandafter{\string&}{\entityH}%
+   \let\NLh=\par \def\n{}\def\U##1{\csname##1\endcsname}%
+   \tentt\localcolor\tmpb\egroup}
+
+\def\commentH#1{{\Green<!--#1-->}}
+\def\tagH#1{\tagHa#1\n^}
+\def\tagHa#1\n#2^{\def\tmpb{#2}\replacestrings{"}{\stringH}%
+   {\Cyan<}{\Red#1}{\Cyan\tmpb>}}
+\def\stringH#1\stringH{{\def\ {\char32 }\Magenta"#1"}}
+\def\entityH#1;{{\Blue\&#1;}}
+
+\let\hisyntaxXML=\hisyntaxHTML
+```
+
+Makro `\hisyntaxHTML` nejprve převede mezery na `\n\ ` a konce řádků na
+`\n\NLh`. Pak převede komentáře `<!--cosi-->` na `\U{commentH}{cosi}`
+a následně tagy `<cosi>` na `\U{tagH}{cosi}`. Makro `\tagH` dále separuje
+jméno tagu od případných parametrů a provede konverzi stringů. Stringy jsou
+tedy vyznačeny jen uvnitř parametrů tagu.
+
+----lang:en--title:HTML syntax highlighting
+![HTML example](img/html-ukazka.png)
+
+As an example of a modification of the previous OPmac trick, we show how
+to do the syntax highlighting of HTML or XML code. Write
+
+```
+\hisyntax{HTML}
+\begtt
+<div class="navis">
+<nav id="site">
+...
+</nav>
+</div>
+\endtt
+```
+
+and you get the result as shown in the right margin here. The
+implementation:
+
+```
+\def\hisyntax#1{\bgroup\def\ptthook{\csname hisyntax#1\endcsname}}
+\def\ghisyntax#1{\def\ptthook{\bgroup\csname hisyntax#1\endcsname}}
+
+\def\hisyntaxHTML#1\egroup{\let\n=\relax \let\NLh=\relax \let\U=\relax
+   \let\TABchar=\relax % used in OPmac trick 0151
+   \adef{ }{\n\ }\adef\^^M{\n\NLh}\edef\tmpb{#1\egroup}%
+   \replacestrings{<!--}{\tmp}\def\tmp##1-->{\U{commentH}{##1}}\edef\tmpb{\tmp
+   \replacestrings{<}{\tmp}\def\tmp##1>{\U{tagH}{##1}}\edef\tpb{\tmpb}%
+   \expandafter\replacestrings\expandafter{\string&}{\entityH}%
+   \let\NLh=\par \def\n{}\def\U##1{\csname##1\endcsname}%
+   \tentt\localcolor\tmpb\egroup}
+
+\def\commentH#1{{\Green<!--#1-->}}
+\def\tagH#1{\tagHa#1\n^}
+\def\tagHa#1\n#2^{\def\tmpb{#2}\replacestrings{"}{\stringH}%
+   {\Cyan<}{\Red#1}{\Cyan\tmpb>}}
+\def\stringH#1\stringH{{\def\ {\char32 }\Magenta"#1"}}
+\def\entityH#1;{{\Blue\&#1;}}
+
+\let\hisyntaxXML=\hisyntaxHTML
+```
+
+The macro `\hisyntaxHTML` converts the spaces to `\n\␣` and end-lines to
+`\n\NLh` first. Then the comments `<!--foo-->` are converted to
+`\U{commentH}{foo}` and tags `<foo>` to `\U{tagH}{foo}`. The macro
+`\tagH` separates the tag name and parameters and does the conversion of
+strings in the parameters.

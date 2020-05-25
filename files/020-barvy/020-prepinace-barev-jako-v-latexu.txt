@@ -1,0 +1,33 @@
+anchor-name:collatex
+id:0034
+author:P. O.
+date:2013-11-29
+
+----lang:cs--title:Přepínače barev jako v LaTeXu
+V LaTeXu po zavedení příslušného balíčku je k dispozici makro `\color`,
+které přepíná lokálně ve skupině barvu podle svého argumentu (např.
+`{\color{red}červený text}`). Makro `\color` je možné definovat takto:
+
+```
+\def\color#1{\localcolor\colorA#1\relax}
+\def\colorA#1#2\relax{\uppercase{\csname#1}#2\endcsname\ignorespaces}
+
+Text {\color{red} červený} a taky {\color{blue} modrý} i normální.
+```
+
+Toto makro nastaví barvu jako `\localcolor` a spustí příkaz se jménem,
+jako je parametr příkazu, jen první písmeno je velké.
+
+----lang:en--title:Color switchers like in LaTeX
+The LaTeX color package provides the macro `\color`, which sets the color
+locally by its argument. This macro can be defined by:
+
+```
+\def\color#1{\localcolor\colorA#1\relax}
+\def\colorA#1#2\relax{\uppercase{\csname#1}#2\endcsname\ignorespaces}
+
+Text {\color{red} red text} and {\color{blue} blue text} and normal.
+```
+
+This macro ensures `\localcolor` and runs the control sequence given by the
+parameter, but first letter is capitalized.

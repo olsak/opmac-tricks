@@ -1,0 +1,4 @@
+----lang:cs--name:Tabulky
+
+----lang:en--name:Tables
+

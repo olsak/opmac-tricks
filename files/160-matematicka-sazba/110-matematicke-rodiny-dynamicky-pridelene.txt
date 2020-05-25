@@ -1,0 +1,206 @@
+anchor-name:dfam
+id:0131
+author:P. O.
+date:2015-11-22
+
+----lang:cs--title:Matematické rodiny dynamicky přidělené
+Klasický TeX i pdfTeX mají omezení na nejvýše 16 matematických rodin
+fontů v jednom vzorečku. OPmac pomocí `ams-math.tex` nebo `tx-math.tex` alokuje
+staticky (pro celý dokument) 12 resp. 14 rodin. Můžete jich staticky
+alokovat méně a dynamicky doplnit jen potřebné rodiny v rámci každého
+jednotlivého vzorečku. Pak můžete mít v dokumentu libovolné množství
+matematických rodin, jen omezení 16 rodin na vzoreček pochopitelně zůstává.
+
+Vytvoříme makro `\dfam{jméno-rodiny}`, které se uvnitř vzorečku chová jako
+`\fam=číslo`, ale rodinu alokuje dynamicky. Dále vytvoříme makro
+
+```
+\dmathchardef\sekvence třída{jméno-rodiny}kód
+```
+
+které deklaruje `\sekvenci` podobně jako `\matchardef`, ale odpovídající rodina
+se automaticky alokuje jen, pokud je `\sekvence` ve vzorečku použita. Pro
+příklad předpokládejme, že není staticky zavedena rodina eufm pro frakturu a
+rsfs pro skript. Pak je možné na začátku dokumentu deklarovat:
+
+```
+% obecně: \sdef{dfam:jméno-rodiny}{jméno-fontu-jako-v-\loadmathfamily}
+\sdef{dfam:fractur}{eufm}   \def\fractur{\dfam{fractur}}
+\sdef{dfam:script}{rsfs}    \def\script{\dfam{script}}
+% ...
+\dmathchardef\cosi 0{fractur}00  % znak třídy 0 kódu 00 (hex) z rodiny fractur
+% ...
+```
+
+a následně to použít:
+
+```
+$a \times {\script B} = {\fractur C}$, a taky $ \beta = \cosi^2 $.
+```
+
+V ukázce jsou dva vzorečky. Vedle staticky zavedených rodin jsou v prvním vzorečku
+navíc dynamicky alokovány rodiny rsfs a eufm a ve druhém jen rodina eufm.
+
+Implementace je následující
+
+```
+\chardef\numfamilies=\count18  % počet staticky linkovaných rodin
+\everymath={\dfamstart} \everydisplay{\dfamstart} \def\dfamlist{}
+\def\dfamstart{\aftergroup\dfamreset \let\dfamstart=\relax}
+\def\dfamreset{\global\count18=\numfamilies \gdef\dfamlist{}}
+
+\def\dfam#1{\relax
+   \expandafter\ifx\csname dfam:#1\endcsname \relax
+      \opwarning{dynamic math family "#1" is not declared}%
+   \else
+      \isinlist\dfamlist{,#1,}\iftrue \else
+         \begingroup \def\wlog##1{}%
+            \csname newfam\expandafter\endcsname \csname dmn:#1\endcsname
+            \globaldefs=1
+            \loadmathfamily{\csname dmn:#1\endcsname} {\csname dfam:#1\endcsname}
+         \endgroup
+         \global\addto\dfamlist{,#1,}%
+         \tmpnum=\csname dmn:#1\endcsname
+         \ifnum \tmpnum<10 \sxdef{dmh:#1}{\the\tmpnum}\else
+            \advance\tmpnum by-10
+            \sxdef{dmh:#1}{\ifcase\tmpnum A\or B\or C\or D\or E\or F\fi}%
+      \fi\fi
+      \fam=\csname dmn:#1\endcsname\relax
+   \fi
+}
+\def\dmathchar#1#2#3#4{\relax
+   \ifnum#1=0{\fi % aby fungovalo 2^\cosi bez nutnosti psát 2^{\cosi}
+   \isinlist\dfamlist{,#2,}\iftrue\else\begingroup\dfam{#2}\endgroup\fi
+   \mathchar"#1\csname dmh:#2\endcsname#3#4
+   \ifnum#1=0}\fi
+}
+\def\dmathchardef #1#2#3#4#5{\def#1{\dmathchar#2{#3}#4#5}}
+\addprotect\dfam \addprotect\dmathchar
+```
+
+Jednotlivé rodiny se zavádějí pomocí `\loadmathfamily` až podle potřeby a
+globálně. Jména zavedených rodin se ukládají do `\dfamlist`. Sekvence
+`\dmn:jméno` obsahuje číslo rodiny a `\dmh:jméno` obsahuje totéž číslo jako hexa
+číslici. Na konci každého vzorečku se hodnoty týkající se dynamicky
+zavedených rodin resetují pomocí `\dfamreset`. Vnořené matematické vzorečky
+(např. `\hbox{...$vzorec$...}` uvnitř vzorce) tyto hodnoty neresetují, protože
+je přechodně nastaveno `\dfamstart` na `\relax`.
+
+Při použití `\dfam` se doporučuje snížit počet staticky zavedených rodin jen
+na často používané předefinováním maker `\normalmath` a `\boldmath` a
+odpovídajícím snížením čísla `\count18`. Rodiny 0, 1, 2 a 3 musejí nutně
+zůstat staticky zavedené, protože TeX potřebuje jejich metriky v každém
+vzorečku.
+
+Má-li rodina bold variantu, je možné ji deklarovat následujícím způsobem:
+
+```
+\newif \ifboldmath   \boldmathfalse
+\addto\normalmath{\boldmathfalse}  \addto\boldmath{\boldmathtrue}
+% příklad eufm a eufb:
+\sdef{dfam:fractur}{\ifboldmath eufb\else eufm\fi}
+```
+
+----lang:en--title:Dynamically allocated math families
+Classical TeX and pdfTeX have a limit of maximal 16 math families of
+fonts in one formula. OPmac uses `ams-math.tex` or `tx-math.tex` and these
+macros allocate 12 resp. 14 math families statically (for whole document).
+But you can allocate less math families statically and other families will
+be allocated dynamically (on demand) inside each formula. The result: you
+can have arbitrary number of math families in your document (but the limit
+16 to one formula is still valid).
+
+We create a macro `\dfam{family-name}` which behaves similar as
+`\fam=family-number` inside formula, but the family is dynamically allocated.
+Moreover, we create a macro
+
+```
+\dmathchardef \sequence class{family-name}hexa-code
+```
+
+which declares the `\sequence` similarly as `\matchardef` does it, but the
+appropriate math family is dynamicaly allocated only if the `\sequence` is
+used in the formula. For example, we suppose that the families eufm (for
+fractur) and rsfs (for script) are not loaded statically. Then you can
+declare families at beginning of your document:
+
+```
+% in general: \sdef{dfam:family-name}{font-name-as-in-\loadmathfamily}
+\sdef{dfam:fractur}{eufm}   \def\fractur{\dfam{fractur}}
+\sdef{dfam:script}{rsfs}    \def\script{\dfam{script}}
+% ...
+\dmathchardef\foo 0{fractur}00  % character class 0 code 00 (hex) from fractur family
+% ...
+```
+
+and next you can use it:
+
+```
+$a \times {\script B} = {\fractur C}$, a taky $ \beta = \foo^2 $.
+```
+
+Two formulae are in this example. The script and fractur families are
+loaded in the first formula and only fractur is loaded in the second
+formula. Of course, the statically loaded families are used in both formulae
+too.
+
+The implementation:
+
+```
+\chardef\numfamilies=\count18  % the number of statically loaded families
+\everymath={\dfamstart} \everydisplay{\dfamstart} \def\dfamlist{}
+\def\dfamstart{\aftergroup\dfamreset \let\dfamstart=\relax}
+\def\dfamreset{\global\count18=\numfamilies \gdef\dfamlist{}}
+
+\def\dfam#1{\relax
+   \expandafter\ifx\csname dfam:#1\endcsname \relax
+      \opwarning{dynamic math family "#1" is not declared}%
+   \else
+      \isinlist\dfamlist{,#1,}\iftrue \else
+         \begingroup \def\wlog##1{}%
+            \csname newfam\expandafter\endcsname \csname dmn:#1\endcsname
+            \globaldefs=1
+            \loadmathfamily{\csname dmn:#1\endcsname} {\csname dfam:#1\endcsname}
+         \endgroup
+         \global\addto\dfamlist{,#1,}%
+         \tmpnum=\csname dmn:#1\endcsname
+         \ifnum \tmpnum<10 \sxdef{dmh:#1}{\the\tmpnum}\else
+            \advance\tmpnum by-10
+            \sxdef{dmh:#1}{\ifcase\tmpnum A\or B\or C\or D\or E\or F\fi}%
+      \fi\fi
+      \fam=\csname dmn:#1\endcsname\relax
+   \fi
+}
+\def\dmathchar#1#2#3#4{\relax
+   \ifnum#1=0{\fi  % 2^\foo will work, don't need to write 2^{\foo}
+   \isinlist\dfamlist{,#2,}\iftrue\else\begingroup\dfam{#2}\endgroup\fi
+   \mathchar"#1\csname dmh:#2\endcsname#3#4
+   \ifnum#1=0}\fi
+}
+\def\dmathchardef #1#2#3#4#5{\def#1{\dmathchar#2{#3}#4#5}}
+\addprotect\dfam \addprotect\dmathchar
+```
+
+Dynamically allocated families are loaded by `\loadmathfamily` on demand
+and with global settings. The names of such families are stored into
+`\famlist`. The control sequence `\dmn:name` includes the number of the family
+and `\dmh:name` includes the hexa digit of such number. The data about loaded
+families are reset at the end of the formula using `\dfamreset`. The nested
+formulae (like `\hbox{...$formula$...}` inside another formula) don't reset
+the data because the `\dfamstart` is set to `\relax` temporary.
+
+When `\dfam` is used then small number of statically allocated families are
+recommended. You do this by redefining `\normalmath` and `\boldmath` and by
+decreasing the `\count18` number. The families 0, 1, 2 ad 3 must be loaded
+statically because the metric information from these families is used by
+TeX in each formula.
+
+If the family have the bold variant then you can declare such family
+like this:
+
+```
+\newif \ifboldmath   \boldmathfalse
+\addto\normalmath{\boldmathfalse}  \addto\boldmath{\boldmathtrue}
+% příklad eufm a eufb:
+\sdef{dfam:fractur}{\ifboldmath eufb\else eufm\fi}
+```
