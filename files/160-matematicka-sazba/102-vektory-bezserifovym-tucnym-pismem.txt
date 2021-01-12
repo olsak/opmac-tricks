@@ -42,7 +42,7 @@ sedmičkou, jedná se o velká řecká písmena a použije se rodina 13. Jinak s
 použije rodina C=12.
 
 
-----lang:en--title:Vecors in sansserif bold including greek letters
+----lang:en--title:Vectors in sansserif bold including greek letters
 
 The OPmac trick above mentions the bahavior of `\bf` and `\bi` in math as
 sansserif bold because this is more common in Czech traditional typesetting
